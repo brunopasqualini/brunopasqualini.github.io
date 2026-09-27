@@ -1,24 +1,16 @@
-// Service worker for the AWS Mock Exam Simulator PWA.
+// Service worker for the Mock Exam Simulator PWA.
 // Strategy:
-//  - App shell (HTML/CSS/JS/manifest/icons): cache-first, so the app opens instantly offline.
-//  - Question bank data (banks.json + each cert folder's *.json files, e.g. dva/bank1.json):
+//  - App shell (HTML/CSS/JS/manifest): cache-first, so the app opens instantly offline.
+//  - Question bank data (banks.json + each cert folder's *.json files under questions/):
 //    stale-while-revalidate, so a new or edited bank is picked up automatically when online,
 //    but a cached copy still works offline.
 // Bump CACHE_VERSION whenever the app shell files change, so old caches get cleared.
 
 const CACHE_VERSION = "v1";
-const SHELL_CACHE = "aws-exam-shell-" + CACHE_VERSION;
-const DATA_CACHE = "aws-exam-data-" + CACHE_VERSION;
+const SHELL_CACHE = "exam-sim-shell-" + CACHE_VERSION;
+const DATA_CACHE = "exam-sim-data-" + CACHE_VERSION;
 
-const SHELL_FILES = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png",
-  "./banks.json",
-];
+const SHELL_FILES = ["./", "./index.html", "./manifest.json", "./banks.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -50,8 +42,8 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
   // Question bank data is every .json file except the PWA's own manifest.json
-  // at the site root (banks.json and anything under a cert folder like dva/, saa/
-  // all count as data, however many folders are added later).
+  // at the site root (banks.json and anything under questions/<cert>/ all
+  // count as data, however many cert folders are added later).
   const isAppManifest = url.pathname.endsWith("/manifest.json");
   const isQuestionData = url.pathname.endsWith(".json") && !isAppManifest;
 

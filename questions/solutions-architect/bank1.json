@@ -1,0 +1,48 @@
+{
+  "examTitle": "Solutions Architect Certification — Sample Set",
+  "questions": [
+    {
+      "id": 1,
+      "domain": "Resilient Architecture",
+      "type": "single",
+      "question": "A company runs a web application on virtual machines behind a load balancer across two availability zones. They want the application to stay available if an entire zone fails. What should they do?",
+      "options": [
+        "Increase the instance size in the primary zone",
+        "Ensure the auto-scaling group spans both zones with a minimum capacity in each",
+        "Move all instances into a single, larger zone",
+        "Enable enhanced networking on the instances"
+      ],
+      "correctAnswers": [1],
+      "explanation": "An auto-scaling group spanning multiple zones with sufficient minimum capacity in each ensures the application can keep serving traffic even if one zone becomes unavailable. Consolidating into one zone removes redundancy entirely."
+    },
+    {
+      "id": 2,
+      "domain": "Cost Optimization",
+      "type": "single",
+      "question": "A company runs a batch-processing workload that can tolerate interruptions and only needs to complete within a flexible time window. Which compute purchasing option minimizes cost?",
+      "options": [
+        "Standard on-demand pricing",
+        "A long-term reserved/committed-use pricing plan",
+        "Spare or preemptible capacity offered at a steep discount",
+        "A dedicated, single-tenant hardware plan"
+      ],
+      "correctAnswers": [2],
+      "explanation": "Spare or preemptible capacity offers the deepest discounts for interruption-tolerant workloads like batch processing. Reserved or committed-use plans suit steady, predictable usage, and dedicated hardware plans exist for compliance or licensing needs, not cost optimization."
+    },
+    {
+      "id": 3,
+      "domain": "Performance & Global Delivery",
+      "type": "multi",
+      "question": "A global media company wants to reduce latency for users downloading large video files worldwide. Which TWO approaches should they use? (Select TWO)",
+      "options": [
+        "A content delivery network that caches content at edge locations",
+        "A dedicated private network circuit to a single data center",
+        "An accelerated transfer feature that routes uploads/downloads over an optimized edge network",
+        "A one-time bulk data transfer appliance shipped by courier",
+        "Provisioned high-IOPS block storage volumes"
+      ],
+      "correctAnswers": [0, 2],
+      "explanation": "A content delivery network caches content close to users, and an accelerated transfer feature speeds up uploads/downloads over long distances by routing through the same edge network. A dedicated circuit and a bulk-transfer appliance solve different problems, and high-IOPS block storage doesn't affect global content delivery."
+    }
+  ]
+}
