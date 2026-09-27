@@ -1,0 +1,1129 @@
+{
+  "examTitle": "AWS Certified Solutions Architect – Associate (SAA-C03) – Practice Exam Set 05",
+  "questions": [
+    {
+      "id": 1,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A team stores the only copy of processed data on the instance store volumes of an Amazon EC2 instance. Which event will cause this data to be lost?",
+      "options": [
+        "The instance is stopped and then started again by an administrator",
+        "The instance is rebooted by using the operating system of the instance",
+        "The instance keeps running while a new IAM role is attached to the instance profile",
+        "The instance keeps running while its security group rules are edited to add a rule"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because data on instance store volumes persists only for the life of a running instance and is lost when the instance is stopped, hibernated, terminated, or when the underlying drive fails. Option B is incorrect because a reboot keeps instance store data. Option C is incorrect because security group changes do not affect storage. Option D is incorrect because an instance that keeps running retains its data. Takeaway: store durable data on EBS or another persistent service.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html"
+    },
+    {
+      "id": 2,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company has transit gateways in us-east-1 and eu-west-1. VPCs attached to each need to communicate privately, over the AWS global network, without internet exposure. Which solution meets this requirement?",
+      "options": [
+        "Create an internet gateway in each VPC and use public IP addresses with security group rules",
+        "Create a VPC peering connection between each pair of VPCs in the two Regions using the transit gateways",
+        "Create a transit gateway peering attachment between the two and add static routes to the peer in each route table",
+        "Enable route propagation between the transit gateways so that they learn routes dynamically from each other"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because transit gateways peer across Regions over the AWS backbone, and peering attachments use static routes. Option A is incorrect because it exposes traffic to the internet. Option B is incorrect because VPC peering does not use transit gateways, and it would create a full mesh. Option D is incorrect because peering attachments do not support route propagation. Takeaway: inter-Region transit gateway peering needs static routes.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/tgw/tgw-peering.html"
+    },
+    {
+      "id": 3,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An application on an active Amazon EC2 instance uses a secondary private IP address that clients have hard-coded. A standby instance in another Availability Zone in the same VPC must take over the address when the active instance fails. Which solution meets this requirement?",
+      "options": [
+        "Use a script that reassigns the secondary private IP address to the standby instance's network interface",
+        "Attach the standby instance to the failed instance's security group so that it inherits the address",
+        "Use Route 53 weighted records that map the private IP address to the standby instance",
+        "Associate the secondary private IP address with an Elastic IP address that stays on the failed instance"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because a secondary private IP address can be reassigned to another network interface in the same subnet. Option B is incorrect because security groups do not carry IP addresses. Note that private IP reassignment is limited to the same subnet and therefore the same Availability Zone. Option C is incorrect because DNS records point names at addresses and cannot move an IP address. Option D is incorrect because an Elastic IP address stays with its association and would not move on its own. Takeaway: a floating IP requires reassignment of the address or the network interface.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/MultipleIP.html"
+    },
+    {
+      "id": 4,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company with an Enterprise support plan wants a list of resources that appear to be idle or underused, such as low-utilization instances and idle load balancers, so that it can remove them and reduce cost. Which service provides this with the LEAST setup?",
+      "options": [
+        "AWS X-Ray traces of the requests to the resources",
+        "Amazon GuardDuty findings for resources with low activity",
+        "AWS Config conformance packs for the unused resources",
+        "AWS Trusted Advisor cost optimization checks"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Trusted Advisor cost optimization checks identify idle and underutilized resources such as low-utilization EC2 instances and idle load balancers. Option A is incorrect because X-Ray traces application requests and does not list idle infrastructure. Option B is incorrect because GuardDuty detects threats. Option C is incorrect because a conformance pack would need rules that define what unused means. Takeaway: use Trusted Advisor to find idle resources.",
+      "reference": "https://docs.aws.amazon.com/awssupport/latest/user/cost-optimization-checks.html"
+    },
+    {
+      "id": 5,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company runs a service that receives UDP traffic, such as syslog and DNS-style queries, on several Amazon EC2 instances. The company needs a load balancer with a static IP address per Availability Zone. Which load balancer should the company use?",
+      "options": [
+        "Application Load Balancer with a UDP listener",
+        "Classic Load Balancer with a UDP listener",
+        "Gateway Load Balancer with an HTTP listener",
+        "Network Load Balancer with a UDP listener"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Network Load Balancers support TCP and UDP listeners and provide one static IP address per Availability Zone. Option A is incorrect because Application Load Balancers support HTTP, HTTPS, and gRPC only. Option B is incorrect because Classic Load Balancers do not support UDP. Option C is incorrect because Gateway Load Balancers distribute traffic to virtual appliances and do not have HTTP listeners. Takeaway: use a Network Load Balancer for UDP traffic.",
+      "reference": "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html"
+    },
+    {
+      "id": 6,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "Hundreds of clients call an API and all retry immediately after receiving throttling errors. The retries create repeated bursts, and the service does not recover. Which change to the clients best helps the service to recover?",
+      "options": [
+        "Retry immediately and raise the maximum number of attempts so that the calls get through faster",
+        "Retry with exponential backoff and add random jitter to each delay so that clients do not retry in step",
+        "Retry with exponential backoff and no jitter so that all of the clients wait the same amount of time",
+        "Retry with a fixed delay of one second between attempts so that the calls of every client are regular"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because backoff spreads retries over time and jitter randomizes them so that clients do not retry in synchronized waves. Option A is incorrect because more immediate retries increase load. Option C is incorrect because backoff without jitter still leaves clients synchronized. Option D is incorrect because a fixed delay makes the clients retry at the same moments. Takeaway: combine backoff with jitter.",
+      "reference": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/retry-backoff.html"
+    },
+    {
+      "id": 7,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A security team needs to detect malicious processes, file changes, and connections inside containers that run on Amazon ECS on AWS Fargate and Amazon EKS, such as crypto mining or reverse shells. The team wants a managed detection service. Which solution meets this requirement?",
+      "options": [
+        "Enable GuardDuty Runtime Monitoring and deploy the managed GuardDuty security agent",
+        "Enable AWS Config rules for the container task definitions and cluster settings",
+        "Enable VPC Flow Logs for the subnets of the cluster and query them with Athena",
+        "Enable Amazon Inspector so that it blocks the malicious processes in the containers"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Runtime Monitoring uses a managed agent to observe operating system, file, process, and network events in containers and detects threats. Option B is incorrect because Config rules assess configuration and not runtime behavior. Option C is incorrect because flow logs contain network metadata and do not show processes or files. Option D is incorrect because Inspector reports vulnerabilities and does not block processes. Takeaway: use Runtime Monitoring for threat detection inside containers.",
+      "reference": "https://docs.aws.amazon.com/guardduty/latest/ug/runtime-monitoring.html"
+    },
+    {
+      "id": 8,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company's disaster recovery plan is to launch 300 Amazon EC2 instances in a second Region after a failure. During a test, the launch stops at 100 instances with an error that the limit is exceeded. What should the company have done to avoid this?",
+      "options": [
+        "Requested the increase in the primary Region because quotas are shared across Regions",
+        "Requested a Service Quotas increase for EC2 vCPUs in the DR Region ahead of time",
+        "Used Reserved Instances in the primary Region, which raise the quotas of other Regions",
+        "Enabled Auto Scaling in the primary Region so that it launches instances in the DR Region"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because service quotas are applied per Region and per account, so DR Regions need their own increases requested before a disaster. Option A is incorrect because quotas are not shared between Regions. Option C is incorrect because reservations do not change quotas. Option D is incorrect because an Auto Scaling group launches instances only in its own Region. Takeaway: verify quotas in the recovery Region.",
+      "reference": "https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html"
+    },
+    {
+      "id": 9,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A team deploys new JavaScript and CSS files several times a day behind Amazon CloudFront. Users sometimes see old files because of caching. Invalidation requests are frequent and add cost and delay. Which approach is BEST?",
+      "options": [
+        "Disable caching for the S3 origin by adding a Cache-Control no-store header to each object",
+        "Include a version or content hash in each file name and reference the new names from the HTML",
+        "Set the TTL of the distribution to 0 seconds so that no object is ever kept in an edge cache",
+        "Create an invalidation for /* after each deployment so that every object is removed"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because new file names are new cache keys, so users get new files immediately without invalidations and old files can stay cached. Option A is incorrect because no-store also removes caching benefits. Option C is incorrect because a TTL of 0 removes the performance benefit. Option D is incorrect because it is the practice that adds delay and, beyond the free allowance, cost. Takeaway: version object names instead of invalidating.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/UpdatingExistingObjects.html"
+    },
+    {
+      "id": 10,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company needs an SFTP endpoint that only employees on the corporate network can reach through AWS Direct Connect, and files must land in Amazon S3. The endpoint must not have a public IP address. Which solution meets these requirements?",
+      "options": [
+        "An Amazon S3 bucket website endpoint with the bucket policy limited to the corporate IP range",
+        "An Amazon EC2 instance with an SFTP daemon, an Elastic IP address, and a bucket sync every hour",
+        "An AWS Transfer Family server with a VPC endpoint of the internal access type, secured with security groups",
+        "An AWS Transfer Family server with a public endpoint and an IP allow list in the server's policy"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because a Transfer Family server with a VPC endpoint of the internal type is reachable only from within the VPC and connected networks such as Direct Connect, with security groups controlling access. Option A is incorrect because S3 website endpoints do not support SFTP and are HTTP only. Option B is incorrect because a self-managed server with an Elastic IP is public and needs maintenance. Option D is incorrect because a public endpoint has public IP addresses. Takeaway: use an internal VPC endpoint for private Transfer Family access.",
+      "reference": "https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html"
+    },
+    {
+      "id": 11,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A team runs a data processing application on an older Amazon EC2 instance type that has a low network bandwidth ceiling. The team needs higher packet rates and lower latency between instances. Which change is MOST likely to meet this requirement?",
+      "options": [
+        "Increase the size of the attached EBS volume so that the instance receives more network throughput from it",
+        "Attach additional Elastic IP addresses to the instance so that the traffic is spread over more public addresses",
+        "Move to a current generation instance type that supports the Elastic Network Adapter and has more bandwidth",
+        "Change the security group to allow all traffic so that packet inspection for each connection is reduced"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because ENA enhanced networking on current generation instance types provides higher bandwidth, higher packet-per-second performance, and lower latency. Option A is incorrect because EBS volume size affects storage throughput and not instance networking. Option B is incorrect because Elastic IP addresses do not raise bandwidth. Option D is incorrect because security groups are stateful filters that do not slow down traffic. Takeaway: choose instances with ENA for network-heavy workloads.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking-ena.html"
+    },
+    {
+      "id": 12,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "Two Amazon EC2 instances of a current generation in the same VPC exchange large data transfers. The team wants higher throughput by using jumbo frames. Which statement is correct?",
+      "options": [
+        "Jumbo frames are supported only inside a cluster placement group and only for instances that use the cluster strategy of placement",
+        "Instances in the same VPC support an MTU of 9001 bytes, but traffic that leaves through an internet gateway is limited to 1500 bytes",
+        "Jumbo frames require the instances to run in a VPC with dedicated tenancy and to use a private network ACL for the subnets",
+        "Traffic through an internet gateway supports an MTU of 9001 bytes when the instances have public IP addresses attached"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because the supported MTU within a VPC is 9001 bytes, while the MTU of traffic to the internet through an internet gateway is 1500 bytes. Option A is incorrect because jumbo frames are supported in any placement, and a cluster group is not required. Option C is incorrect because dedicated tenancy is not required. Option D is incorrect because public addresses do not change the internet MTU. Takeaway: jumbo frames apply inside the VPC path and not to the internet.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/network_mtu.html"
+    },
+    {
+      "id": 13,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A global video site serves popular files through Amazon CloudFront from an origin in one Region. Viewers are spread across many countries, and the origin still receives many requests for the same files from different edge locations. Which change reduces the load on the origin the MOST?",
+      "options": [
+        "Add a second origin in another Region and use origin groups so that requests are split between the origins",
+        "Enable Origin Shield in the Region closest to the origin so that regional edge caches are consolidated",
+        "Enable field-level encryption on the distribution so that the objects are cached in a protected form",
+        "Increase the minimum TTL of the distribution to 0 seconds so that edge locations fetch objects more often"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Origin Shield adds a centralized caching layer that collapses requests from many edge and regional caches into fewer requests to the origin. Option A is incorrect because origin groups provide failover and do not reduce the number of requests for the same objects. Option C is incorrect because field-level encryption protects specific form fields and does not affect cache efficiency. Option D is incorrect because a TTL of 0 forces revalidation and increases origin load. Takeaway: use Origin Shield to reduce origin requests for globally distributed viewers.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html"
+    },
+    {
+      "id": 14,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A team's application log groups in Amazon CloudWatch Logs were created with the default settings, and storage costs keep growing. Compliance requires 90 days of logs. Which change reduces the cost with the LEAST effort?",
+      "options": [
+        "Set the retention period of each log group to 90 days, which matches the compliance requirement",
+        "Encrypt the log groups with a customer managed KMS key so that the log data is compressed in storage",
+        "Export the log groups to Amazon S3 and keep the retention of the log groups at the current setting",
+        "Create a subscription filter that copies every event to a second log group for the archive"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because log groups keep data indefinitely by default, and a retention setting deletes events older than the period, so storage stops growing. Option B is incorrect because encryption does not compress data. Option C is incorrect because exporting without expiring the log groups keeps the stored data and adds S3 costs. Option D is incorrect because copying the events adds storage. Takeaway: set retention on every log group.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/Working-with-log-groups-and-streams.html"
+    },
+    {
+      "id": 15,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A contact center records phone calls and uses Amazon Transcribe to create transcripts. Compliance requires that spoken card numbers and names do not appear in the stored transcripts. Which configuration meets this requirement?",
+      "options": [
+        "Run an Amazon Comprehend sentiment analysis job on the transcripts to remove sensitive sentences",
+        "Enable Amazon Macie on the output bucket so that it deletes the transcripts that contain card numbers",
+        "Enable server-side encryption on the output bucket so that transcript text is unreadable to analysts",
+        "Enable content redaction in the Amazon Transcribe job so that PII is masked in the transcript output"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Transcribe content redaction identifies PII in speech and replaces it in the transcript with placeholders. Option A is incorrect because sentiment analysis classifies emotion and does not remove text. Option B is incorrect because Macie reports findings and does not delete transcripts. Option C is incorrect because encryption at rest does not hide values from authorized readers. Takeaway: enable redaction at transcription time.",
+      "reference": "https://docs.aws.amazon.com/transcribe/latest/dg/pii-redaction.html"
+    },
+    {
+      "id": 16,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "A central data account owns an AWS Glue Data Catalog. A partner account must read the definitions of two databases so that Amazon Athena in the partner account can query the tables, without duplicating catalog entries. Which TWO actions meet these requirements? (Select TWO)",
+      "options": [
+        "Create an IAM user in the central account for the partner team and share the user's access keys",
+        "Create an AWS Glue crawler in the partner account that reads the storage volumes of the central account",
+        "Add a Data Catalog resource policy in the central account that grants the partner account access to the two databases",
+        "Grant IAM permissions for the Glue read actions to the partner's principals in the partner account",
+        "Export the two databases as CSV files to Amazon S3 so that the partner account can create its own copies of the tables"
+      ],
+      "correctAnswers": [
+        2,
+        3
+      ],
+      "explanation": "Options C and D are correct. Cross-account access to catalog resources needs a resource policy in the owning account and matching IAM permissions for the principals in the other account. Option A is incorrect because sharing access keys is an insecure practice. Option B is incorrect because a crawler cannot read the storage volumes of another account. Option E is incorrect because exporting creates duplicate catalog entries that drift from the source. Takeaway: cross-account catalog access needs both a resource policy and IAM permissions.",
+      "reference": "https://docs.aws.amazon.com/glue/latest/dg/cross-account-access.html"
+    },
+    {
+      "id": 17,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A finance team wants to be notified when the spending for a project is forecast to exceed its monthly budget of $10,000, before the actual spending reaches the amount. Which solution meets this requirement?",
+      "options": [
+        "An AWS Cost Explorer saved report that is opened by the team on the first day of every month",
+        "An AWS Budgets cost budget with an alert on forecasted spend at 100 percent of the budget",
+        "An AWS Budgets usage budget for EC2 hours with an alert at 100 percent of actual usage",
+        "An Amazon CloudWatch billing alarm on the EstimatedCharges metric at $10,000"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Budgets can alert on forecasted amounts and therefore warn before the actual spending exceeds the budget. Option A is incorrect because a report needs someone to look at it. Option C is incorrect because a usage budget for EC2 hours tracks hours and not total cost, and actual usage alerts come later. Option D is incorrect because the billing alarm reflects actual charges that have already accrued and does not forecast. Takeaway: use forecast alerts for early warnings.",
+      "reference": "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html"
+    },
+    {
+      "id": 18,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "VPC A is peered with VPC B, and VPC B is peered with VPC C. Instances in VPC A cannot reach instances in VPC C. The team wants A and C to communicate while adding the LEAST management overhead as more VPCs are added. What should the team do?",
+      "options": [
+        "Create a second peering connection between VPC A and VPC B in the other direction",
+        "Enable transitive routing in the properties of the peering connections",
+        "Attach the VPCs to an AWS Transit Gateway and update the route tables",
+        "Add routes in VPC B so that it forwards traffic between VPC A and VPC C"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because VPC peering is not transitive, and a transit gateway acts as a hub that scales as VPCs are added. Option A is incorrect because one peering connection is already bidirectional. Option B is incorrect because there is no transitive routing setting for peering. Option D is incorrect because a peered VPC does not forward traffic from one peer to another. Takeaway: use Transit Gateway for hub-and-spoke connectivity.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html"
+    },
+    {
+      "id": 19,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company considers enabling S3 Transfer Acceleration on a bucket to which users worldwide upload files. Some users are in the same Region as the bucket. The finance team is concerned about additional charges. Which statement is correct?",
+      "options": [
+        "Charges apply only to transfers that AWS determines are likely to be faster than a standard transfer",
+        "Transfer Acceleration is billed at a flat monthly fee for each bucket, regardless of how many transfers use it",
+        "Charges apply to all transfers, and the speed comparison tool has no effect on what appears on the bill",
+        "Transfer Acceleration is free for uploads and is billed only for the downloads that are made from the bucket"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because AWS does not charge the acceleration fee for transfers that are not likely to be faster than a regular S3 transfer, and the speed comparison tool helps to evaluate the benefit. Option B is incorrect because there is no flat fee. Option C is incorrect because charges do not apply when acceleration is not expected to help. Option D is incorrect because both uploads and downloads can be charged when they benefit. Takeaway: Transfer Acceleration is charged per accelerated transfer.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+    },
+    {
+      "id": 20,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A Amazon Redshift cluster runs in private subnets with no internet gateway. Compliance requires that COPY and UNLOAD traffic between the cluster and Amazon S3 stays inside the AWS network and is controlled by VPC endpoint policies. Which configuration meets this requirement?",
+      "options": [
+        "Enable audit logging on the cluster so that COPY and UNLOAD traffic is written to a bucket in the VPC",
+        "Place the cluster behind a Network Load Balancer with a private listener that forwards traffic to S3",
+        "Enable enhanced VPC routing on the cluster and create an S3 gateway endpoint in the cluster's VPC",
+        "Enable cross-Region snapshot copy on the cluster and grant the cluster role access to the target bucket"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because enhanced VPC routing forces COPY and UNLOAD traffic through the VPC, where an S3 endpoint and its policy control and contain the path. Option A is incorrect because audit logging records activity and does not route traffic. Option B is incorrect because a load balancer cannot front the S3 service for cluster data loads. Option D is incorrect because snapshot copy is a backup feature and does not change the network path of data loads. Takeaway: enhanced VPC routing keeps Redshift data movement inside the VPC.",
+      "reference": "https://docs.aws.amazon.com/redshift/latest/mgmt/enhanced-vpc-routing.html"
+    },
+    {
+      "id": 21,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A VPC uses a 10.0.0.0/24 CIDR block and has run out of IP addresses. The team must add capacity for more instances without recreating the VPC or disrupting workloads that are already running. What should the team do?",
+      "options": [
+        "Create a new VPC with a larger block and migrate the existing instances by rebuilding them",
+        "Associate a secondary IPv4 CIDR block with the VPC and create new subnets in it",
+        "Change the primary CIDR block of the VPC to a larger range in the VPC settings",
+        "Enable IPv6 on the VPC so that the IPv4 address range is extended automatically"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because you can add secondary CIDR blocks to an existing VPC, and new subnets can use them without affecting existing resources. Option A is incorrect because it causes disruption and needs migration. Option C is incorrect because the primary CIDR block cannot be changed. Option D is incorrect because IPv6 does not add IPv4 addresses. Takeaway: extend a VPC with secondary CIDR blocks.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-cidr-blocks.html"
+    },
+    {
+      "id": 22,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Amazon ECS service on AWS Fargate runs tasks behind an Application Load Balancer. If a container stops responding to requests, the team wants the platform to remove it from the load balancer and replace it automatically. What should the team configure?",
+      "options": [
+        "A CloudWatch alarm that notifies an engineer who restarts the task from the console",
+        "An AWS Backup plan that restores the task definition every hour",
+        "A target group health check and the ECS service scheduler to maintain the desired task count",
+        "An Auto Scaling policy that adds a task when the average CPU utilization exceeds 90 percent"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because load balancer health checks mark unresponsive targets unhealthy, and the service scheduler stops them and starts replacements to keep the desired count. Option A is incorrect because it depends on a person. Option B is incorrect because AWS Backup does not restore task definitions. Option D is incorrect because CPU scaling adds capacity and does not detect unresponsive containers. Takeaway: combine health checks with the service scheduler.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-load-balancing.html"
+    },
+    {
+      "id": 23,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company must protect Amazon EBS snapshots of production volumes from deletion for 90 days, including deletion by administrators with full permissions, to defend against ransomware. Which feature meets this requirement?",
+      "options": [
+        "Amazon Data Lifecycle Manager with a retention rule of 90 days",
+        "Amazon EBS Snapshot Lock in compliance mode with a 90-day lock duration",
+        "Snapshot sharing with a second account that has a policy denying DeleteSnapshot",
+        "Amazon EBS fast snapshot restore enabled for the snapshots in the Availability Zone"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Snapshot Lock in compliance mode prevents deletion during the lock period, and even users with full permissions cannot remove the snapshots. Option A is incorrect because a lifecycle retention rule schedules deletions, but an administrator can still delete snapshots manually. Option C is incorrect because sharing does not protect the source snapshots from deletion by the owner. Option D is incorrect because fast snapshot restore speeds up restores. Takeaway: use Snapshot Lock for immutable snapshots.",
+      "reference": "https://docs.aws.amazon.com/ebs/latest/userguide/snapshot-lock.html"
+    },
+    {
+      "id": 24,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company has services in several VPCs and accounts, and it wants service-to-service communication with authentication and authorization that is controlled by IAM-style policies, without managing peering, transit gateway routing, or overlapping CIDR issues. Which service should the company use?",
+      "options": [
+        "AWS Transit Gateway with route tables and network ACLs that are defined for each of the services",
+        "Amazon VPC Lattice with a service network and auth policies that use IAM",
+        "AWS PrivateLink endpoint services with an interface endpoint that is created for every consumer",
+        "VPC peering connections between every pair of the VPCs with security group rules for services"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because VPC Lattice provides an application-layer service network across VPCs and accounts, with auth policies that use IAM for authentication and authorization, and it works with overlapping CIDR ranges. Option A is incorrect because routing and ACLs do not authenticate callers. Option C is incorrect because PrivateLink exposes single services one endpoint at a time and does not provide policy-based service authorization. Option D is incorrect because peering is network-level and does not authorize requests at the service level. Takeaway: use VPC Lattice for application-layer connectivity and authorization.",
+      "reference": "https://docs.aws.amazon.com/vpc-lattice/latest/ug/what-is-vpc-lattice.html"
+    },
+    {
+      "id": 25,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company runs an application in two Regions and uses Route 53 Traffic Flow. The Region in Europe has spare capacity, and the company wants to send more of the users who are near the boundary between Regions to it, without using fixed country lists. Which routing policy should the company use?",
+      "options": [
+        "Latency routing with a lower TTL on the records of the European endpoint",
+        "Geolocation routing with a record for each country in the boundary area",
+        "Geoproximity routing with a positive bias value on the European endpoint",
+        "Failover routing with the European endpoint set as the primary record"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because geoproximity routing routes by the distance between users and resources and lets you expand or shrink the size of a geographic area with a bias value. Option A is incorrect because latency routing follows measured latency, and TTL does not shift traffic. Option B is incorrect because geolocation requires explicit mappings and cannot shift boundary users by distance. Option D is incorrect because failover sends all traffic to the primary and only uses the secondary during failures. Takeaway: use geoproximity bias to tune traffic distribution.",
+      "reference": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geoproximity.html"
+    },
+    {
+      "id": 26,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company wants developers to launch only approved, pre-configured architectures, such as a small web stack, without giving them broad permissions to the underlying services. This standardization should also limit unnecessary spending. Which service meets this requirement?",
+      "options": [
+        "Amazon Machine Images that are shared with the developers through launch permissions",
+        "AWS Config with managed rules that flag resources which are not approved",
+        "AWS CloudFormation drift detection that runs every day on the developer stacks",
+        "AWS Service Catalog with portfolios of products that use launch constraints"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Service Catalog lets administrators publish approved products, and launch constraints let users deploy them with a role while they need only limited permissions. Option A is incorrect because sharing AMIs standardizes images and not complete architectures or permissions. Option B is incorrect because Config flags noncompliance after the fact. Option C is incorrect because drift detection reports differences and does not restrict what can be launched. Takeaway: use Service Catalog for governed self-service.",
+      "reference": "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html"
+    },
+    {
+      "id": 27,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company wants to add security headers to every response and rewrite short URLs to their full paths for a website behind Amazon CloudFront. The logic is simple, runs on every request, and must add the lowest possible latency and cost. Which solution should the company use?",
+      "options": [
+        "Lambda@Edge functions associated with the origin request and origin response events",
+        "An AWS Lambda function behind the Application Load Balancer that rewrites the requests",
+        "An Amazon API Gateway proxy in front of the distribution that runs a mapping template",
+        "CloudFront Functions associated with viewer request and viewer response events"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because CloudFront Functions run at the edge with sub-millisecond startup at a lower cost than Lambda@Edge, which suits header manipulation and URL rewrites on viewer events. Option A is incorrect because Lambda@Edge is more capable but costs more and adds latency for simple logic, and origin events run only on cache misses. Option B is incorrect because it adds a round trip to the origin Region. Option C is incorrect because a proxy in front of the distribution adds a hop. Takeaway: prefer CloudFront Functions for lightweight edge logic.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/edge-functions-choosing.html"
+    },
+    {
+      "id": 28,
+      "domain": "Design Resilient Architectures",
+      "type": "multi",
+      "question": "A company has one Site-to-Site VPN connection to a virtual private gateway. The team wants the connection to survive the failure of one AWS endpoint, and knows that each connection has two tunnels. Which TWO actions give the team the benefit of this redundancy? (Select TWO)",
+      "options": [
+        "Create a second virtual private gateway in the same VPC and attach it to the same subnets",
+        "Configure the customer gateway device to establish both tunnels of the connection",
+        "Rely on AWS to keep the second tunnel active and to copy the traffic to it automatically",
+        "Use dynamic BGP routing so that traffic fails over between the tunnels when one goes down",
+        "Enable route propagation on the second tunnel so that the customer gateway device is optional"
+      ],
+      "correctAnswers": [
+        1,
+        3
+      ],
+      "explanation": "Options B and D are correct. Each connection has two tunnels that terminate in different Availability Zones, and the customer gateway device must bring up both and fail over, typically with BGP. Option A is incorrect because a VPC supports one virtual private gateway. Option C is incorrect because AWS does not mirror traffic to the second tunnel. Option E is incorrect because route propagation applies to routes in the VPC and does not replace the customer gateway. Takeaway: configure both tunnels on the customer side.",
+      "reference": "https://docs.aws.amazon.com/vpn/latest/s2svpn/VPNTunnels.html"
+    },
+    {
+      "id": 29,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "After a failover, an Amazon Aurora PostgreSQL cluster serves queries slowly for several minutes because the promoted reader has a cold buffer cache. The team wants the performance after a failover to be stable from the first minute. Which feature meets this requirement?",
+      "options": [
+        "An additional cross-Region replica that keeps its own cache warm for the cluster",
+        "Aurora Backtrack, which restores the cache of the writer after a failover",
+        "Cluster cache management with a designated reader in promotion tier 0",
+        "A larger writer instance so that the cache of the promoted reader is bigger"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because cluster cache management keeps the buffer cache of the designated failover reader synchronized with the writer, so the promoted instance is already warm. Option A is incorrect because a cross-Region replica is not the target of a local failover and has its own workload. Option B is incorrect because Backtrack rewinds the data and does not affect caches. Option D is incorrect because a larger writer does not warm the reader's cache. Takeaway: use cluster cache management for warm failovers in Aurora PostgreSQL.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.cluster-cache-mgmt.html"
+    },
+    {
+      "id": 30,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company purchased Reserved Instances a year ago. Management wants to know how much of its eligible usage is covered by reservations and how much of the purchased reservations is unused. Which tool provides this information?",
+      "options": [
+        "AWS Cost Explorer reservation coverage and utilization reports",
+        "AWS Config timeline for the instances that are covered by reservations",
+        "Amazon Inspector findings for the instances that are covered by reservations",
+        "AWS Compute Optimizer recommendations for the EC2 instances of the account"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Cost Explorer shows the coverage of usage by reservations and the utilization of purchased reservations. Option B is incorrect because Config records configuration changes and not billing coverage. Option C is incorrect because Inspector assesses vulnerabilities. Option D is incorrect because Compute Optimizer recommends resource sizes based on utilization. Takeaway: use coverage and utilization reports to manage commitments.",
+      "reference": "https://docs.aws.amazon.com/cost-management/latest/userguide/ce-ri-coverage.html"
+    },
+    {
+      "id": 31,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A team wants a path on an existing Application Load Balancer, /report, to be handled by an AWS Lambda function, while other paths still go to Amazon EC2 instances. Which configuration meets this requirement?",
+      "options": [
+        "Create a Network Load Balancer target group that points to the function's ARN and forward the path to it",
+        "Create a target group of the Lambda type and add a listener rule for the /report path that forwards to it",
+        "Create an API Gateway endpoint for the function and configure the ALB to redirect the path to it",
+        "Register the function's IP address in the instance target group and add a health check on the path"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because ALB supports Lambda functions as targets, and listener rules route paths to a Lambda target group. Option A is incorrect because Lambda targets are registered in ALB target groups and not with NLB. Option C is incorrect because it adds another service and an unnecessary redirect. Option D is incorrect because functions do not have IP addresses that can be registered. Takeaway: ALB can invoke Lambda directly.",
+      "reference": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html"
+    },
+    {
+      "id": 32,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company wants to prevent its development accounts from launching large and expensive Amazon EC2 instance types. Developers should still be able to launch small types, and the restriction must apply to every principal in those accounts. Which solution meets this requirement?",
+      "options": [
+        "A service control policy that denies ec2:RunInstances when ec2:InstanceType is not in a list of approved types",
+        "An IAM permissions boundary that is attached to the root user of each of the development accounts",
+        "An AWS Budgets action that stops each instance after it has run for more than one hour in the account",
+        "A CloudWatch alarm on the CPU utilization of the accounts that alerts the finance team when spending is high"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because an SCP applied to the organizational unit restricts every principal in the member accounts, and the ec2:InstanceType condition key limits which types can be launched. Option B is incorrect because boundaries apply to specific IAM users and roles and cannot be attached to the root user. Option C is incorrect because a budget action reacts to cost after resources are running and cannot select by type. Option D is incorrect because alarms only notify. Takeaway: use SCP conditions to enforce cost guardrails.",
+      "reference": "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_examples_ec2.html"
+    },
+    {
+      "id": 33,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company runs a production Amazon EKS cluster. The team wants to know which part of the high availability design is the customer's responsibility. Which statement is correct?",
+      "options": [
+        "The customer must create a load balancer in front of the Kubernetes API server",
+        "The customer must back up the etcd database of the control plane every day",
+        "The customer must run worker nodes or Fargate profiles across multiple Availability Zones",
+        "The customer must run and patch the Kubernetes API servers in each Availability Zone"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because EKS runs and scales the control plane across multiple Availability Zones, while the customer chooses how worker capacity is spread. Option A is incorrect because EKS provides the API endpoint with load balancing. Option B is incorrect because AWS manages etcd and its durability. Option D is incorrect because AWS manages the API servers. Takeaway: EKS makes the control plane highly available and the data plane is up to you.",
+      "reference": "https://docs.aws.amazon.com/eks/latest/best-practices/reliability.html"
+    },
+    {
+      "id": 34,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Amazon ECS service runs on EC2 container instances in three Availability Zones. The team wants the task placement to distribute tasks evenly across the zones so that a zone failure affects a small share of tasks. Which placement strategy should the team use?",
+      "options": [
+        "The random strategy with a distinctInstance placement constraint",
+        "The binpack strategy on CPU with a memberOf constraint on the zone",
+        "The spread strategy on the attribute ecs.availability-zone",
+        "The binpack strategy on memory so that each instance is filled first"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because the spread strategy on the ecs.availability-zone attribute distributes tasks evenly across zones. Option A is incorrect because random placement does not guarantee an even distribution across zones. Option B is incorrect because binpack on CPU also concentrates tasks and the constraint limits candidates. Option D is incorrect because binpack packs tasks onto as few instances as possible to save cost and concentrates tasks. Takeaway: spread on availability zone for resilient placement.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-strategies.html"
+    },
+    {
+      "id": 35,
+      "domain": "Design High-Performing Architectures",
+      "type": "multi",
+      "question": "A web application serves images and scripts from an Amazon S3 bucket and personalized API responses from an Application Load Balancer, all under one domain. The company wants static content cached for a long time and API responses never cached. Which TWO cache behaviors should be configured on one CloudFront distribution? (Select TWO)",
+      "options": [
+        "A /static/* behavior that routes to the S3 origin and uses a long TTL",
+        "An /api/* behavior that routes to the ALB origin and uses a caching policy with caching disabled",
+        "A default behavior with a long TTL that routes all of the requests to the S3 origin",
+        "A /static/* behavior that routes to the ALB origin and uses the default TTL of the distribution",
+        "An /api/* behavior that routes to the S3 origin and uses an origin group with the ALB as secondary"
+      ],
+      "correctAnswers": [
+        0,
+        1
+      ],
+      "explanation": "Options A and B are correct. Path-pattern cache behaviors let one distribution send different paths to different origins with different caching policies. Option C is incorrect because a long TTL for everything would serve wrong or cached responses for API paths. Option D is incorrect because it sends static requests to the ALB and misses the long TTL. Option E is incorrect because origin groups provide failover and are not path routing. Takeaway: use path-based behaviors to separate static and dynamic content.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html"
+    },
+    {
+      "id": 36,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A data lake contains hundreds of tables. New tables are added every week, and access should depend on attributes such as sensitivity and department. The security team wants to avoid granting permissions table by table. Which solution meets this requirement with the LEAST ongoing effort?",
+      "options": [
+        "Use AWS Lake Formation tag-based access control with LF-tags assigned to databases, tables, and columns",
+        "Write an IAM policy for each department that lists the ARN of every table it may read",
+        "Create a separate S3 bucket for each sensitivity level and copy the tables when they are added",
+        "Grant every analyst the AWSGlueConsoleFullAccess policy and rely on naming conventions"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because LF-tags let administrators grant permissions on tag expressions, so new resources with matching tags are covered without new grants. Option B is incorrect because listing every table ARN requires policy updates for every new table. Option C is incorrect because copying tables duplicates data and adds operational work. Option D is incorrect because that managed policy grants broad access to the catalog, and naming conventions do not enforce anything. Takeaway: use tag-based access control for scalable data lake permissions.",
+      "reference": "https://docs.aws.amazon.com/lake-formation/latest/dg/tag-based-access-control.html"
+    },
+    {
+      "id": 37,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A FinOps team wants one place in which it can see and prioritize cost-saving recommendations across all accounts and Regions, such as rightsizing, idle resources, and commitment purchases, including the estimated savings. Which service should the team use?",
+      "options": [
+        "AWS Cost Optimization Hub",
+        "Amazon CloudWatch Application Insights",
+        "AWS Systems Manager Explorer",
+        "AWS Health Dashboard"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Cost Optimization Hub consolidates recommendations from several sources across accounts and Regions and shows the estimated savings. Option B is incorrect because Application Insights monitors application health. Option C is incorrect because Explorer summarizes operational data. Option D is incorrect because the Health Dashboard reports service events. Takeaway: use Cost Optimization Hub to prioritize savings.",
+      "reference": "https://docs.aws.amazon.com/cost-management/latest/userguide/cost-optimization-hub.html"
+    },
+    {
+      "id": 38,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company runs private instances in a dual-stack VPC. The instances must connect out to IPv6 services on the internet, but the internet must not be able to initiate connections to them. Which solution meets this requirement?",
+      "options": [
+        "A virtual private gateway with a route for ::/0 in the private subnets' route table",
+        "A NAT gateway with a route for ::/0 in the private subnets' route table",
+        "An internet gateway with a route for ::/0 and a network ACL that blocks inbound traffic",
+        "An egress-only internet gateway with a route for ::/0 in the private subnets' route table"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because an egress-only internet gateway allows outbound IPv6 traffic and blocks connections that start from the internet. Option A is incorrect because a virtual private gateway is for VPN connections. Option B is incorrect because a NAT gateway for IPv6 translation is not how IPv6 outbound access is provided for instances. Option C is incorrect because an internet gateway allows inbound traffic to instances that have public addresses, and network ACLs are stateless and harder to manage. Takeaway: use an egress-only internet gateway for outbound-only IPv6.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/userguide/egress-only-internet-gateway.html"
+    },
+    {
+      "id": 39,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company brings its own server-bound software licenses to AWS and must avoid exceeding the number of licensed cores across accounts, which could cause unplanned true-up costs. The company wants to be notified and to stop launches that exceed the limit. Which service should the company use?",
+      "options": [
+        "AWS Trusted Advisor with a check on the number of licensed cores that are in use in the accounts",
+        "AWS License Manager with license configurations that enforce hard limits on core counts",
+        "AWS Budgets with a cost budget that is set to the price of the licenses that the company owns",
+        "AWS Organizations with a tag policy that requires a license tag on every instance in the accounts"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because License Manager tracks license usage across accounts and can enforce hard limits that stop launches that would exceed the licensed count. Option A is incorrect because Trusted Advisor has no check for bring-your-own license counts. Option C is incorrect because budgets track cost and do not count licensed cores or block launches. Option D is incorrect because tag policies standardize tag values and do not count usage. Takeaway: use License Manager to control license consumption.",
+      "reference": "https://docs.aws.amazon.com/license-manager/latest/userguide/license-manager.html"
+    },
+    {
+      "id": 40,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "An application behind a Network Load Balancer must log the original client IP address. The targets are registered by IP address in a target group and the NLB does not preserve the source IP for them. Which change gives the application the client IP address?",
+      "options": [
+        "Read the X-Forwarded-For header that the Network Load Balancer adds to each request",
+        "Enable proxy protocol v2 on the target group and configure the application to parse it",
+        "Enable cross-zone load balancing so that the source address of each client is retained",
+        "Change the listener protocol to HTTP so that the load balancer forwards the client address"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because proxy protocol v2 passes connection information, including the client address, to targets, and the application must be able to parse it. Option A is incorrect because NLB operates at layer 4 and does not add HTTP headers. Option C is incorrect because cross-zone load balancing does not affect client addresses. Option D is incorrect because NLB does not support HTTP listeners. Takeaway: use proxy protocol when client IP preservation is not available.",
+      "reference": "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/edit-target-group-attributes.html"
+    },
+    {
+      "id": 41,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company runs an application in us-east-1 and ap-southeast-1. The company wants each user's DNS query to resolve to the Region that gives the user the lowest network latency, and to skip a Region when its health check fails. Which Route 53 configuration meets this requirement?",
+      "options": [
+        "Weighted records with equal weights for the two Regions and a health check on each record",
+        "Geolocation records that map each continent to the nearest Region with a default record",
+        "Simple records with multiple values that list the IP addresses of both Regions",
+        "Latency records for each Region with health checks associated with the records of both"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because latency-based routing returns the Region with the lowest measured latency for the user, and health checks remove unhealthy endpoints from answers. Option A is incorrect because equal weights split traffic randomly. Option B is incorrect because geolocation uses the user's location and not latency. Option C is incorrect because a multivalue answer does not consider latency. Takeaway: use latency records to route to the fastest Region.",
+      "reference": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-latency.html"
+    },
+    {
+      "id": 42,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company runs Amazon EMR clusters that process regulated data. Security requires encryption for data on the local disks of the nodes, for data in Amazon S3 written through EMRFS, and for data moving between nodes. Which solution applies these settings consistently to each cluster?",
+      "options": [
+        "An S3 bucket policy that denies unencrypted uploads and is attached to the bucket that the EMR clusters use for their output",
+        "A CloudTrail trail that records every write from the cluster and alerts the security team when a write is not encrypted",
+        "An EMR security configuration that enables at-rest and in-transit encryption and is selected when the cluster is created",
+        "An IAM policy on the EMR instance profile that denies actions unless each request uses a customer managed KMS key"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because a security configuration defines encryption for local disks, EMRFS data in S3, and in-transit traffic, and it is applied when a cluster is launched. Option A is incorrect because a bucket policy covers only data written to that bucket. Option B is incorrect because CloudTrail only records API calls and cannot encrypt data. Option D is incorrect because an instance profile policy cannot encrypt local volumes or node-to-node traffic. Takeaway: use EMR security configurations for encryption settings.",
+      "reference": "https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-create-security-configuration.html"
+    },
+    {
+      "id": 43,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "An AWS Lambda function runs in private subnets that have no NAT gateway or internet route. The function must retrieve a secret from AWS Secrets Manager, and the traffic must stay inside the AWS network. Which TWO actions meet these requirements? (Select TWO)",
+      "options": [
+        "Attach an Elastic IP address to the function so that it can reach the Secrets Manager public endpoint",
+        "Create a gateway VPC endpoint for Secrets Manager and add a route for it to the subnets' route table",
+        "Create an interface VPC endpoint for Secrets Manager in the private subnets of the function",
+        "Move the function outside the VPC and add an IP-based condition to the secret's resource policy",
+        "Allow inbound HTTPS from the function's security group on the endpoint's security group"
+      ],
+      "correctAnswers": [
+        2,
+        4
+      ],
+      "explanation": "Options C and E are correct. Secrets Manager is reached privately through an interface endpoint powered by AWS PrivateLink, and the endpoint's security group must allow HTTPS from the function. Option A is incorrect because Lambda functions cannot be assigned Elastic IP addresses and it would use a public path. Option B is incorrect because gateway endpoints exist only for S3 and DynamoDB. Option D is incorrect because a function outside the VPC connects over public endpoints and IP conditions do not keep traffic private. Takeaway: use interface endpoints and open their security groups.",
+      "reference": "https://docs.aws.amazon.com/secretsmanager/latest/userguide/vpc-endpoint-overview.html"
+    },
+    {
+      "id": 44,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company stores thousands of customer support transcripts as text files in Amazon S3. Before analysts use them, personally identifiable information such as names and card numbers must be found and replaced with masked values in new output files. Which solution meets this requirement with the LEAST development effort?",
+      "options": [
+        "An Amazon Rekognition job that detects text in the transcripts and blurs the personal values",
+        "An Amazon Comprehend asynchronous PII redaction job that reads the S3 files and writes redacted copies",
+        "An Amazon Textract analysis job that extracts key-value pairs and drops the personal values",
+        "An Amazon Macie discovery job that automatically rewrites the S3 objects with the sensitive values removed"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Comprehend can detect PII entities in text and run a PII redaction job that writes redacted copies of the documents to S3. Option A is incorrect because Rekognition analyzes images and video. Option C is incorrect because Textract extracts text from scanned documents and does not redact text files. Option D is incorrect because Macie discovers and reports sensitive data and does not modify objects. Takeaway: use Comprehend PII redaction for text.",
+      "reference": "https://docs.aws.amazon.com/comprehend/latest/dg/pii.html"
+    },
+    {
+      "id": 45,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "multi",
+      "question": "A company records all resource types with AWS Config in every account, and the cost of configuration items is high because some resources, such as security groups and network interfaces, change very frequently. Compliance requires the configuration history of only IAM and S3 resources. Which TWO changes reduce cost? (Select TWO)",
+      "options": [
+        "Record only the resource types that are required by compliance instead of all supported types",
+        "Turn off the delivery channel so that Config does not store configuration items in Amazon S3",
+        "Enable the conformance packs in all accounts so that the recorder charges are waived",
+        "Use periodic recording (daily) for the resource types that change often and do not need every change",
+        "Increase the snapshot delivery frequency so that fewer items are recorded in the history"
+      ],
+      "correctAnswers": [
+        0,
+        3
+      ],
+      "explanation": "Options A and D are correct. Config charges per configuration item recorded, so limiting the recorded resource types and using daily periodic recording for frequently changing types reduces the number of items. Option B is incorrect because the recorder still generates items and the delivery channel is required. Option C is incorrect because conformance packs add rule evaluation charges. Option E is incorrect because snapshot frequency does not change how many items are recorded. Takeaway: scope the recorder and use periodic recording.",
+      "reference": "https://docs.aws.amazon.com/config/latest/developerguide/select-resources.html"
+    },
+    {
+      "id": 46,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company runs an application behind AWS Global Accelerator with endpoint groups in two Regions. During a release, the team wants to send 10 percent of the traffic to the new Region first and increase the share gradually, without changing DNS. Which feature meets this requirement?",
+      "options": [
+        "A Route 53 weighted record that points the static addresses of the accelerator at each Region in turn",
+        "The client affinity setting of the listener, which sends the first requests of a client to the new Region",
+        "The endpoint weights of the Application Load Balancer target groups in the other Region of the accelerator",
+        "The traffic dial of the endpoint group, which sets the percentage of traffic that goes to that group"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because the traffic dial controls the percentage of traffic that goes to each endpoint group, which allows gradual shifts and blue/green cutovers without DNS changes. Option A is incorrect because the accelerator provides static addresses that cannot be split by a DNS record and it requires DNS changes. Option B is incorrect because client affinity keeps a client on the same endpoint. Option C is incorrect because target group weights work inside a Region and do not shift traffic between Regions. Takeaway: use traffic dials to control the share per Region.",
+      "reference": "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoint-groups-traffic-dial.html"
+    },
+    {
+      "id": 47,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company stores billions of objects in an Amazon S3 bucket with SSE-KMS. AWS KMS request charges are high because every object upload and download calls KMS. The company must keep using a customer managed key. Which change reduces the KMS costs the MOST?",
+      "options": [
+        "Increase the number of customer managed keys that the bucket uses for the uploads",
+        "Enable S3 Bucket Keys for the bucket, so that S3 reuses a bucket-level key",
+        "Switch to SSE-S3 for all of the objects that are stored in the bucket",
+        "Enable automatic key rotation on the customer managed key of the bucket each year"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because an S3 Bucket Key lets S3 generate short-lived data keys from a bucket-level key, which reduces the number of requests to KMS by up to 99 percent while the customer managed key is still used. Option A is incorrect because more keys do not reduce requests. Option C is incorrect because it stops using the customer managed key. Option D is incorrect because rotation does not change request volume. Takeaway: use Bucket Keys to reduce KMS request costs.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html"
+    },
+    {
+      "id": 48,
+      "domain": "Design Resilient Architectures",
+      "type": "multi",
+      "question": "A company has one Direct Connect connection at a colocation facility and VPCs in three AWS Regions. The company wants to reach all VPCs through the same connection without creating a separate connection for each Region. Which TWO actions meet this requirement? (Select TWO)",
+      "options": [
+        "Create a Direct Connect gateway and associate the virtual private gateways or transit gateway of the VPCs with it",
+        "Create a public virtual interface and route the private VPC traffic through the AWS public IP addresses",
+        "Create a VPC peering connection between the facility and each Region through the connection",
+        "Create a Site-to-Site VPN to each Region and remove the Direct Connect connection",
+        "Create a private virtual interface on the connection and attach it to the Direct Connect gateway"
+      ],
+      "correctAnswers": [
+        0,
+        4
+      ],
+      "explanation": "Options A and E are correct. A Direct Connect gateway connects a private virtual interface to virtual private gateways or transit gateways in multiple Regions. Option B is incorrect because a public virtual interface reaches AWS public services and not private VPC addresses. Option C is incorrect because peering connects VPCs to VPCs and not to on-premises networks. Option D is incorrect because removing Direct Connect changes the requirements. Takeaway: a Direct Connect gateway provides multi-Region reach.",
+      "reference": "https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-gateways-intro.html"
+    },
+    {
+      "id": 49,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A finance team needs to analyze line-item cost and usage data, such as spending by resource ID and by tag, across all accounts of an organization. The analysis needs more detail than the Cost Explorer console shows. Which solution meets this requirement?",
+      "options": [
+        "Export the Cost Explorer graphs as images every month and combine them in a spreadsheet",
+        "Configure AWS Budgets reports that email the team a summary of each account each week",
+        "Configure an AWS Cost and Usage Report that delivers to Amazon S3, and query it with Amazon Athena",
+        "Read the invoice of the management account and enter the totals into a spreadsheet"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because the Cost and Usage Report provides the most detailed data, including resource IDs and tags, and Athena can query it in S3. Option A is incorrect because graphs are aggregated images and lack line-item detail. Option B is incorrect because budget reports summarize spending against thresholds. Option D is incorrect because invoices show only totals by service and are manual. Takeaway: use CUR with Athena for detailed cost analysis.",
+      "reference": "https://docs.aws.amazon.com/cur/latest/userguide/cur-query-athena.html"
+    },
+    {
+      "id": 50,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A small company with a Business support plan wants a quick review that identifies security groups open to the internet, missing MFA on the root user, and public snapshots, with the LEAST setup. Which service should the company use?",
+      "options": [
+        "Amazon Detective investigation graphs",
+        "AWS Trusted Advisor security checks",
+        "Amazon CloudWatch Synthetics canaries",
+        "AWS Artifact reports"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Trusted Advisor security checks flag items such as open security group ports, root account MFA, and public EBS or RDS snapshots without deployment effort. Option A is incorrect because Detective investigates existing findings and does not audit configuration. Option C is incorrect because Synthetics canaries monitor endpoints. Option D is incorrect because Artifact provides compliance reports and agreements. Takeaway: Trusted Advisor gives quick configuration checks.",
+      "reference": "https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor-check-reference.html"
+    },
+    {
+      "id": 51,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company uses Amazon FSx for Windows File Server for departmental shares. Security requires that clients connect only with SMB encryption, so that unencrypted access is rejected, and that access is authorized with existing Active Directory groups. Which solution meets these requirements?",
+      "options": [
+        "Enable encryption at rest with a customer managed KMS key, which encrypts all client connections in transit",
+        "Create IAM users for each employee and attach identity policies that grant the SMB actions",
+        "Place the file system behind a Network Load Balancer with a TLS listener that decrypts client sessions",
+        "Join the file system to Active Directory and configure the SMB server to reject unencrypted access"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because FSx for Windows integrates with Active Directory for authorization through NTFS ACLs, and the SMB configuration can require encryption so that unencrypted sessions are rejected. Option A is incorrect because encryption at rest does not protect data in transit. Option B is incorrect because SMB shares are not authorized by IAM identity policies. Option C is incorrect because a load balancer with TLS would break the SMB protocol and is not a supported access pattern. Takeaway: combine AD authorization with enforced SMB encryption.",
+      "reference": "https://docs.aws.amazon.com/fsx/latest/WindowsGuide/encryption-in-transit-fsxW.html"
+    },
+    {
+      "id": 52,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company runs containers in two Regions and wants images pushed to the private Amazon ECR registry in us-east-1 to be available in eu-west-1 automatically, so that a Regional outage does not stop new deployments. Which solution meets this requirement with the LEAST effort?",
+      "options": [
+        "Configure private registry replication with a rule for the eu-west-1 Region",
+        "Create an ECR pull through cache rule that pulls from the other Region",
+        "Enable cross-Region replication on the S3 bucket that holds the image layers",
+        "Run a CodeBuild project that pulls and pushes each image on a schedule"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because ECR private registry replication copies images to the configured Regions automatically after a push. Option B is incorrect because pull through cache rules cache images from upstream public registries and not from your private registries. Option C is incorrect because the layers are stored in a service-managed bucket that customers cannot configure. Option D is incorrect because a scheduled job adds custom pipeline code and a delay. Takeaway: use registry replication for multi-Region images.",
+      "reference": "https://docs.aws.amazon.com/AmazonECR/latest/userguide/replication.html"
+    },
+    {
+      "id": 53,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A network team maintains the list of partner CIDR ranges that must be allowed in security groups in 40 accounts of an organization. The team wants to update the ranges in one place and have all security groups pick up the changes. Which solution meets this requirement?",
+      "options": [
+        "Create a security group in the network account with the partner ranges and reference it from the security groups of the other accounts",
+        "Store the CIDR ranges in a Systems Manager parameter and copy them into each security group with a scheduled script",
+        "Create a network ACL in the network account that holds the ranges and associate it with the subnets of all other accounts",
+        "Create a customer managed prefix list, share it with the organization by using AWS RAM, and reference it in security group rules"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because a managed prefix list can be shared through RAM, and rules that reference it update automatically when entries change. Option A is incorrect because security group references across accounts work only for peered VPCs and do not carry CIDR ranges. Option B is incorrect because scripts would have to update each security group. Option C is incorrect because a network ACL cannot be associated with subnets of other accounts. Takeaway: share prefix lists with RAM.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/userguide/sharing-managed-prefix-lists.html"
+    },
+    {
+      "id": 54,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company uses AWS Direct Connect to reach its VPC. The company adds a Site-to-Site VPN as backup over the internet, and wants the traffic to use Direct Connect when it is available and to fail over to the VPN when it is not. Which design meets this requirement?",
+      "options": [
+        "Configure equal-cost multi-path so that traffic is always split between the Direct Connect connection and the VPN",
+        "Use static routes with the VPN as the primary path and remove the Direct Connect routes when the VPN fails",
+        "Disable BGP on the VPN so that traffic uses only the Direct Connect routes until an engineer switches the paths",
+        "Advertise the same prefixes over both connections and rely on the gateway's preference for Direct Connect routes"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because when the same prefix is learned over Direct Connect and VPN, the gateway prefers the Direct Connect path, and traffic moves to the VPN if the Direct Connect route is withdrawn. Option A is incorrect because ECMP would send some traffic over the internet even when Direct Connect works. Option B is incorrect because it reverses the preference and relies on manual route changes. Option C is incorrect because failover would then require manual work. Takeaway: rely on BGP and route preference for automatic failover.",
+      "reference": "https://docs.aws.amazon.com/whitepapers/latest/aws-vpc-connectivity-options/aws-direct-connect-plus-vpn-network-to-amazon.html"
+    },
+    {
+      "id": 55,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company runs five Amazon EC2 instances that each hold a critical component of a clustered application. The company wants to reduce the chance that a single hardware failure affects more than one instance. Which placement group strategy should the company use?",
+      "options": [
+        "Cluster, which places the instances on the same rack for low latency",
+        "Spread, which places each instance on distinct underlying hardware",
+        "Dedicated Hosts, which place the instances on one physical server",
+        "Partition with one partition, which groups all instances on the same partition"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because a spread placement group places each instance on distinct racks with independent power and network, which limits correlated failures for a small number of critical instances. Option A is incorrect because cluster placement packs instances together for network performance and increases correlated risk. Option C is incorrect because a Dedicated Host is one physical server. Option D is incorrect because a single partition puts the instances on the same set of racks. Takeaway: use spread placement for small critical groups.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html"
+    },
+    {
+      "id": 56,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company enabled Amazon GuardDuty in 60 accounts with all protection plans, and the bill is higher than planned. Some accounts do not store data in Amazon S3 and do not run containers. The security team wants to reduce cost without losing coverage where it matters. What should the team do?",
+      "options": [
+        "Enable GuardDuty only in the management account, which extends coverage to the member accounts for free",
+        "Archive all findings automatically with a suppression rule so that the findings are not billed",
+        "Review the usage and cost statistics by protection plan and disable the plans that the accounts do not need",
+        "Suspend GuardDuty in every account for one week each month so that the monthly charges are lower"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because GuardDuty shows estimated cost by data source and protection plan, and the plans can be enabled or disabled per account, so plans that do not apply can be turned off. Option A is incorrect because coverage of member accounts requires GuardDuty to be enabled for them. Option B is incorrect because suppression rules hide findings and the analysis is still billed. Option D is incorrect because suspending protection leaves gaps and disables detections. Takeaway: tune protection plans by account to control GuardDuty cost.",
+      "reference": "https://docs.aws.amazon.com/guardduty/latest/ug/monitoring_costs.html"
+    },
+    {
+      "id": 57,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company connects its data center to a transit gateway with a Site-to-Site VPN. Each VPN tunnel supports up to 1.25 Gbps, and the workload needs about 5 Gbps of aggregate throughput over the VPN. Which design meets this requirement?",
+      "options": [
+        "Create multiple VPN connections to the transit gateway with dynamic routing and enable equal-cost multi-path routing",
+        "Create one VPN connection and increase the size of the instance that runs the customer gateway software",
+        "Create one VPN connection with static routes and increase the MTU of the tunnels to 9001 bytes for jumbo frames",
+        "Create one VPN connection to a virtual private gateway and enable ECMP so that the two tunnels are aggregated"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because a transit gateway supports ECMP across multiple VPN connections that use BGP, which aggregates the bandwidth of several tunnels. Option B is incorrect because the per-tunnel limit applies regardless of the customer device. Option C is incorrect because static routing does not support ECMP and jumbo frames are not supported over VPN. Option D is incorrect because a virtual private gateway does not support ECMP. Takeaway: scale VPN throughput with transit gateway ECMP.",
+      "reference": "https://docs.aws.amazon.com/vpn/latest/s2svpn/vpn-limits.html"
+    },
+    {
+      "id": 58,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company connects its remote office to AWS with a Site-to-Site VPN over the internet. Users report inconsistent performance because the path is long. The company does not want to purchase a Direct Connect connection. Which change is likely to improve the performance?",
+      "options": [
+        "Change the tunnel options to use a smaller MTU so that more packets are sent over the connection each second",
+        "Replace the VPN with VPC peering to the network of the remote office through the internet gateway",
+        "Add a second customer gateway device and assign both of the devices the same public IP address",
+        "Enable acceleration on the VPN connection so that traffic enters the AWS network at the nearest edge location"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because an accelerated VPN uses AWS Global Accelerator so that traffic reaches the AWS network at the nearest edge location and travels over the backbone, which improves consistency. Option A is incorrect because a smaller MTU adds overhead. Option B is incorrect because peering connects VPCs to each other and not to on-premises networks. Option C is incorrect because two devices cannot share an IP address. Takeaway: use accelerated VPN for better internet VPN performance.",
+      "reference": "https://docs.aws.amazon.com/vpn/latest/s2svpn/accelerated-vpn.html"
+    },
+    {
+      "id": 59,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "An Amazon SNS topic is encrypted with the AWS managed key alias/aws/sns. After encryption was enabled, Amazon CloudWatch alarms and Amazon S3 event notifications can no longer publish to the topic. Which TWO actions restore publishing while keeping the topic encrypted? (Select TWO)",
+      "options": [
+        "Add the alarm and bucket ARNs to the topic access policy while the AWS managed key stays in place",
+        "Encrypt the topic with a customer managed KMS key instead of the AWS managed key",
+        "Allow the CloudWatch and S3 service principals to call kms:GenerateDataKey and kms:Decrypt in the key policy",
+        "Disable encryption on the topic and enable server-side encryption on the source bucket instead",
+        "Add kms:Decrypt for the publishing services to the IAM policies of the account administrators"
+      ],
+      "correctAnswers": [
+        1,
+        2
+      ],
+      "explanation": "Options B and C are correct. The key policy of an AWS managed key cannot be edited to trust other services, so the topic needs a customer managed key whose key policy allows the publishing service principals to generate data keys and decrypt. Option A is incorrect because the topic policy does not grant use of the key. Option D is incorrect because it removes the encryption requirement. Option E is incorrect because the services publish on their own behalf and administrator permissions do not apply. Takeaway: encrypted topics that receive service events need a customer managed key.",
+      "reference": "https://docs.aws.amazon.com/sns/latest/dg/sns-key-management.html"
+    },
+    {
+      "id": 60,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Amazon ECS service runs four tasks behind an Application Load Balancer. The team wants deployments to keep at least four healthy tasks at all times and to start new tasks before old ones are stopped. Which deployment configuration meets this requirement?",
+      "options": [
+        "Set the minimum healthy percent to 50 and the maximum percent to 100",
+        "Set the minimum healthy percent to 0 and the maximum percent to 100",
+        "Set the minimum healthy percent to 100 and the maximum percent to 100",
+        "Set the minimum healthy percent to 100 and the maximum percent to 200"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because a minimum of 100 percent keeps all four tasks running, and a maximum of 200 percent allows the scheduler to start up to four new tasks before stopping old ones. Option A is incorrect because it allows capacity to drop to two tasks and cannot exceed four. Option B is incorrect because it allows all tasks to stop and does not start new ones first. Option C is incorrect because with no headroom the scheduler cannot start new tasks without stopping old ones, so the deployment cannot proceed. Takeaway: headroom above 100 percent makes rolling updates safe.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html"
+    },
+    {
+      "id": 61,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A financial company archives records in an Amazon S3 Glacier vault. A regulation requires that the records cannot be deleted for seven years and that even the root user cannot change the rule after it is finalized. The team wants a period to test the policy first. Which solution meets these requirements?",
+      "options": [
+        "Create a CloudWatch alarm on deletions from the vault and restore the deleted archives from a copy afterward",
+        "Initiate a Vault Lock policy that denies deletion for seven years, test it during the 24-hour window, and then complete it",
+        "Attach an IAM policy that denies deletion to all users of the account and remove the access keys of the root user",
+        "Enable MFA Delete on the vault so that each deletion needs an authentication code from the root user of the account"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because a Vault Lock policy becomes immutable once completed, and it can be tested during the in-progress state that lasts up to 24 hours before it is finalized. Option A is incorrect because detection after deletion does not prevent it. Option C is incorrect because IAM policies can be changed by administrators and root. Option D is incorrect because MFA Delete is an S3 versioning feature and does not exist for Glacier vaults. Takeaway: Vault Lock provides immutable, testable retention controls.",
+      "reference": "https://docs.aws.amazon.com/amazonglacier/latest/dev/vault-lock.html"
+    },
+    {
+      "id": 62,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "A company runs an Amazon OpenSearch Service domain that stores logs from several business units. Each unit must see only its own indices, and the domain must not be reachable from the internet. Which TWO actions meet these requirements? (Select TWO)",
+      "options": [
+        "Create one domain for each business unit and share the master user credentials between the unit's users",
+        "Enable fine-grained access control and map each unit's role to permissions on its own index patterns",
+        "Launch the domain inside a VPC and control network access with security groups",
+        "Create a public domain and restrict access with an IP-based resource policy for each business unit",
+        "Enable node-to-node encryption so that each unit's users are limited to their own indices"
+      ],
+      "correctAnswers": [
+        1,
+        2
+      ],
+      "explanation": "Options B and C are correct. A VPC domain has no public endpoint, and security groups control network access, while fine-grained access control provides role-based permissions down to index (and document and field) level. Option A is incorrect because sharing master credentials removes accountability and grants full access. Option D is incorrect because a public endpoint remains reachable from the internet and IP filters do not separate indices. Option E is incorrect because node-to-node encryption protects data in transit between nodes and does not authorize users. Takeaway: combine a VPC domain with fine-grained access control.",
+      "reference": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/fgac.html"
+    },
+    {
+      "id": 63,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "A Fargate task runs in private subnets that have no internet access. The task must pull an image from Amazon ECR and send container logs to Amazon CloudWatch Logs. Which THREE VPC endpoints must be created? (Select THREE)",
+      "options": [
+        "A gateway endpoint for Amazon ECR that is added to the route tables of the private subnets",
+        "An interface endpoint for com.amazonaws.region.ecr.dkr, which serves the Docker registry API",
+        "An interface endpoint for Amazon SQS that the container agent uses to pull the image",
+        "An interface endpoint for com.amazonaws.region.ecr.api, which serves the ECR service API calls",
+        "A gateway endpoint for Amazon S3, which serves the storage of the image layers"
+      ],
+      "correctAnswers": [
+        1,
+        3,
+        4
+      ],
+      "explanation": "Options B, D, and E are correct. Pulling from ECR needs the ecr.dkr endpoint for the Docker registry, the ecr.api endpoint for registry API calls, and an S3 gateway endpoint because image layers are stored in S3 (an interface endpoint for CloudWatch Logs is needed for the awslogs driver as well). Option A is incorrect because ECR does not have a gateway endpoint type. Option C is incorrect because the task does not use SQS to pull images. Takeaway: private ECR pulls need two interface endpoints and an S3 gateway endpoint.",
+      "reference": "https://docs.aws.amazon.com/AmazonECR/latest/userguide/vpc-endpoints.html"
+    },
+    {
+      "id": 64,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An application in a VPC uses an interface VPC endpoint for an AWS service. The endpoint has a network interface in only one Availability Zone. During an outage in that zone, instances in the other zones lose access to the service. Which change improves the resilience?",
+      "options": [
+        "Change the endpoint type to a gateway endpoint so that the endpoint becomes highly available across the zones",
+        "Add a second route table to the VPC with a route that sends the traffic to the private IP address of the endpoint",
+        "Attach an additional security group to the endpoint that allows all inbound traffic from the VPC and the internet",
+        "Add subnets in additional Availability Zones to the endpoint so that it has a network interface in each of them"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because an interface endpoint places an elastic network interface in each selected subnet, so creating them in multiple Availability Zones removes the dependency on one zone. Option A is incorrect because gateway endpoints exist only for S3 and DynamoDB. Option B is incorrect because routes do not replace endpoint interfaces, and they are not used for interface endpoints. Option C is incorrect because security group rules do not affect zone availability. Takeaway: deploy interface endpoints in every zone that you use.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/privatelink/create-interface-endpoint.html"
+    },
+    {
+      "id": 65,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company runs an Amazon MSK cluster. The security team wants producers and consumers on Amazon EC2 and AWS Lambda to authenticate with their IAM roles, without managing client certificates or user passwords, and to be authorized per topic. Which solution meets these requirements?",
+      "options": [
+        "Enable mutual TLS on the cluster and issue a client certificate from a private CA to each producer and consumer",
+        "Enable SASL/SCRAM authentication and store each client's username and password in AWS Secrets Manager",
+        "Enable IAM access control on the cluster and grant kafka-cluster permissions to the roles in identity policies",
+        "Disable client authentication and restrict the cluster's security group to the subnets of the producers"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because MSK IAM access control authenticates clients with IAM identities and authorizes actions on clusters, topics, and groups with IAM policies. Option A is incorrect because mutual TLS requires certificates for every client. Option B is incorrect because SASL/SCRAM relies on usernames and passwords that must be stored and rotated. Option D is incorrect because unauthenticated access controlled by network location alone cannot authorize per topic. Takeaway: IAM access control removes credentials from MSK clients.",
+      "reference": "https://docs.aws.amazon.com/msk/latest/developerguide/iam-access-control.html"
+    }
+  ]
+}
