@@ -1,0 +1,51 @@
+{
+  "examTitle": "AWS Certified Solutions Architect – Associate (SAA-C03) Sample Set",
+  "questions": [
+    {
+      "id": 1,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company runs a web application on EC2 instances behind an Application Load Balancer across two Availability Zones. They want to ensure the application stays available if an entire AZ fails. What should they do?",
+      "options": [
+        "Increase the instance size in the primary AZ",
+        "Ensure the Auto Scaling group spans both AZs with a minimum capacity in each",
+        "Move all instances to a single, larger AZ",
+        "Enable enhanced networking on the instances"
+      ],
+      "correctAnswers": [1],
+      "explanation": "An Auto Scaling group spanning multiple AZs with sufficient minimum capacity in each ensures the application can continue serving traffic even if one AZ becomes unavailable. Consolidating into one AZ removes redundancy entirely.",
+      "reference": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html"
+    },
+    {
+      "id": 2,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company has a batch processing workload that can tolerate interruptions and runs for a few hours each night. Which EC2 purchasing option minimizes cost?",
+      "options": [
+        "On-Demand Instances",
+        "Reserved Instances",
+        "Spot Instances",
+        "Dedicated Hosts"
+      ],
+      "correctAnswers": [2],
+      "explanation": "Spot Instances offer the deepest discounts for interruption-tolerant workloads like batch processing. Reserved Instances suit steady-state usage, and Dedicated Hosts are for licensing/compliance needs, not cost optimization.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html"
+    },
+    {
+      "id": 3,
+      "domain": "Design High-Performing Architectures",
+      "type": "multi",
+      "question": "A global media company wants to reduce latency for users downloading video content worldwide. Which TWO AWS services should they use? (Select TWO)",
+      "options": [
+        "Amazon CloudFront",
+        "AWS Direct Connect",
+        "Amazon S3 with Transfer Acceleration",
+        "AWS Snowball",
+        "Amazon EBS Provisioned IOPS volumes"
+      ],
+      "correctAnswers": [0, 2],
+      "explanation": "CloudFront caches content at edge locations close to users, and S3 Transfer Acceleration speeds up uploads/downloads over long distances using the CloudFront edge network. Direct Connect and Snowball address different problems, and EBS IOPS volumes don't affect global content delivery.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html"
+    }
+  ]
+}
