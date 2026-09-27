@@ -1,1 +1,1404 @@
-"Bruno Pasqualini" 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Mock Exam Simulator</title>
+<meta name="description" content="Offline-capable AWS certification mock exam simulator with multiple question banks.">
+<meta name="theme-color" content="#0f6e5c">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AWS Exam">
+<style>
+  :root{
+    --bg:#f6f5f2;
+    --panel:#ffffff;
+    --ink:#1b1d1f;
+    --ink-soft:#5b6167;
+    --line:#dfdcd4;
+    --accent:#0f6e5c;
+    --accent-ink:#ffffff;
+    --wrong:#b3432b;
+    --right:#0f6e5c;
+    --chip:#eee9dd;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(0,0,0,0.06);
+    --focus:2px solid #1467c9;
+  }
+  [data-theme="dark"]{
+    --bg:#14161a;
+    --panel:#1d2025;
+    --ink:#eceae4;
+    --ink-soft:#9aa0a6;
+    --line:#33373d;
+    --accent:#4fd1a5;
+    --accent-ink:#0c1210;
+    --wrong:#ef7a63;
+    --right:#4fd1a5;
+    --chip:#262a30;
+    --shadow:0 1px 3px rgba(0,0,0,0.4);
+    --focus:2px solid #7fb6ff;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Iowan Old Style","Georgia","Charter",serif;
+    line-height:1.5;
+    transition:background .2s ease,color .2s ease;
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 22px;
+    border-bottom:1px solid var(--line);
+    background:var(--panel);
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+  .brand{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.01em;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .brand small{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-weight:400;
+    color:var(--ink-soft);
+    font-size:12px;
+  }
+  .topbar-actions{display:flex;align-items:center;gap:8px;}
+  .theme-toggle, .install-btn{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    border:1px solid var(--line);
+    background:var(--chip);
+    color:var(--ink);
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .install-btn{border-color:var(--accent);color:var(--accent);}
+  .theme-toggle:focus-visible,.install-btn:focus-visible{outline:var(--focus);outline-offset:2px;}
+
+  .offline-banner{
+    background:#c9962b;
+    color:#241a00;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:13px;
+    text-align:center;
+    padding:6px 12px;
+    display:none;
+  }
+  .offline-banner.show{display:block;}
+
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+
+  /* Progress */
+  .progress-wrap{margin-bottom:22px;}
+  .progress-meta{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .progress-track{
+    height:4px;
+    background:var(--line);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    width:0%;
+    transition:width .3s ease;
+  }
+
+  /* Start screen */
+  .start-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:36px 30px;
+    box-shadow:var(--shadow);
+  }
+  .start-card h1{
+    font-size:26px;
+    margin:0 0 6px;
+  }
+  .start-card p{
+    color:var(--ink-soft);
+    max-width:52ch;
+  }
+  .start-actions{
+    margin-top:22px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .field-label{
+    display:block;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin:20px 0 6px;
+  }
+  select.bank-select{
+    width:100%;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:14.5px;
+    padding:10px 12px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .bank-desc{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+
+  /* Buttons */
+  .btn{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    border:1px solid var(--accent);
+    background:var(--accent);
+    color:var(--accent-ink);
+    padding:11px 22px;
+    border-radius:6px;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.secondary{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+  .btn:focus-visible{outline:var(--focus);outline-offset:2px;}
+
+  /* Question card */
+  .q-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 26px 22px;
+    box-shadow:var(--shadow);
+  }
+  .q-domain{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12px;
+    color:var(--accent);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .q-text{
+    font-size:19px;
+    margin:0 0 6px;
+  }
+  .q-hint{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-bottom:18px;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .option{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+    cursor:pointer;
+    background:var(--bg);
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:14.5px;
+  }
+  .option:hover{border-color:var(--accent);}
+  .option input{
+    margin-top:2px;
+    accent-color:var(--accent);
+    width:16px;
+    height:16px;
+    flex-shrink:0;
+  }
+  .option.selected{
+    border-color:var(--accent);
+    background:color-mix(in srgb, var(--accent) 10%, var(--bg));
+  }
+  .option.correct{
+    border-color:var(--right);
+    background:color-mix(in srgb, var(--right) 16%, var(--bg));
+  }
+  .option.incorrect{
+    border-color:var(--wrong);
+    background:color-mix(in srgb, var(--wrong) 14%, var(--bg));
+  }
+  .option:focus-within{outline:var(--focus);outline-offset:2px;}
+
+  .feedback{
+    margin-top:14px;
+    padding:14px 16px;
+    border-radius:8px;
+    background:var(--chip);
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:13.5px;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback .verdict{
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .feedback .verdict.correct{color:var(--right);}
+  .feedback .verdict.incorrect{color:var(--wrong);}
+  .feedback a{color:var(--accent);}
+
+  .nav-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:22px;
+  }
+  .nav-row .spacer{flex:1;}
+
+  /* Results */
+  .results{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:30px 28px;
+    box-shadow:var(--shadow);
+  }
+  .score-big{
+    font-size:44px;
+    font-weight:700;
+    margin:2px 0 0;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+  }
+  .score-sub{color:var(--ink-soft);margin-bottom:20px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:13.5px;}
+  .domain-table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:13.5px;
+    margin:16px 0 24px;
+  }
+  .domain-table th,.domain-table td{
+    text-align:left;
+    padding:8px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .domain-table th{color:var(--ink-soft);font-weight:600;}
+  .review-item{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .review-item .rq{font-weight:600;margin-bottom:4px;}
+  .review-item .ra{font-family:"Helvetica Neue",Arial,sans-serif;font-size:13px;color:var(--ink-soft);}
+  .tag{
+    display:inline-block;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:11px;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:8px;
+  }
+  .tag.correct{background:color-mix(in srgb, var(--right) 20%, transparent);color:var(--right);}
+  .tag.incorrect{background:color-mix(in srgb, var(--wrong) 20%, transparent);color:var(--wrong);}
+
+  .error-box{
+    background:var(--panel);
+    border:1px solid var(--wrong);
+    border-radius:var(--radius);
+    padding:20px;
+    color:var(--wrong);
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:14px;
+  }
+
+  .hidden{display:none !important;}
+
+  /* Flag + timer */
+  .q-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .flag-btn{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    border:1px solid var(--line);
+    background:var(--chip);
+    color:var(--ink-soft);
+    border-radius:999px;
+    padding:5px 12px;
+    cursor:pointer;
+  }
+  .flag-btn.flagged{
+    border-color:#c9962b;
+    color:#c9962b;
+    background:color-mix(in srgb, #c9962b 16%, var(--bg));
+  }
+  .timer{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+  }
+  .timer.low{color:var(--wrong);}
+
+  /* Start screen extras */
+  .setup-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:18px 0 4px;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:14px;
+  }
+  .setup-row input[type="checkbox"]{
+    width:16px;height:16px;accent-color:var(--accent);
+  }
+  .resume-banner{
+    margin-top:18px;
+    padding:12px 14px;
+    border-radius:8px;
+    background:var(--chip);
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:13.5px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .history-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin-top:18px;
+    box-shadow:var(--shadow);
+  }
+  .history-card h3{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:14px;
+    margin:0 0 10px;
+  }
+  .history-table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:13px;
+  }
+  .history-table th,.history-table td{
+    text-align:left;
+    padding:6px 8px;
+    border-bottom:1px solid var(--line);
+  }
+  .history-table th{color:var(--ink-soft);font-weight:600;}
+  .import-toggle{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    color:var(--accent);
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:0;
+    margin-top:16px;
+    text-decoration:underline;
+  }
+  .import-box{
+    margin-top:10px;
+  }
+  .import-box textarea{
+    width:100%;
+    min-height:120px;
+    font-family:monospace;
+    font-size:12px;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    resize:vertical;
+  }
+  .import-msg{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:12.5px;
+    margin-top:6px;
+  }
+  .import-msg.err{color:var(--wrong);}
+  .import-msg.ok{color:var(--right);}
+  .kbd-hint{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:10px;
+  }
+
+  @media (max-width:600px){
+    main{padding:18px 14px 60px;}
+    .q-card{padding:20px 18px 18px;}
+    .start-card{padding:26px 20px;}
+    .score-big{font-size:36px;}
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="offline-banner" id="offlineBanner">You're offline — using the last downloaded question bank.</div>
+
+<div class="topbar">
+  <div class="brand" id="brandTitle">AWS Exam <small>Mock Simulator</small></div>
+  <div class="topbar-actions">
+    <button class="install-btn hidden" id="installBtn" type="button">Install app</button>
+    <button class="theme-toggle" id="themeToggle" type="button">Dark mode</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- START SCREEN -->
+  <section id="startScreen">
+    <div class="start-card">
+      <h1>Ready when you are.</h1>
+      <p>Pick a question bank, then work through it one question at a time. Your answers are saved as you go, and you'll get a full domain-by-domain breakdown at the end. Installed as an app, it also works with no internet connection.</p>
+
+      <label class="field-label" for="bankSelect">Question bank</label>
+      <select class="bank-select" id="bankSelect"></select>
+      <p class="bank-desc" id="bankDesc"></p>
+
+      <div class="setup-row">
+        <input type="checkbox" id="timedModeToggle">
+        <label for="timedModeToggle">Timed mode (130 minutes, like the real exam)</label>
+      </div>
+
+      <div class="start-actions">
+        <button class="btn" id="startBtn" type="button">Start new exam</button>
+        <button class="btn secondary hidden" id="retestBtn" type="button">Retest my weak areas</button>
+      </div>
+
+      <div class="resume-banner hidden" id="resumeBanner">
+        <span id="resumeText"></span>
+        <button class="btn secondary" id="resumeBtn" type="button">Resume</button>
+      </div>
+
+      <button class="import-toggle" id="importToggle" type="button">Paste a question set manually (JSON)</button>
+      <div class="import-box hidden" id="importBox">
+        <textarea id="importTextarea" placeholder='{"examTitle": "...", "questions": [ ... ]}'></textarea>
+        <div class="start-actions">
+          <button class="btn secondary" id="importApplyBtn" type="button">Use this question set</button>
+        </div>
+        <div class="import-msg" id="importMsg"></div>
+      </div>
+    </div>
+
+    <div class="history-card hidden" id="historyCard">
+      <h3>Past attempts</h3>
+      <table class="history-table" id="historyTable"></table>
+    </div>
+  </section>
+
+  <!-- LOAD ERROR -->
+  <section id="errorScreen" class="hidden">
+    <div class="error-box" id="errorText"></div>
+  </section>
+
+  <!-- EXAM SCREEN -->
+  <section id="examScreen" class="hidden">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="progressLabel">Question 1 of 65</span>
+        <span id="progressScoreLabel"></span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="q-toolbar">
+      <button class="flag-btn" id="flagBtn" type="button">🚩 Mark for review</button>
+      <span class="timer hidden" id="timerDisplay"></span>
+    </div>
+
+    <div class="q-card">
+      <div class="q-domain" id="qDomain"></div>
+      <p class="q-text" id="qText"></p>
+      <p class="q-hint" id="qHint"></p>
+      <div class="options" id="qOptions"></div>
+      <div class="feedback" id="qFeedback">
+        <div class="verdict" id="fVerdict"></div>
+        <div id="fExplain"></div>
+        <div id="fRef"></div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn secondary" id="prevBtn" type="button">Back</button>
+      <div class="spacer"></div>
+      <button class="btn" id="checkBtn" type="button">Submit answer</button>
+      <button class="btn hidden" id="nextBtn" type="button">Next question</button>
+    </div>
+    <p class="kbd-hint">Keyboard: number keys select an answer, Enter submits or moves on, F flags the question.</p>
+  </section>
+
+  <!-- RESULTS SCREEN -->
+  <section id="resultsScreen" class="hidden">
+    <div class="results">
+      <div class="q-domain">Final result</div>
+      <p class="score-big" id="finalScoreBig"></p>
+      <p class="score-sub" id="finalScoreSub"></p>
+
+      <h3 style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;margin-bottom:4px;">Score by domain</h3>
+      <table class="domain-table" id="domainTable"></table>
+
+      <h3 style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;margin-bottom:8px;">Questions to review</h3>
+      <div id="reviewList"></div>
+
+      <div class="start-actions">
+        <button class="btn" id="restartBtn" type="button">Back to start</button>
+        <button class="btn secondary hidden" id="retestFromResultsBtn" type="button">Retest weak areas now</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_PREFIX = "awsExam:";
+  var THEME_KEY = STORAGE_PREFIX + "theme";
+  var CUSTOM_DATA_KEY = STORAGE_PREFIX + "customData";
+  var LAST_BANK_KEY = STORAGE_PREFIX + "lastBankId";
+  var TIMED_SECONDS = 130 * 60;
+
+  // Per-bank keys, so progress/history for different exams don't collide.
+  function stateKey(bankId){ return STORAGE_PREFIX + "state:" + bankId; }
+  function historyKey(bankId){ return STORAGE_PREFIX + "history:" + bankId; }
+
+  var state = {
+    bankId: "custom",
+    bankTitle: "",
+    questions: [],
+    answers: {},
+    submitted: {},
+    flagged: {},
+    current: 0,
+    timedMode: false,
+    secondsLeft: TIMED_SECONDS,
+    timerHandle: null
+  };
+
+  var el = {
+    startScreen: document.getElementById("startScreen"),
+    errorScreen: document.getElementById("errorScreen"),
+    errorText: document.getElementById("errorText"),
+    examScreen: document.getElementById("examScreen"),
+    resultsScreen: document.getElementById("resultsScreen"),
+    bankSelect: document.getElementById("bankSelect"),
+    bankDesc: document.getElementById("bankDesc"),
+    startBtn: document.getElementById("startBtn"),
+    retestBtn: document.getElementById("retestBtn"),
+    retestFromResultsBtn: document.getElementById("retestFromResultsBtn"),
+    timedModeToggle: document.getElementById("timedModeToggle"),
+    resumeBanner: document.getElementById("resumeBanner"),
+    resumeText: document.getElementById("resumeText"),
+    resumeBtn: document.getElementById("resumeBtn"),
+    historyCard: document.getElementById("historyCard"),
+    historyTable: document.getElementById("historyTable"),
+    importToggle: document.getElementById("importToggle"),
+    importBox: document.getElementById("importBox"),
+    importTextarea: document.getElementById("importTextarea"),
+    importApplyBtn: document.getElementById("importApplyBtn"),
+    importMsg: document.getElementById("importMsg"),
+    themeToggle: document.getElementById("themeToggle"),
+    installBtn: document.getElementById("installBtn"),
+    offlineBanner: document.getElementById("offlineBanner"),
+    brandTitle: document.getElementById("brandTitle"),
+    progressLabel: document.getElementById("progressLabel"),
+    progressScoreLabel: document.getElementById("progressScoreLabel"),
+    progressFill: document.getElementById("progressFill"),
+    flagBtn: document.getElementById("flagBtn"),
+    timerDisplay: document.getElementById("timerDisplay"),
+    qDomain: document.getElementById("qDomain"),
+    qText: document.getElementById("qText"),
+    qHint: document.getElementById("qHint"),
+    qOptions: document.getElementById("qOptions"),
+    qFeedback: document.getElementById("qFeedback"),
+    fVerdict: document.getElementById("fVerdict"),
+    fExplain: document.getElementById("fExplain"),
+    fRef: document.getElementById("fRef"),
+    prevBtn: document.getElementById("prevBtn"),
+    checkBtn: document.getElementById("checkBtn"),
+    nextBtn: document.getElementById("nextBtn"),
+    finalScoreBig: document.getElementById("finalScoreBig"),
+    finalScoreSub: document.getElementById("finalScoreSub"),
+    domainTable: document.getElementById("domainTable"),
+    reviewList: document.getElementById("reviewList"),
+    restartBtn: document.getElementById("restartBtn")
+  };
+
+  var allQuestionsCache = [];
+  var bankCatalog = []; // [{id, file, title, description}]
+
+  // ---------- Theme ----------
+  function applyTheme(mode){
+    document.body.setAttribute("data-theme", mode);
+    el.themeToggle.textContent = mode === "dark" ? "Light mode" : "Dark mode";
+    try{ localStorage.setItem(THEME_KEY, mode); }catch(e){}
+  }
+  (function initTheme(){
+    var saved = null;
+    try{ saved = localStorage.getItem(THEME_KEY); }catch(e){}
+    if(!saved){
+      saved = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    }
+    applyTheme(saved);
+  })();
+  el.themeToggle.addEventListener("click", function(){
+    var current = document.body.getAttribute("data-theme");
+    applyTheme(current === "dark" ? "light" : "dark");
+  });
+
+  // ---------- PWA: service worker + install prompt + offline banner ----------
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("./sw.js").catch(function(){ /* offline-first still degrades gracefully */ });
+    });
+  }
+
+  var deferredInstallPrompt = null;
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    el.installBtn.classList.remove("hidden");
+  });
+  el.installBtn.addEventListener("click", function(){
+    if(!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.finally(function(){
+      deferredInstallPrompt = null;
+      el.installBtn.classList.add("hidden");
+    });
+  });
+  window.addEventListener("appinstalled", function(){
+    el.installBtn.classList.add("hidden");
+  });
+
+  function updateOfflineBanner(){
+    el.offlineBanner.classList.toggle("show", !navigator.onLine);
+  }
+  window.addEventListener("online", updateOfflineBanner);
+  window.addEventListener("offline", updateOfflineBanner);
+  updateOfflineBanner();
+
+  // ---------- Utilities ----------
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function escapeHtml(str){
+    var div = document.createElement("div");
+    div.textContent = str == null ? "" : String(str);
+    return div.innerHTML;
+  }
+
+  function saveState(){
+    try{
+      localStorage.setItem(stateKey(state.bankId), JSON.stringify({
+        bankTitle: state.bankTitle,
+        answers: state.answers,
+        submitted: state.submitted,
+        flagged: state.flagged,
+        current: state.current,
+        timedMode: state.timedMode,
+        secondsLeft: state.secondsLeft,
+        order: state.questions.map(function(q){ return q.id; })
+      }));
+    }catch(e){}
+  }
+
+  function clearState(bankId){
+    try{ localStorage.removeItem(stateKey(bankId)); }catch(e){}
+  }
+
+  // ---------- History (past attempts), scoped per question bank ----------
+  function loadHistory(bankId){
+    try{
+      var raw = localStorage.getItem(historyKey(bankId));
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){ return []; }
+  }
+
+  function appendHistory(bankId, entry){
+    var hist = loadHistory(bankId);
+    hist.push(entry);
+    if(hist.length > 20) hist = hist.slice(hist.length - 20);
+    try{ localStorage.setItem(historyKey(bankId), JSON.stringify(hist)); }catch(e){}
+  }
+
+  function renderHistory(){
+    var hist = loadHistory(state.bankId);
+    if(hist.length === 0){
+      el.historyCard.classList.add("hidden");
+      return;
+    }
+    el.historyCard.classList.remove("hidden");
+    var rows = "<tr><th>Date</th><th>Mode</th><th>Score</th><th>%</th></tr>";
+    hist.slice().reverse().forEach(function(h){
+      var d = new Date(h.date);
+      var dateStr = isNaN(d.getTime()) ? h.date : (d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}));
+      rows += "<tr><td>" + escapeHtml(dateStr) + "</td><td>" + escapeHtml(h.mode || "Full exam") + "</td><td>" + h.correct + "/" + h.total + "</td><td>" + h.pct + "%</td></tr>";
+    });
+    el.historyTable.innerHTML = rows;
+  }
+
+  function lastAttemptWeakQuestionIds(bankId){
+    var hist = loadHistory(bankId);
+    if(hist.length === 0) return null;
+    var last = hist[hist.length - 1];
+    return Array.isArray(last.wrongIds) ? last.wrongIds : null;
+  }
+
+  // ---------- Loading question banks ----------
+  function fetchJson(path){
+    return fetch(path, { cache: "no-store" }).then(function(res){
+      if(!res.ok) throw new Error(path + " responded with status " + res.status);
+      return res.json();
+    });
+  }
+
+  function loadCatalog(){
+    return fetchJson("./banks.json").then(function(data){
+      if(!data || !Array.isArray(data.banks) || data.banks.length === 0){
+        throw new Error('banks.json must contain a non-empty "banks" array.');
+      }
+      return data.banks;
+    });
+  }
+
+  function loadBankFile(bank){
+    // bank.file is a path relative to the site root, e.g. "dva/bank1.json"
+    return fetchJson("./" + bank.file).then(function(data){
+      if(!data || !Array.isArray(data.questions) || data.questions.length === 0){
+        throw new Error(bank.file + ' did not contain a non-empty "questions" array.');
+      }
+      return { id: bank.id, title: data.examTitle || bank.title, questions: data.questions };
+    });
+  }
+
+  function readCustomData(){
+    try{
+      var raw = localStorage.getItem(CUSTOM_DATA_KEY);
+      if(!raw) return null;
+      var data = JSON.parse(raw);
+      if(data && Array.isArray(data.questions) && data.questions.length > 0){
+        return { id: "custom", title: data.examTitle || "Custom question set", questions: data.questions };
+      }
+      return null;
+    }catch(e){ return null; }
+  }
+
+  function showError(message){
+    el.startScreen.classList.add("hidden");
+    el.examScreen.classList.add("hidden");
+    el.resultsScreen.classList.add("hidden");
+    el.errorScreen.classList.remove("hidden");
+    el.errorText.textContent =
+      "Couldn't load the question data. " + message +
+      " Make sure this page is served over http(s) (GitHub Pages, or a local server) rather than opened directly from disk, since browsers block local file fetches otherwise.";
+  }
+
+  function populateBankSelect(){
+    el.bankSelect.innerHTML = "";
+    bankCatalog.forEach(function(b){
+      var opt = document.createElement("option");
+      opt.value = b.id;
+      opt.textContent = b.title;
+      el.bankSelect.appendChild(opt);
+    });
+    var customOpt = document.createElement("option");
+    customOpt.value = "custom";
+    customOpt.textContent = "Custom (pasted JSON)";
+    var hasCustom = !!readCustomData();
+    customOpt.disabled = !hasCustom;
+    if(hasCustom) el.bankSelect.appendChild(customOpt);
+
+    var lastId = null;
+    try{ lastId = localStorage.getItem(LAST_BANK_KEY); }catch(e){}
+    if(lastId && Array.prototype.some.call(el.bankSelect.options, function(o){ return o.value === lastId; })){
+      el.bankSelect.value = lastId;
+    }
+    updateBankDesc();
+  }
+
+  function updateBankDesc(){
+    var id = el.bankSelect.value;
+    var bank = bankCatalog.filter(function(b){ return b.id === id; })[0];
+    el.bankDesc.textContent = bank ? (bank.description || "") : "Loaded from the question set you pasted in.";
+  }
+  el.bankSelect.addEventListener("change", function(){
+    updateBankDesc();
+    checkResumeForSelectedBank();
+    updateRetestAvailability();
+    renderHistory();
+  });
+
+  // ---------- JSON import ----------
+  el.importToggle.addEventListener("click", function(){
+    el.importBox.classList.toggle("hidden");
+  });
+
+  el.importApplyBtn.addEventListener("click", function(){
+    var raw = el.importTextarea.value.trim();
+    if(!raw){
+      el.importMsg.textContent = "Paste a JSON object first.";
+      el.importMsg.className = "import-msg err";
+      return;
+    }
+    var data;
+    try{
+      data = JSON.parse(raw);
+    }catch(e){
+      el.importMsg.textContent = "Invalid JSON: " + e.message;
+      el.importMsg.className = "import-msg err";
+      return;
+    }
+    if(!data || !Array.isArray(data.questions) || data.questions.length === 0){
+      el.importMsg.textContent = 'JSON must have a non-empty "questions" array.';
+      el.importMsg.className = "import-msg err";
+      return;
+    }
+    try{ localStorage.setItem(CUSTOM_DATA_KEY, JSON.stringify(data)); }catch(e){}
+    el.importMsg.textContent = "Question set loaded (" + data.questions.length + " questions). Select \"Custom (pasted JSON)\" above to use it.";
+    el.importMsg.className = "import-msg ok";
+    populateBankSelect();
+    el.bankSelect.value = "custom";
+    updateBankDesc();
+  });
+
+  // ---------- Exam flow ----------
+  function loadSelectedBankAndStart(opts){
+    var id = el.bankSelect.value;
+    var promise;
+    if(id === "custom"){
+      var custom = readCustomData();
+      if(!custom){ showError("No custom question set has been pasted in yet."); return; }
+      promise = Promise.resolve(custom);
+    } else {
+      var bank = bankCatalog.filter(function(b){ return b.id === id; })[0];
+      if(!bank){ showError("Selected question bank was not found."); return; }
+      promise = loadBankFile(bank);
+    }
+    promise.then(function(loaded){
+      try{ localStorage.setItem(LAST_BANK_KEY, loaded.id); }catch(e){}
+      startExam(loaded, opts);
+    }).catch(function(err){
+      showError(err.message || String(err));
+    });
+  }
+
+  function startExam(loaded, opts){
+    opts = opts || {};
+    allQuestionsCache = loaded.questions;
+    var pool = loaded.questions.slice();
+    var restrictIds = opts.onlyIds || null;
+    if(restrictIds && restrictIds.length > 0){
+      var idSet = {};
+      restrictIds.forEach(function(id){ idSet[id] = true; });
+      var filtered = pool.filter(function(q){ return idSet[q.id]; });
+      pool = filtered.length > 0 ? filtered : pool;
+    }
+    var picked = pool.length > 65 ? shuffle(pool).slice(0, 65) : shuffle(pool);
+
+    state.bankId = loaded.id;
+    state.bankTitle = loaded.title;
+    state.questions = picked;
+    state.answers = {};
+    state.submitted = {};
+    state.flagged = {};
+    state.current = 0;
+    state.timedMode = !!el.timedModeToggle.checked;
+    state.secondsLeft = TIMED_SECONDS;
+    stopTimer();
+    saveState();
+
+    el.brandTitle.innerHTML = escapeHtml(loaded.title) + " <small>Mock Simulator</small>";
+    el.startScreen.classList.add("hidden");
+    el.resultsScreen.classList.add("hidden");
+    el.errorScreen.classList.add("hidden");
+    el.examScreen.classList.remove("hidden");
+    if(state.timedMode) startTimer();
+    updateTimerDisplay();
+    renderQuestion();
+  }
+
+  function currentQuestion(){
+    return state.questions[state.current];
+  }
+
+  // ---------- Timer ----------
+  function startTimer(){
+    el.timerDisplay.classList.remove("hidden");
+    stopTimer();
+    state.timerHandle = setInterval(function(){
+      state.secondsLeft = Math.max(0, state.secondsLeft - 1);
+      updateTimerDisplay();
+      saveState();
+      if(state.secondsLeft <= 0){
+        stopTimer();
+        showResults();
+      }
+    }, 1000);
+  }
+  function stopTimer(){
+    if(state.timerHandle){
+      clearInterval(state.timerHandle);
+      state.timerHandle = null;
+    }
+  }
+  function updateTimerDisplay(){
+    if(!state.timedMode){
+      el.timerDisplay.classList.add("hidden");
+      return;
+    }
+    el.timerDisplay.classList.remove("hidden");
+    var m = Math.floor(state.secondsLeft / 60);
+    var s = state.secondsLeft % 60;
+    el.timerDisplay.textContent = "⏱ " + m + ":" + (s < 10 ? "0" + s : s) + " left";
+    el.timerDisplay.classList.toggle("low", state.secondsLeft <= 300);
+  }
+
+  function renderQuestion(){
+    var q = currentQuestion();
+    var total = state.questions.length;
+    var answeredCount = Object.keys(state.submitted).filter(function(id){ return state.submitted[id]; }).length;
+
+    el.progressLabel.textContent = "Question " + (state.current + 1) + " of " + total;
+    el.progressScoreLabel.textContent = answeredCount + " answered";
+    el.progressFill.style.width = ((state.current) / total * 100) + "%";
+
+    el.qDomain.textContent = "Domain: " + (q.domain || "General");
+    el.qText.textContent = q.question;
+
+    var isMulti = q.type === "multi" || (Array.isArray(q.correctAnswers) && q.correctAnswers.length > 1);
+    var neededCount = Array.isArray(q.correctAnswers) ? q.correctAnswers.length : 1;
+    el.qHint.textContent = isMulti ? ("Select " + neededCount + " answers.") : "Select one answer.";
+
+    el.qOptions.innerHTML = "";
+    var savedSelection = state.answers[q.id] || [];
+    var alreadySubmitted = !!state.submitted[q.id];
+
+    q.options.forEach(function(optionText, idx){
+      var wrapper = document.createElement("label");
+      wrapper.className = "option";
+      wrapper.setAttribute("for", "opt_" + q.id + "_" + idx);
+
+      var input = document.createElement("input");
+      input.type = isMulti ? "checkbox" : "radio";
+      input.name = "q_" + q.id;
+      input.id = "opt_" + q.id + "_" + idx;
+      input.value = idx;
+      input.checked = savedSelection.indexOf(idx) !== -1;
+      input.disabled = alreadySubmitted;
+
+      input.addEventListener("change", function(){
+        var sel = state.answers[q.id] ? state.answers[q.id].slice() : [];
+        if(isMulti){
+          var pos = sel.indexOf(idx);
+          if(input.checked && pos === -1) sel.push(idx);
+          if(!input.checked && pos !== -1) sel.splice(pos, 1);
+        } else {
+          sel = [idx];
+        }
+        state.answers[q.id] = sel;
+        saveState();
+        refreshOptionStyles();
+        el.checkBtn.disabled = sel.length === 0;
+      });
+
+      var span = document.createElement("span");
+      span.textContent = optionText;
+
+      wrapper.appendChild(input);
+      wrapper.appendChild(span);
+      el.qOptions.appendChild(wrapper);
+    });
+
+    refreshOptionStyles();
+
+    el.checkBtn.disabled = savedSelection.length === 0;
+    el.prevBtn.disabled = state.current === 0;
+
+    var isFlagged = !!state.flagged[q.id];
+    el.flagBtn.classList.toggle("flagged", isFlagged);
+    el.flagBtn.textContent = isFlagged ? "🚩 Flagged for review" : "🚩 Mark for review";
+
+    if(alreadySubmitted){
+      showFeedback(q);
+      el.checkBtn.classList.add("hidden");
+      el.nextBtn.classList.remove("hidden");
+    } else {
+      el.qFeedback.classList.remove("show");
+      el.checkBtn.classList.remove("hidden");
+      el.nextBtn.classList.add("hidden");
+    }
+
+    el.nextBtn.textContent = (state.current === state.questions.length - 1) ? "See results" : "Next question";
+    updateTimerDisplay();
+  }
+
+  function refreshOptionStyles(){
+    var q = currentQuestion();
+    var sel = state.answers[q.id] || [];
+    var subs = !!state.submitted[q.id];
+    var correctSet = q.correctAnswers || [];
+
+    var opts = el.qOptions.querySelectorAll(".option");
+    opts.forEach(function(node, idx){
+      node.classList.remove("selected", "correct", "incorrect");
+      var isSelected = sel.indexOf(idx) !== -1;
+      var isCorrect = correctSet.indexOf(idx) !== -1;
+
+      if(subs){
+        if(isCorrect) node.classList.add("correct");
+        else if(isSelected && !isCorrect) node.classList.add("incorrect");
+      } else if(isSelected){
+        node.classList.add("selected");
+      }
+    });
+  }
+
+  function isAnswerCorrect(q, sel){
+    var correct = (q.correctAnswers || []).slice().sort();
+    var chosen = (sel || []).slice().sort();
+    if(correct.length !== chosen.length) return false;
+    for(var i = 0; i < correct.length; i++){
+      if(correct[i] !== chosen[i]) return false;
+    }
+    return true;
+  }
+
+  function showFeedback(q){
+    var sel = state.answers[q.id] || [];
+    var correct = isAnswerCorrect(q, sel);
+    el.qFeedback.classList.add("show");
+    el.fVerdict.textContent = correct ? "Correct" : "Incorrect";
+    el.fVerdict.className = "verdict " + (correct ? "correct" : "incorrect");
+    el.fExplain.textContent = q.explanation || "";
+    if(q.reference){
+      el.fRef.innerHTML = 'Reference: <a href="' + q.reference + '" target="_blank" rel="noopener">' + q.reference + "</a>";
+    } else {
+      el.fRef.innerHTML = "";
+    }
+  }
+
+  function submitCurrent(){
+    var q = currentQuestion();
+    if(state.submitted[q.id]) return;
+    if(!state.answers[q.id] || state.answers[q.id].length === 0) return;
+    state.submitted[q.id] = true;
+    saveState();
+    refreshOptionStyles();
+    showFeedback(q);
+    el.checkBtn.classList.add("hidden");
+    el.nextBtn.classList.remove("hidden");
+    el.qOptions.querySelectorAll("input").forEach(function(inp){ inp.disabled = true; });
+    var answeredCount = Object.keys(state.submitted).filter(function(id){ return state.submitted[id]; }).length;
+    el.progressScoreLabel.textContent = answeredCount + " answered";
+  }
+
+  function goNext(){
+    if(state.current < state.questions.length - 1){
+      state.current++;
+      saveState();
+      renderQuestion();
+    } else {
+      showResults();
+    }
+  }
+
+  function goPrev(){
+    if(state.current > 0){
+      state.current--;
+      saveState();
+      renderQuestion();
+    }
+  }
+
+  el.checkBtn.addEventListener("click", submitCurrent);
+  el.nextBtn.addEventListener("click", goNext);
+  el.prevBtn.addEventListener("click", goPrev);
+
+  el.flagBtn.addEventListener("click", function(){
+    var q = currentQuestion();
+    state.flagged[q.id] = !state.flagged[q.id];
+    saveState();
+    var isFlagged = !!state.flagged[q.id];
+    el.flagBtn.classList.toggle("flagged", isFlagged);
+    el.flagBtn.textContent = isFlagged ? "🚩 Flagged for review" : "🚩 Mark for review";
+  });
+
+  // ---------- Keyboard shortcuts ----------
+  document.addEventListener("keydown", function(e){
+    if(el.examScreen.classList.contains("hidden")) return;
+    if(e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) {
+      if(e.target.type !== "radio" && e.target.type !== "checkbox") return;
+    }
+    var key = e.key;
+    if(key >= "1" && key <= "9"){
+      var idx = parseInt(key, 10) - 1;
+      var inputs = el.qOptions.querySelectorAll("input");
+      if(inputs[idx] && !inputs[idx].disabled){
+        if(inputs[idx].type === "radio"){
+          inputs[idx].checked = true;
+        } else {
+          inputs[idx].checked = !inputs[idx].checked;
+        }
+        inputs[idx].dispatchEvent(new Event("change"));
+      }
+      return;
+    }
+    if(key === "Enter"){
+      e.preventDefault();
+      if(!el.checkBtn.classList.contains("hidden") && !el.checkBtn.disabled){
+        submitCurrent();
+      } else if(!el.nextBtn.classList.contains("hidden")){
+        goNext();
+      }
+      return;
+    }
+    if(key === "f" || key === "F"){
+      el.flagBtn.click();
+    }
+  });
+
+  // ---------- Results ----------
+  function showResults(){
+    stopTimer();
+    el.examScreen.classList.add("hidden");
+    el.resultsScreen.classList.remove("hidden");
+    el.progressFill.style.width = "100%";
+
+    var total = state.questions.length;
+    var correctCount = 0;
+    var domainStats = {}; // domain -> {correct, total}
+    var wrongList = [];
+    var wrongIds = [];
+
+    state.questions.forEach(function(q){
+      var sel = state.answers[q.id] || [];
+      var correct = isAnswerCorrect(q, sel);
+      if(correct) correctCount++;
+
+      var d = q.domain || "General";
+      if(!domainStats[d]) domainStats[d] = { correct: 0, total: 0 };
+      domainStats[d].total++;
+      if(correct) domainStats[d].correct++;
+
+      if(!correct){
+        wrongList.push({ q: q, sel: sel });
+        wrongIds.push(q.id);
+      }
+    });
+
+    var pct = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+    el.finalScoreBig.textContent = correctCount + " / " + total;
+    el.finalScoreSub.textContent = pct + "% correct" + (state.timedMode && state.secondsLeft <= 0 ? " · time ran out" : "");
+
+    var tableHtml = "<tr><th>Domain</th><th>Score</th><th>%</th></tr>";
+    Object.keys(domainStats).sort().forEach(function(d){
+      var s = domainStats[d];
+      var dpct = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+      tableHtml += "<tr><td>" + escapeHtml(d) + "</td><td>" + s.correct + "/" + s.total + "</td><td>" + dpct + "%</td></tr>";
+    });
+    el.domainTable.innerHTML = tableHtml;
+
+    if(wrongList.length === 0){
+      el.reviewList.innerHTML = '<p style="font-family:\'Helvetica Neue\',Arial,sans-serif;color:var(--ink-soft);">No misses. Clean sweep.</p>';
+    } else {
+      el.reviewList.innerHTML = wrongList.map(function(item){
+        var q = item.q;
+        var yourAnswers = (item.sel.length ? item.sel : []).map(function(i){ return q.options[i]; }).join("; ") || "(no answer submitted)";
+        var correctAnswers = (q.correctAnswers || []).map(function(i){ return q.options[i]; }).join("; ");
+        return '<div class="review-item">' +
+          '<div class="rq">' + escapeHtml(q.question) + '<span class="tag incorrect">Domain: ' + escapeHtml(q.domain || "General") + '</span></div>' +
+          '<div class="ra">Your answer: ' + escapeHtml(yourAnswers) + '</div>' +
+          '<div class="ra">Correct answer: ' + escapeHtml(correctAnswers) + '</div>' +
+          (q.explanation ? '<div class="ra">' + escapeHtml(q.explanation) + '</div>' : '') +
+          '</div>';
+      }).join("");
+    }
+
+    appendHistory(state.bankId, {
+      date: new Date().toISOString(),
+      mode: state.timedMode ? "Timed" : "Untimed",
+      correct: correctCount,
+      total: total,
+      pct: pct,
+      wrongIds: wrongIds
+    });
+
+    el.retestFromResultsBtn.classList.toggle("hidden", wrongIds.length === 0);
+
+    clearState(state.bankId);
+  }
+
+  el.restartBtn.addEventListener("click", function(){
+    el.resultsScreen.classList.add("hidden");
+    el.startScreen.classList.remove("hidden");
+    renderHistory();
+    updateRetestAvailability();
+    checkResumeForSelectedBank();
+  });
+
+  el.retestFromResultsBtn.addEventListener("click", function(){
+    var weakIds = lastAttemptWeakQuestionIds(state.bankId);
+    el.resultsScreen.classList.add("hidden");
+    startExam({ id: state.bankId, title: state.bankTitle, questions: allQuestionsCache }, { onlyIds: weakIds });
+  });
+
+  el.retestBtn.addEventListener("click", function(){
+    loadSelectedBankAndStartRetest();
+  });
+
+  function loadSelectedBankAndStartRetest(){
+    var id = el.bankSelect.value;
+    var weakIds = lastAttemptWeakQuestionIds(id);
+    loadSelectedBankAndStart({ onlyIds: weakIds });
+  }
+
+  function updateRetestAvailability(){
+    var weakIds = lastAttemptWeakQuestionIds(el.bankSelect.value);
+    el.retestBtn.classList.toggle("hidden", !weakIds || weakIds.length === 0);
+  }
+
+  // ---------- Resume in-progress exam (per selected bank) ----------
+  function checkResumeForSelectedBank(){
+    var id = el.bankSelect.value;
+    var savedRaw = null;
+    try{ savedRaw = localStorage.getItem(stateKey(id)); }catch(e){}
+    el.resumeBanner.classList.add("hidden");
+    // Remove any previously bound click handler by cloning the button.
+    var freshResumeBtn = el.resumeBtn.cloneNode(true);
+    el.resumeBtn.parentNode.replaceChild(freshResumeBtn, el.resumeBtn);
+    el.resumeBtn = freshResumeBtn;
+
+    if(!savedRaw) return;
+    var saved;
+    try{ saved = JSON.parse(savedRaw); }catch(e){ return; }
+    if(!saved || !Array.isArray(saved.order) || saved.order.length === 0) return;
+
+    el.resumeBanner.classList.remove("hidden");
+    var answeredN = saved.submitted ? Object.keys(saved.submitted).filter(function(k){ return saved.submitted[k]; }).length : 0;
+    el.resumeText.textContent = "You have an exam in progress — question " + ((saved.current || 0) + 1) + " of " + saved.order.length + " (" + answeredN + " answered).";
+
+    el.resumeBtn.addEventListener("click", function(){
+      var resumePromise = (id === "custom") ? Promise.resolve(readCustomData()) :
+        loadBankFile(bankCatalog.filter(function(b){ return b.id === id; })[0]);
+
+      resumePromise.then(function(loaded){
+        if(!loaded) throw new Error("Could not reload this question bank.");
+        var byId = {};
+        loaded.questions.forEach(function(q){ byId[q.id] = q; });
+        var restored = saved.order.map(function(qid){ return byId[qid]; }).filter(Boolean);
+        if(restored.length !== saved.order.length){
+          showError("The question bank has changed since this exam was saved, so it can't be resumed.");
+          return;
+        }
+        allQuestionsCache = loaded.questions;
+        state.bankId = id;
+        state.bankTitle = loaded.title;
+        state.questions = restored;
+        state.answers = saved.answers || {};
+        state.submitted = saved.submitted || {};
+        state.flagged = saved.flagged || {};
+        state.current = Math.min(saved.current || 0, restored.length - 1);
+        state.timedMode = !!saved.timedMode;
+        state.secondsLeft = typeof saved.secondsLeft === "number" ? saved.secondsLeft : TIMED_SECONDS;
+
+        el.brandTitle.innerHTML = escapeHtml(loaded.title) + " <small>Mock Simulator</small>";
+        el.startScreen.classList.add("hidden");
+        el.examScreen.classList.remove("hidden");
+        if(state.timedMode && state.secondsLeft > 0) startTimer();
+        renderQuestion();
+      }).catch(function(err){
+        showError(err.message || String(err));
+      });
+    });
+  }
+
+  el.startBtn.addEventListener("click", function(){
+    loadSelectedBankAndStart();
+  });
+
+  // ---------- Boot ----------
+  function boot(){
+    loadCatalog().then(function(banks){
+      bankCatalog = banks;
+      populateBankSelect();
+      checkResumeForSelectedBank();
+      updateRetestAvailability();
+      renderHistory();
+    }).catch(function(err){
+      // Fall back to a custom pasted set if the manifest can't be loaded (e.g. first offline visit).
+      var custom = readCustomData();
+      if(custom){
+        bankCatalog = [];
+        populateBankSelect();
+        el.bankSelect.value = "custom";
+        updateBankDesc();
+        checkResumeForSelectedBank();
+        updateRetestAvailability();
+        renderHistory();
+        return;
+      }
+      showError(err.message || String(err));
+    });
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

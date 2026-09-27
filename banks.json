@@ -1,0 +1,16 @@
+{
+  "banks": [
+    {
+      "id": "dva-c02-bank1",
+      "file": "dva/bank1.json",
+      "title": "AWS Certified Developer – Associate (DVA-C02)",
+      "description": "Sample set"
+    },
+    {
+      "id": "saa-c03-bank1",
+      "file": "saa/bank1.json",
+      "title": "AWS Certified Solutions Architect – Associate (SAA-C03)",
+      "description": "Sample set"
+    }
+  ]
+}
