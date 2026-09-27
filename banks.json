@@ -1,16 +1,28 @@
 {
-  "banks": [
+  "certifications": [
     {
-      "id": "dva-c02-bank1",
-      "file": "dva/bank1.json",
-      "title": "AWS Certified Developer – Associate (DVA-C02)",
-      "description": "Sample set"
+      "id": "developer-associate",
+      "title": "AWS Certified Developer - Associated (DVA-C02)",
+      "banks": [
+        {
+          "id": "developer-associate-bank1",
+          "file": "questions/developer-associate/bank1.json",
+          "title": "Bank 1 (sample)",
+          "description": "Sample set — replace with your generated question bank."
+        }
+      ]
     },
     {
-      "id": "saa-c03-bank1",
-      "file": "saa/bank1.json",
-      "title": "AWS Certified Solutions Architect – Associate (SAA-C03)",
-      "description": "Sample set"
+      "id": "solutions-architect",
+      "title": "AWS Certified Solutions Architect - Associated (SAA-C03)",
+      "banks": [
+        {
+          "id": "solutions-architect-bank1",
+          "file": "questions/solutions-architect/bank1.json",
+          "title": "Bank 1 (sample)",
+          "description": "Sample set — replace with your generated question bank."
+        }
+      ]
     }
   ]
 }
