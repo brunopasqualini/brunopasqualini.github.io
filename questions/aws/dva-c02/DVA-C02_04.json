@@ -1,0 +1,1118 @@
+{
+  "examTitle": "AWS Certified Developer \u2013 Associate (DVA-C02)",
+  "questions": [
+    {
+      "id": 1,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer needs shared, POSIX-compliant file storage that can be concurrently mounted by multiple EC2 instances across several Availability Zones, growing and shrinking automatically as files are added or removed. Which AWS storage service fits this requirement?",
+      "options": [
+        "Amazon S3",
+        "Amazon EFS",
+        "Amazon FSx for Windows File Server",
+        "Amazon EBS"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because S3 is an object store accessed via an HTTP API, not a POSIX file system that can be mounted directly by an OS the way EFS can. Option B is correct because EFS provides a fully managed, elastic NFS file system that can be concurrently mounted by many instances across multiple Availability Zones, scaling automatically with usage. Option C is incorrect because this is designed specifically for Windows-based SMB file sharing, not general POSIX-compliant Linux file access across multiple EC2 instances. Option D is incorrect because an EBS volume attaches to a single EC2 instance at a time (except io2/io1 Multi-Attach, which is limited and not POSIX-shared in this general way) and does not scale storage automatically across many concurrent mounters. EFS is the AWS-managed, elastic NFS file system for concurrent, multi-AZ, multi-instance POSIX file access.",
+      "reference": "https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html"
+    },
+    {
+      "id": 2,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A team stores user profile photos in S3 and serves them through CloudFront. To reduce load time for a common set of thumbnail sizes, the team wants CloudFront (not the origin) to generate resized images on the fly and cache them at the edge, based on query string parameters like width and height, without operating a separate image-processing service. Which CloudFront capability supports this?",
+      "options": [
+        "Origin Access Control (OAC) configured on the S3 origin",
+        "Lambda@Edge (or CloudFront Functions combined with a Lambda@Edge origin-request function) that resizes the image before caching, keyed by the query string cache behavior",
+        "CloudFront's default caching behavior alone, with no custom logic, since it resizes images automatically based on query strings",
+        "A CloudFront Origin Group with a fallback origin"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because OAC controls how CloudFront authenticates to a private S3 origin; it has no role in resizing images. Option B is correct because Lambda@Edge functions can execute custom logic at CloudFront edge locations, including invoking an image processing library to resize images on demand, with results then cached at the edge based on the configured cache key including query strings. Option C is incorrect because CloudFront does not natively resize images without custom logic; some functionality must be added via Lambda@Edge or a similar edge-compute mechanism. Option D is incorrect because origin groups provide failover between two origins for availability; they do not perform image transformation. Lambda@Edge is the CloudFront capability for running custom logic, such as on-the-fly image resizing, at the edge before caching the result.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-examples.html"
+    },
+    {
+      "id": 3,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants a Lambda function to automatically read updated values from an AWS AppConfig configuration profile, including feature flags, with minimal added latency and without directly calling the AppConfig API on every invocation. Which approach is recommended?",
+      "options": [
+        "Call the AppConfig GetConfiguration API directly from the function on every invocation",
+        "Bake the configuration values into the deployment package at build time",
+        "Store the configuration in the function's reserved concurrency setting",
+        "Use the AWS AppConfig Lambda extension, which caches configuration locally within the execution environment and refreshes it periodically in the background"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because calling the API directly on every invocation adds a network round trip and additional latency to each invocation compared to using the local caching extension. Option B is incorrect because hardcoding configuration values at build time defeats the purpose of dynamically retrieving updated feature flags without a redeploy. Option C is incorrect because reserved concurrency is a capacity control setting and has no relationship to storing or retrieving application configuration values. Option D is correct because the AppConfig Lambda extension runs alongside the function, polling for configuration updates and serving cached values locally over a fast local HTTP call, avoiding a full AppConfig API round trip on every invocation. The AppConfig Lambda extension is specifically designed to provide fast, locally cached access to configuration without a full API call on every invocation.",
+      "reference": "https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html"
+    },
+    {
+      "id": 4,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer implements a Lambda function that writes to an Amazon Aurora Serverless v2 cluster using the Data API instead of a traditional database driver connection. What is a key operational advantage of using the Data API in this Lambda context, compared to a standard SQL driver connection?",
+      "options": [
+        "The Data API is HTTP-based and does not require managing persistent database connections or a connection pool from the Lambda function, avoiding the connection-exhaustion problems common with highly concurrent Lambda invocations",
+        "The Data API provides lower query latency than a direct SQL connection in all cases",
+        "The Data API removes the need for any IAM permissions to access the database",
+        "The Data API automatically shards the database across multiple Aurora clusters"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because because the Data API makes stateless HTTPS calls instead of opening a persistent database connection per execution environment, it avoids the scaling connection-count problem that traditional drivers face when many concurrent Lambda invocations each try to open their own database connection. Option B is incorrect because the Data API generally introduces additional latency per call compared to a warm, already-open direct connection, since it is an HTTP-based abstraction rather than a persistent low-level connection. Option C is incorrect because the Data API still requires IAM permissions (and a Secrets Manager-based credential) to authorize and authenticate calls; it does not remove the need for permissions. Option D is incorrect because the Data API is an access method to a single cluster; it does not implement automatic sharding across multiple clusters. The Data API's main operational advantage for Lambda is avoiding persistent connection management, which addresses the connection-exhaustion problem common with highly concurrent serverless workloads.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html"
+    },
+    {
+      "id": 5,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants API Gateway to cache backend responses for a GET endpoint for 5 minutes, reducing the number of calls made to a slow, rarely-changing backend Lambda function. Which API Gateway feature should be enabled?",
+      "options": [
+        "CloudFront caching in front of the REST API with no changes on API Gateway itself",
+        "A Lambda authorizer with a caching TTL",
+        "Increasing the Lambda function's reserved concurrency",
+        "API Gateway response caching, configured with a TTL of 300 seconds on the relevant method"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because while CloudFront could be layered in front of API Gateway, API Gateway itself provides a native caching feature that directly addresses this requirement without requiring an additional service. Option B is incorrect because authorizer caching only caches the authorization decision for a token, not the actual response payload of the integration. Option C is incorrect because reserved concurrency affects how many concurrent executions are allowed; it does not cache responses or reduce the number of times the backend is invoked for repeated identical requests. Option D is correct because API Gateway supports enabling a managed cache per stage, with a configurable TTL per method, that serves repeated identical requests from the cache instead of invoking the backend integration each time. API Gateway's built-in response caching feature is the direct way to cache backend responses for a configurable TTL per method.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html"
+    },
+    {
+      "id": 6,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer designs a DynamoDB table for a leaderboard application where the table must support fetching the top 10 scores across all players, updated frequently, while write throughput needs to scale across many partitions to avoid a hot key on a single 'leaderboard' partition. Which design addresses both requirements?",
+      "options": [
+        "Use a single partition key value of 'leaderboard' for every player's score item, sorted by score as the sort key",
+        "Store each player's score in a separate DynamoDB table",
+        "Use a sharded partition key (for example leaderboard#<shard number> where the shard is randomly or deterministically chosen from a fixed small range) combined with a sort key on score, and aggregate top results across all shards in the application layer using parallel queries",
+        "Use playerId as the partition key with no sort key, and scan the entire table to compute the top 10 on every request"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because a single shared partition key value creates a hot partition that all writes funnel through, which does not scale write throughput across many partitions as required. Option B is incorrect because creating a separate table per player prevents any single Query from retrieving a combined top-10 list across all players in an efficient way. Option C is correct because sharding the leaderboard's logical single partition into several physical partitions spreads write load, while querying all shards in parallel and merging the top results in the application layer avoids concentrating all writes on one hot partition key. Option D is incorrect because using a scan across the entire table to compute a leaderboard on every request is inefficient and does not use DynamoDB's native sort-key ordering capability for this access pattern. Sharding a hot partition key into several physical partitions, combined with fan-out queries merged in the application, is the standard DynamoDB technique for high-write leaderboard-style access patterns.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html"
+    },
+    {
+      "id": 7,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants a Step Functions state machine to wait for exactly 10 minutes between two states, without invoking any external services or polling. Which state type should be used?",
+      "options": [
+        "A Task state invoking a Lambda function that sleeps for 10 minutes",
+        "A Parallel state with a single empty branch",
+        "A Wait state with a Seconds (or Timestamp) field set to the desired delay",
+        "A Choice state with no conditions defined"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because using a Lambda function to sleep wastes execution time and cost, and risks hitting the function's timeout, when a native Wait state achieves the same delay without any compute cost. Option B is incorrect because a Parallel state runs branches concurrently and does not provide a native timed delay mechanism. Option C is correct because the Wait state is specifically designed to pause a state machine's execution for a specified duration or until a specific time, without external calls. Option D is incorrect because a Choice state evaluates branching logic based on conditions; it has no built-in mechanism for pausing execution for a fixed duration. The Wait state is the native Step Functions construct for pausing execution for a specified duration without external calls or polling.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-wait-state.html"
+    },
+    {
+      "id": 8,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer builds a Lambda function triggered by DynamoDB Streams to replicate changes to an OpenSearch index for search functionality. During testing, the function occasionally processes the same stream record more than once after a transient failure and retry, resulting in duplicate index updates. The team wants to make the OpenSearch update logic idempotent, given that the DynamoDB Streams record includes the modified item's primary key and a monotonically increasing version number attribute. Which approach makes the update idempotent?",
+      "options": [
+        "Disable retries on the Lambda function's DynamoDB Streams event source mapping",
+        "Use the OpenSearch document's ID equal to the DynamoDB item's primary key, and set the document's version in OpenSearch using the item's version attribute with a version_type of external, so out-of-order or duplicate updates with an equal or lower version are automatically rejected by OpenSearch",
+        "Generate a new random OpenSearch document ID for every stream record processed",
+        "Increase the DynamoDB Streams event source mapping's batch window to avoid duplicate records entirely"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because disabling retries would cause legitimate transient failures to result in permanently skipped updates instead of making the processing logic itself safely idempotent. Option B is correct because using the item's primary key as the document ID ensures repeated writes target the same document, and using external versioning with the item's own version number lets OpenSearch itself reject stale or duplicate writes, since it will not apply an update whose version is not strictly greater than what is already indexed. Option C is incorrect because using a random ID for every update would create a new, duplicate document in the index for every processing attempt instead of updating the same existing document. Option D is incorrect because stream processing can still redeliver records after certain failures regardless of the batch window setting; the batch window controls batching timing, not exactly-once delivery guarantees. Using a stable document ID plus OpenSearch's external versioning against a monotonically increasing source version number is a standard way to make downstream updates idempotent against duplicate or out-of-order stream records.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html"
+    },
+    {
+      "id": 9,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants to invoke multiple independent Lambda functions in parallel from within a Step Functions state machine and wait for all of them to complete before proceeding to the next state. Which state type should be used?",
+      "options": [
+        "A Parallel state with a separate branch for each Lambda function invocation",
+        "A Choice state with multiple conditions",
+        "Multiple sequential Task states, one after another",
+        "A Map state iterating over a fixed list of function names"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because the Parallel state runs multiple branches concurrently and waits for all branches to complete before the state machine proceeds, which directly matches the requirement. Option B is incorrect because a Choice state selects exactly one branch to execute based on conditions; it does not run multiple branches concurrently. Option C is incorrect because sequential Task states execute one after another, not concurrently, which does not meet the requirement to run them in parallel. Option D is incorrect because a Map state iterates the same branch logic over a dynamic collection of items; it is not the natural fit for invoking a small, fixed set of distinctly different functions in parallel. The Parallel state is the Step Functions construct specifically for running multiple distinct branches concurrently and synchronizing on their completion.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-parallel-state.html"
+    },
+    {
+      "id": 10,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A team is designing a multi-tenant SaaS application on DynamoDB using a single shared table, where the partition key encodes both tenant ID and entity type (for example TENANT#123#ORDER#456). A new requirement asks for the ability to efficiently query all orders across all tenants that were placed on a specific date, for internal analytics, without scanning the entire table. Which approach addresses this new access pattern without redesigning the primary key?",
+      "options": [
+        "Create a separate table replicating every order, keyed by date, updated manually by application code on every write",
+        "Change the base table's partition key to be the order date instead of the tenant-scoped key",
+        "Add a Global Secondary Index with a partition key based on order date (or a derived attribute like orderDate) and a suitable sort key, projecting the needed attributes",
+        "Perform a full table Scan filtered by date whenever this analytics query is needed"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because manually duplicating and syncing data into a separate table for a single query pattern adds operational complexity and consistency risk compared to using a GSI on the existing table. Option B is incorrect because changing the base table's partition key would break the existing tenant-scoped access patterns that other parts of the application already rely on. Option C is correct because adding a GSI with a different partition key lets the existing table support a new, previously unsupported access pattern (querying across all tenants by date) without altering the base table's primary key design or duplicating data into a separate table. Option D is incorrect because a full table scan is inefficient at scale and does not use DynamoDB's native indexing capabilities for a new, well-defined access pattern. Adding a GSI is the standard way to support a new access pattern on an existing DynamoDB table without redesigning the base table's primary key.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-indexes-general.html"
+    },
+    {
+      "id": 11,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants to send push notifications to iOS and Android mobile devices from a backend application, without managing separate integrations for Apple Push Notification service (APNs) and Firebase Cloud Messaging (FCM) individually in application code. Which AWS service provides a unified interface for this?",
+      "options": [
+        "Amazon SES",
+        "Amazon SNS mobile push notifications",
+        "Amazon Pinpoint analytics only (excluding its messaging features)",
+        "AWS IoT Core"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because SES is designed for sending and receiving email, not mobile push notifications to iOS or Android devices. Option B is correct because SNS provides a unified API for publishing messages to multiple mobile push notification services, including APNs and FCM, through platform application endpoints, abstracting away the underlying service-specific details. Option C is incorrect because the analytics-only aspect of Pinpoint does not send push notifications; that requires Pinpoint's messaging capability or SNS mobile push, not analytics alone. Option D is incorrect because IoT Core is designed for connecting and communicating with IoT devices using protocols like MQTT, not for general mobile push notifications to iOS/Android apps. SNS mobile push provides a single, unified API for sending notifications across multiple mobile push services like APNs and FCM.",
+      "reference": "https://docs.aws.amazon.com/sns/latest/dg/sns-mobile-application-as-subscriber.html"
+    },
+    {
+      "id": 12,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer notices that a Lambda function processing S3 events sometimes receives the same S3 event notification more than once, resulting in the same file occasionally being processed twice. The team wants to handle this without redesigning the S3 event delivery mechanism. Which is the correct characterization of this behavior and the recommended fix?",
+      "options": [
+        "S3 event notifications guarantee exactly-once delivery, so this must be caused by the Lambda function throwing duplicate events itself",
+        "The fix is to switch from S3 event notifications to CloudTrail data events, which guarantee exactly-once delivery",
+        "S3 event notifications are delivered at-least-once, so duplicate deliveries are expected occasionally; the function's processing logic should be made idempotent, for example by checking and recording processed object keys and versions before performing the processing side effect",
+        "This indicates a bug in S3 that should be reported to AWS Support for a guaranteed fix"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because S3 event notifications do not guarantee exactly-once delivery; the described behavior is consistent with expected at-least-once delivery semantics, not a function-caused duplication. Option B is incorrect because CloudTrail data events do not provide a stronger exactly-once delivery guarantee either; the correct fix is making the processing logic idempotent regardless of the specific notification mechanism used. Option C is correct because S3's event notification system, like many AWS event-driven integrations, provides at-least-once delivery rather than exactly-once, so applications must be designed to handle occasional duplicate deliveries through idempotent processing logic. Option D is incorrect because at-least-once delivery is documented, expected AWS behavior for S3 event notifications, not a defect requiring an AWS-side fix. At-least-once delivery is a documented characteristic of S3 event notifications; idempotent processing logic is the correct way to handle occasional duplicate deliveries.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html"
+    },
+    {
+      "id": 13,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants a Lambda function's error handling code to distinguish between a validation error caused by bad client input (which should not be retried) and a transient downstream service error (which should be retried by the caller). Which practice supports this distinction when the function is invoked through API Gateway?",
+      "options": [
+        "Catch all exceptions and return an empty response body with no status code",
+        "Always return HTTP 200 regardless of error type, embedding error details only in the response body",
+        "Throw or return distinct, identifiable error types/messages from the function, and map them to different HTTP status codes (for example 400 for validation errors, 502/503 for transient downstream errors) using API Gateway's integration response mapping",
+        "Always return HTTP 500 for any error, since API Gateway cannot differentiate error types"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because omitting the status code entirely removes exactly the signal that callers need to decide whether to retry, and a response must have a status code. Option B is incorrect because returning 200 for all outcomes removes the standard HTTP-level signal that clients and intermediate systems rely on to distinguish success from different classes of failure. Option C is correct because distinguishing error types in the function's own code and mapping them to semantically appropriate HTTP status codes lets callers correctly determine whether to retry (5xx) or fix their request (4xx) based on the response. Option D is incorrect because API Gateway can map different backend errors to different status codes via selection patterns; defaulting everything to 500 discards useful information about whether a request should be retried. Mapping distinct error types to semantically correct HTTP status codes (4xx for client errors, 5xx for transient/server errors) is the standard way to let API consumers make correct retry decisions.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-simple-proxy-for-lambda-error-handling.html"
+    },
+    {
+      "id": 14,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer is optimizing a Lambda function that processes a batch of records from an SQS queue and writes each result to DynamoDB using individual PutItem calls in a loop, awaiting each call sequentially before starting the next. Profiling shows most of the function's duration is spent waiting on these sequential DynamoDB calls, and the records do not depend on each other. Which change most directly reduces duration for a batch of up to 25 independent items?",
+      "options": [
+        "Switch the function's runtime from Python to a compiled language only, keeping the same sequential call pattern",
+        "Reduce the SQS batch size to 1 so only one record is processed per invocation",
+        "Increase the Lambda function's timeout to accommodate the sequential calls",
+        "Use DynamoDB's BatchWriteItem operation (or issue the individual PutItem calls concurrently, respecting DynamoDB's per-batch limits) instead of awaiting each PutItem sequentially in a loop"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because changing runtime language does not address the underlying issue of unnecessary sequential waiting on independent network calls. Option B is incorrect because processing one record per invocation avoids batching benefits and would multiply the number of invocations and associated overhead instead of addressing the sequential-call latency within a batch. Option C is incorrect because increasing timeout allows the slow sequential pattern to complete without erroring, but does not reduce the actual duration or the resulting cost of the invocation. Option D is correct because BatchWriteItem lets up to 25 write operations be submitted together in a single call, or alternatively issuing calls concurrently overlaps their latency, both of which reduce total wait time compared to strictly sequential individual calls. Batching or concurrently issuing independent DynamoDB write calls, instead of awaiting each sequentially, is a direct way to reduce Lambda duration for batch processing workloads.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.BatchOperations"
+    },
+    {
+      "id": 15,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants an EventBridge rule to archive all events matching a specific pattern for 90 days, so they can later be replayed into the event bus if needed for reprocessing or debugging. Which EventBridge feature directly supports this archive-and-replay capability?",
+      "options": [
+        "EventBridge archive and replay, configured on the event bus with a retention period and an associated event pattern",
+        "CloudWatch Logs Insights queries against the rule's execution history",
+        "An S3 bucket with a lifecycle rule set to 90 days, manually configured as a target with custom replay code",
+        "An SQS dead-letter queue attached to the rule's target"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because EventBridge natively supports archiving events matching a pattern for a configured retention period, and later replaying them back onto the bus, without requiring a custom-built storage and replay mechanism. Option B is incorrect because Logs Insights can query log data but is not itself an archive-and-replay mechanism for EventBridge events. Option C is incorrect because this would require building custom archiving and replay logic instead of using EventBridge's own built-in archive and replay feature. Option D is incorrect because a DLQ captures events that failed delivery to a target; it is not designed as a general-purpose, pattern-based archive of all matching events for later replay. EventBridge's native archive and replay feature is purpose-built for retaining matched events and replaying them later without custom infrastructure.",
+      "reference": "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-archive-event.html"
+    },
+    {
+      "id": 16,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer is building a chat application backend using API Gateway WebSocket APIs and Lambda. The team needs to send a message to all currently connected clients in a specific chat room, where connection IDs for each room are tracked in a DynamoDB table. Which approach correctly delivers messages to connected WebSocket clients from a Lambda function?",
+      "options": [
+        "Use the API Gateway Management API's PostToConnection action, calling it once per connection ID retrieved from DynamoDB for the target room, using the WebSocket API's endpoint URL",
+        "Call the standard API Gateway Invoke API used for REST APIs",
+        "Publish the message to an SNS topic that all clients are subscribed to directly",
+        "Write the message to the DynamoDB table and rely on DynamoDB Streams to push it to the browser automatically"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because PostToConnection is the specific API Gateway Management API operation for pushing a message to a specific, currently connected WebSocket client identified by its connection ID. Option B is incorrect because the standard REST API Invoke mechanism does not apply to pushing data to an existing WebSocket connection; that requires the API Gateway Management API's PostToConnection action. Option C is incorrect because WebSocket clients connected through API Gateway do not subscribe to SNS topics directly; delivery to a specific WebSocket connection requires the API Gateway Management API. Option D is incorrect because DynamoDB Streams triggers backend Lambda functions on changes; it has no direct mechanism to push data to a browser's open WebSocket connection without going through the Management API. PostToConnection on the API Gateway Management API is the specific mechanism for a backend Lambda function to push data to a connected WebSocket client.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-execute-api.html"
+    },
+    {
+      "id": 17,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants a Lambda function's dependencies, which rarely change, to be shared across five different functions in the same application without duplicating the dependency package in each function's deployment artifact. Which Lambda feature is designed for this?",
+      "options": [
+        "Lambda destinations",
+        "Provisioned concurrency",
+        "A Lambda layer containing the shared dependencies, attached to each of the five functions",
+        "Lambda function aliases"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because destinations route the results of asynchronous invocations to other services; they have no role in sharing dependency code between functions. Option B is incorrect because provisioned concurrency pre-warms execution environments for faster starts; it does not provide a mechanism for sharing dependency packages across multiple functions. Option C is correct because layers let a set of dependencies be packaged once and referenced by multiple functions, avoiding duplication of the same dependency code across every function's own deployment package. Option D is incorrect because aliases point to specific published versions of a single function for traffic management purposes; they do not share dependency code across separate functions. Lambda layers are specifically designed for sharing common code or dependencies across multiple functions without duplicating them in each deployment package.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html"
+    },
+    {
+      "id": 18,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer configures a DynamoDB table's TTL attribute to automatically delete stale session records, and separately wants every deleted-by-TTL item to also trigger a cleanup Lambda function that removes an associated S3 object. Which approach correctly implements this?",
+      "options": [
+        "Rely on DynamoDB TTL to automatically invoke an associated Lambda function directly, since TTL supports configuring a target function",
+        "Poll the DynamoDB table every minute from a scheduled Lambda function to detect which items were recently removed",
+        "Enable DynamoDB Streams on the table and subscribe a Lambda function to it, and within the function, inspect the stream record's userIdentity field to check whether the deletion was performed by the TTL process (as opposed to a manual delete), then perform the S3 cleanup accordingly",
+        "Use an S3 lifecycle rule tied to the DynamoDB table's TTL setting"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because TTL itself does not support directly invoking a Lambda function; TTL deletions must be observed indirectly through DynamoDB Streams. Option B is incorrect because polling for removed items is unreliable, since deleted items are gone, and this approach abandons DynamoDB Streams, the properly designed mechanism for observing this kind of change. Option C is correct because DynamoDB Streams captures TTL-based deletions as REMOVE events, and the userIdentity field specifically identifies TTL-initiated deletions, allowing the subscribed Lambda function to distinguish and react specifically to expiration-driven removals. Option D is incorrect because S3 lifecycle rules operate independently on S3 objects and have no built-in linkage to a separate DynamoDB table's TTL configuration. DynamoDB Streams captures TTL deletions as REMOVE events with an identifiable userIdentity, letting a subscribed function react specifically to expiration-driven removals for cleanup workflows.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/time-to-live-ttl-streams.html"
+    },
+    {
+      "id": 19,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer wants to build a chatbot that understands natural language user requests and triggers different backend Lambda functions depending on detected user intent, without implementing custom natural language processing. Which AWS service is designed for this?",
+      "options": [
+        "Amazon Transcribe",
+        "Amazon Polly",
+        "Amazon Comprehend",
+        "Amazon Lex"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because Transcribe converts speech to text; it does not provide intent recognition or conversational bot orchestration. Option B is incorrect because Polly converts text to lifelike speech; it does not perform intent recognition or conversational flow management. Option C is incorrect because Comprehend performs natural language processing tasks like sentiment analysis and entity extraction on text, but is not itself a conversational bot-building service with intent-based Lambda fulfillment. Option D is correct because Lex provides natural language understanding and intent recognition specifically designed for building conversational interfaces, and integrates directly with Lambda for fulfilling recognized intents. Lex is the AWS service purpose-built for conversational interfaces with intent recognition and native Lambda-based fulfillment.",
+      "reference": "https://docs.aws.amazon.com/lex/latest/dg/what-is.html"
+    },
+    {
+      "id": 20,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer builds a Lambda function that reads a large configuration object from Parameter Store (a StringList parameter with thousands of comma-separated values) on every cold start, adding noticeable latency. Values change infrequently, at most once a day. The team wants to reduce this repeated retrieval cost across invocations within the same execution environment while still picking up daily changes reasonably promptly. What is the best approach?",
+      "options": [
+        "Cache the parameter value in a module-level variable along with a timestamp, and only re-fetch from Parameter Store if a configured cache duration (for example, one hour) has elapsed since the last fetch",
+        "Move the parameter retrieval into the function handler so it always reflects the latest value",
+        "Increase the function's memory to speed up the Parameter Store API call",
+        "Store the configuration values as Lambda environment variables that are manually updated by a person once a day"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because caching the value at module scope means it persists across warm invocations within the same execution environment, and a time-based cache expiration ensures the function periodically checks for updates without calling Parameter Store on every single invocation. Option B is incorrect because fetching on every invocation, rather than caching with periodic refresh, reintroduces the exact repeated latency cost the team wants to reduce. Option C is incorrect because more memory increases available CPU, which has limited effect on the latency of an external network call to Parameter Store, and does not address the repeated-call pattern itself. Option D is incorrect because manually editing environment variables introduces operational overhead and human error risk compared to an automated, time-based cache refresh pattern. Module-level caching with a time-based refresh strategy balances reduced repeated API calls against timely propagation of infrequent configuration changes.",
+      "reference": "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html"
+    },
+    {
+      "id": 21,
+      "domain": "Development with AWS Services",
+      "type": "multi",
+      "question": "A developer is comparing Amazon SQS and Amazon SNS for a new notification feature. Which TWO statements correctly describe a difference between the two services? (Select TWO)",
+      "options": [
+        "SQS supports fan-out delivery of a single message to multiple independent subscribers natively, without SNS",
+        "SNS is a point-to-point queue where only one subscriber receives each message",
+        "SNS uses a publish/subscribe model where a single published message can be delivered to many different subscribed endpoints, such as multiple SQS queues, Lambda functions, and email addresses",
+        "SQS and SNS are functionally identical and differ only in pricing",
+        "SQS messages persist in the queue until a consumer processes and deletes them, while SNS does not durably store messages for subscribers that are not currently able to receive them (outside of retry policies)"
+      ],
+      "correctAnswers": [
+        2,
+        4
+      ],
+      "explanation": "Option A is incorrect because native fan-out to multiple independent subscribers is an SNS capability; SQS alone delivers each message to only one consumer that successfully processes it. Option B is incorrect because SNS is designed for one-to-many fan-out delivery, not a strictly one-to-one point-to-point model like a queue. Option C is correct because SNS topics fan out one message to potentially many independent subscribers, unlike SQS, which is a point-to-point queue. Option D is incorrect because the two services have fundamentally different delivery models (queue vs. pub/sub), not just different pricing. Option E is correct because SQS is a durable queue that holds messages until consumed, whereas SNS is primarily a push-based delivery mechanism with its own retry policies rather than a long-term message store. SNS provides pub/sub fan-out to multiple subscribers, while SQS is a point-to-point, durable queue; combining them (fan-out) is a common pattern.",
+      "reference": "https://docs.aws.amazon.com/sns/latest/dg/sns-common-scenarios.html"
+    },
+    {
+      "id": 22,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer wants an application running on Amazon ECS Fargate to retrieve temporary AWS credentials automatically, scoped to the specific task, without embedding any long-term credentials in the container image. Which ECS feature provides this?",
+      "options": [
+        "An IAM task role attached to the task definition",
+        "A security group attached to the task's elastic network interface",
+        "A hardcoded access key stored as a container environment variable",
+        "An IAM task execution role used only for pulling the container image and writing logs"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because ECS injects temporary credentials for the assigned task role into the container via a local metadata endpoint, similar to how EC2 instance profiles work, without requiring any credentials to be baked into the image. Option B is incorrect because security groups control network traffic; they do not provide AWS API credentials to the application. Option C is incorrect because hardcoding long-term credentials is exactly what an IAM task role's automatically rotated temporary credentials are meant to avoid. Option D is incorrect because the task execution role is scoped to ECS agent operations like pulling images and writing logs; application-level AWS API calls should use the separate task role, not the execution role. IAM task roles provide temporary, automatically rotated AWS credentials scoped to a specific ECS task, distinct from the task execution role used for ECS agent operations.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html"
+    },
+    {
+      "id": 23,
+      "domain": "Security",
+      "type": "single",
+      "question": "A company wants to require that any IAM role capable of calling kms:ScheduleKeyDeletion across the account can only be used if the caller's session originated from a specific, trusted CI/CD pipeline role, identified by a session tag set during AssumeRole, and never from an interactive human session. Which IAM policy approach enforces this?",
+      "options": [
+        "Require MFA on the role using aws:MultiFactorAuthPresent",
+        "Rely on the IAM role's trust policy alone, without any condition on the permissions policy",
+        "Add a Condition to the relevant permissions policy (or the key policy) requiring a session tag, such as aws:PrincipalTag/pipeline, to equal the expected value, effectively denying the action unless the session was tagged appropriately during role assumption by the trusted pipeline",
+        "Use an SCP that blocks kms:ScheduleKeyDeletion for all principals account-wide"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because MFA presence addresses human authentication factors, not specifically whether the session originated from the particular CI/CD pipeline as required. Option B is incorrect because a trust policy alone controls who can assume the role, but without an additional condition on the sensitive action itself, any session under that role, however it was established, could still perform the action. Option C is correct because session tags set during AssumeRole become available as aws:PrincipalTag context keys in subsequent policy evaluations, so conditioning the sensitive action on a specific tag value restricts it to sessions established through the trusted pipeline's specific role assumption process. Option D is incorrect because blocking the action entirely for everyone would also prevent the legitimate CI/CD pipeline from performing it, which does not meet the requirement of allowing it specifically for the trusted pipeline. Session tags combined with condition keys like aws:PrincipalTag let policies restrict sensitive actions to sessions established through a specific, trusted assumption path.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html"
+    },
+    {
+      "id": 24,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer wants to confirm whether a specific S3 bucket's objects are publicly accessible before deploying an application that assumes the bucket is private. Which AWS feature provides a direct, account-level way to prevent public access regardless of any individual bucket policy or ACL misconfiguration?",
+      "options": [
+        "S3 Block Public Access, enabled at the account or bucket level",
+        "S3 Object Lock",
+        "S3 Transfer Acceleration",
+        "S3 Intelligent-Tiering"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Block Public Access settings override permissive bucket policies or ACLs, providing a centralized safeguard against public exposure regardless of how an individual resource policy might otherwise be misconfigured. Option B is incorrect because Object Lock enforces write-once-read-many retention for compliance purposes; it does not control whether objects are publicly accessible. Option C is incorrect because Transfer Acceleration speeds up uploads over long distances using CloudFront's edge network; it has no relationship to public access control. Option D is incorrect because Intelligent-Tiering automatically moves objects between access tiers to optimize cost; it does not control public accessibility. S3 Block Public Access provides a centralized, override-capable safeguard against public exposure, independent of individual bucket policy or ACL settings.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html"
+    },
+    {
+      "id": 25,
+      "domain": "Security",
+      "type": "single",
+      "question": "A company's Lambda function needs to call a partner's API that requires mutual TLS (mTLS) client certificate authentication, where the private key must never be exposed in environment variables or function code. Which approach best protects the private key while allowing the function to establish an mTLS connection?",
+      "options": [
+        "Hardcode the private key as a string literal in the function's source code",
+        "Store the private key in AWS Secrets Manager (or use AWS Private CA-issued credentials retrieved at runtime), fetch it into memory only at invocation time using the function's execution role permissions, and avoid writing it to persistent storage like /tmp beyond the current execution's lifetime",
+        "Store the private key in a public S3 bucket for easy retrieval by the function at runtime",
+        "Embed the private key directly in an environment variable, relying on Lambda's default encryption at rest for environment variables"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because hardcoding the key directly in source code stored in a repository is a direct and severe exposure risk, worse than any of the runtime-retrieval alternatives. Option B is correct because retrieving the key at runtime from Secrets Manager, scoped by IAM permissions, keeps it out of the deployment package and environment variable configuration, and avoiding unnecessary persistence limits the exposure window for the sensitive key material. Option C is incorrect because a publicly accessible bucket exposes the key to anyone on the internet, which is the opposite of the protection required. Option D is incorrect because while Lambda does encrypt environment variables at rest, storing a private key there still exposes it in the function's configuration to anyone with sufficient IAM read permissions on the function, which the requirement specifically wants to avoid. Retrieving sensitive credentials like private keys from Secrets Manager at runtime, scoped by IAM, and minimizing persistence, is the standard pattern for protecting secrets used in Lambda functions.",
+      "reference": "https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_lambda.html"
+    },
+    {
+      "id": 26,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer wants to be notified automatically whenever a new access key is created for any IAM user in the account, as part of a security monitoring workflow. Which combination of services should be used?",
+      "options": [
+        "An S3 Storage Lens dashboard",
+        "A VPC Flow Logs subscription filter",
+        "AWS Trusted Advisor cost optimization checks",
+        "An EventBridge rule matching CloudTrail's CreateAccessKey event, targeting an SNS topic (or Lambda function) for notification"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because Storage Lens provides storage usage and activity metrics for S3, unrelated to IAM API activity such as access key creation. Option B is incorrect because Flow Logs capture network traffic metadata at the ENI level; they do not capture IAM control-plane API calls like access key creation. Option C is incorrect because cost optimization checks focus on cost efficiency recommendations, not real-time notification of specific IAM API calls. Option D is correct because CloudTrail captures IAM API activity including CreateAccessKey, and EventBridge can match this specific event in near real time and route it to a notification target. CloudTrail plus EventBridge is the standard combination for near real-time detection and notification of specific IAM API activity such as access key creation.",
+      "reference": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/best-practices-security.html"
+    },
+    {
+      "id": 27,
+      "domain": "Security",
+      "type": "single",
+      "question": "A company's compliance requirement states that S3 objects containing certain sensitive data classifications must never be copied to a bucket in a different AWS Region, even by an otherwise highly privileged administrator, and any attempt should be actively blocked, not just logged. Which approach enforces this?",
+      "options": [
+        "Enable S3 Cross-Region Replication monitoring alerts",
+        "An SCP that denies s3:PutObject (and related copy operations) on buckets outside the approved Region(s), or, more precisely for cross-Region copy scenarios, a bucket policy combined with an SCP restricting the aws:RequestedRegion condition for relevant S3 actions",
+        "Rely on S3 Object Lock to prevent cross-Region copies",
+        "Configure AWS Config to flag any object found outside the approved Region"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because Cross-Region Replication monitoring reports on replication activity; it does not prevent or block a manual or programmatic copy to another Region. Option B is correct because SCPs set an account-wide, unoverridable permission ceiling, so denying actions based on Region conditions provides a preventive control that blocks the action outright, unlike detective controls that only log or alert after the fact. Option C is incorrect because Object Lock enforces retention (preventing deletion or overwrite) for compliance purposes; it does not restrict which Region an object can be copied to. Option D is incorrect because Config is a detective control that identifies non-compliant states after they occur, not a preventive block on the copy action itself. SCPs with Region-based conditions provide a preventive, unoverridable control, unlike detective mechanisms like Config or replication monitoring which only observe after the fact.",
+      "reference": "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_examples_general.html"
+    },
+    {
+      "id": 28,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer wants to grant a third-party SaaS vendor's AWS account read-only access to a specific S3 bucket without creating IAM users for the vendor or sharing any long-term AWS credentials. Which approach is recommended?",
+      "options": [
+        "Make the S3 bucket public so the vendor's systems can access it without any credentials",
+        "Give the vendor the developer account's root user credentials",
+        "Create an IAM user in the developer's account and share its access key with the vendor",
+        "Create a cross-account IAM role in the developer's account with a trust policy allowing the vendor's AWS account to assume it, scoped to read-only S3 permissions on the specific bucket"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because making the bucket public exposes the data to anyone on the internet, far beyond the vendor's intended scope of access. Option B is incorrect because sharing root credentials grants unrestricted access to the entire account and is never an appropriate way to share limited resource access. Option C is incorrect because sharing long-term access keys with an external party is a significant security risk and is explicitly what the requirement wants to avoid. Option D is correct because a cross-account role lets the vendor assume temporary, scoped credentials without the developer's account needing to create IAM users or share any long-term secret keys. A cross-account IAM role with a scoped trust policy is the standard, secure way to grant limited access to an external AWS account without creating users or sharing long-term credentials.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_common-scenarios_third-party.html"
+    },
+    {
+      "id": 29,
+      "domain": "Security",
+      "type": "single",
+      "question": "A team's Lambda function processes files uploaded by end users and calls a virus-scanning API before allowing the file to be used elsewhere in the application. Compliance requires that unscanned or infected files can never be accessed by other parts of the system, even temporarily. Which architecture best enforces this?",
+      "options": [
+        "Use S3 Transfer Acceleration to speed up the scanning process",
+        "Upload files to a quarantine S3 bucket with a bucket policy that denies access to any principal other than the scanning Lambda function; move (or copy with appropriate re-permissions) the file to a separate 'clean' bucket only after the scan passes",
+        "Upload files directly to the application's main production bucket and run the scan asynchronously afterward",
+        "Rely on the scanning Lambda function's own logic to prevent other services from reading the file before scanning completes"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because Transfer Acceleration speeds up data transfer over long distances; it has no bearing on preventing unauthorized access to unscanned files. Option B is correct because using a strictly access-restricted quarantine bucket ensures no other part of the system can read the file until it has been explicitly moved to a separate bucket after passing the scan, providing a clear, enforced boundary between unscanned and scanned files. Option C is incorrect because uploading directly to the production bucket exposes the file to potential access by other parts of the system before the scan has completed, violating the requirement. Option D is incorrect because apart from IAM/bucket policy enforcement, a Lambda function's internal logic has no way to prevent an entirely separate service or user from directly reading an object from a shared bucket. A quarantine bucket with restrictive IAM/bucket policies, and controlled promotion to a clean bucket, enforces a hard boundary between unscanned and scanned files.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-overview.html"
+    },
+    {
+      "id": 30,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer needs a Lambda function to call the AWS KMS GenerateDataKey API to create a data encryption key for client-side envelope encryption. Which permission must the function's execution role include, at minimum, for this specific operation?",
+      "options": [
+        "kms:PutKeyPolicy on the KMS key",
+        "kms:ScheduleKeyDeletion on the KMS key",
+        "kms:CreateKey on the account",
+        "kms:GenerateDataKey on the specific KMS key's ARN"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because PutKeyPolicy modifies the key's resource policy, which is unrelated to simply requesting a new data key for encryption use. Option B is incorrect because this action schedules deletion of the key itself, an unrelated and highly privileged action not required for generating a data key. Option C is incorrect because CreateKey is used to create new KMS keys, which is a separate, more privileged action from generating a data key using an already-existing key. Option D is correct because the GenerateDataKey action itself must be explicitly permitted on the target KMS key for the caller to successfully generate a new data key. kms:GenerateDataKey is the specific, minimal permission needed to request a new data encryption key from an existing KMS key for envelope encryption.",
+      "reference": "https://docs.aws.amazon.com/kms/latest/developerguide/programming-encryption.html"
+    },
+    {
+      "id": 31,
+      "domain": "Security",
+      "type": "single",
+      "question": "A company's security team wants to ensure that any newly created S3 bucket is automatically checked for public access misconfiguration and, if found non-compliant, automatically remediated by re-enabling Block Public Access, without requiring a person to manually intervene. Which combination of AWS services supports this automated detect-and-remediate workflow?",
+      "options": [
+        "An AWS Config rule (such as s3-bucket-public-read-prohibited) with an associated automatic remediation action (using an SSM Automation document or a custom Lambda function) configured to re-enable Block Public Access on non-compliant buckets",
+        "An S3 Storage Lens configuration alone",
+        "CloudTrail Insights alone, with no additional remediation automation",
+        "A manually run script executed by a security engineer once a week"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because AWS Config supports evaluating resources against rules and can trigger automatic remediation actions when a resource is found non-compliant, providing exactly this kind of automated detect-and-fix workflow without manual intervention. Option B is incorrect because Storage Lens provides visibility into storage usage and activity metrics; it does not evaluate compliance rules or trigger automated remediation actions. Option C is incorrect because CloudTrail Insights identifies unusual API activity trends; on its own, it does not evaluate configuration compliance or perform any remediation action. Option D is incorrect because a manually run, periodically scheduled script does not meet the requirement for automatic, ongoing detection and remediation without human intervention. AWS Config rules combined with automatic remediation actions provide the automated, ongoing detect-and-fix capability for resource misconfigurations like public S3 buckets.",
+      "reference": "https://docs.aws.amazon.com/config/latest/developerguide/remediation.html"
+    },
+    {
+      "id": 32,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer wants an ECS task running on Fargate to have different IAM permissions than the ECS agent itself uses to pull the container image and write logs. Which two distinct IAM roles does ECS support for this separation, and which one should the application code use to call other AWS services?",
+      "options": [
+        "The application should use the underlying EC2 instance's role directly, bypassing both ECS-specific roles",
+        "Only the task role exists, and the execution role is a deprecated concept no longer used by ECS",
+        "Only one IAM role, the task execution role, exists and must be used for both infrastructure operations and application API calls",
+        "The task role and the task execution role are separate; application code should use the credentials provided via the task role, not the task execution role"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because on Fargate there is no underlying customer-managed EC2 instance to attach a role to; ECS's task role is the correct mechanism for application-level permissions regardless of launch type. Option B is incorrect because both the task role and the task execution role are current, actively used ECS concepts serving distinct purposes. Option C is incorrect because ECS supports two separate roles specifically to avoid over-granting infrastructure-level permissions to application code, or vice versa. Option D is correct because ECS distinguishes between the task execution role (used by the ECS agent for infrastructure operations like pulling images and writing logs) and the task role (used by the application code running inside the container for its own AWS API calls), and application code should rely on the task role's credentials. ECS's task role (application permissions) and task execution role (infrastructure permissions) serve distinct purposes and should not be conflated.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html"
+    },
+    {
+      "id": 33,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer needs a Lambda function's execution role to be able to write to a specific DynamoDB table but explicitly must never be able to call the DeleteTable API on any table, even if a future code change or a compromised dependency attempted to call it, as a defense-in-depth measure beyond simply not including DeleteTable in the Allow policy. Which approach adds this additional layer of protection?",
+      "options": [
+        "Set the DynamoDB table's billing mode to on-demand",
+        "Simply not including dynamodb:DeleteTable in the Allow statement is already sufficient and equally defense-in-depth as an explicit Deny",
+        "Add an explicit Deny statement for dynamodb:DeleteTable in the role's permissions policy (or an attached permissions boundary), in addition to only granting specific Allow actions like PutItem and GetItem",
+        "Enable DynamoDB point-in-time recovery on the table"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because billing mode configuration has no relationship to IAM-level permission enforcement or protection against unwanted API calls. Option B is incorrect because relying solely on omission means a future accidental broadening of the Allow policy (such as switching to dynamodb:* by mistake) could inadvertently grant DeleteTable; an explicit Deny protects against that scenario, providing a stronger guarantee. Option C is correct because an explicit Deny (whether in the role's own policy or in a permissions boundary) provides a defense-in-depth guarantee that DeleteTable can never be allowed for this role, even if a future policy change accidentally adds a broader Allow that might otherwise include it. Option D is incorrect because point-in-time recovery helps restore data after an unwanted change but does not prevent the DeleteTable API call from being permitted by IAM in the first place. An explicit Deny is a stronger, defense-in-depth guarantee than simply omitting an action from an Allow policy, since it cannot be inadvertently overridden by a future broader Allow.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html"
+    },
+    {
+      "id": 34,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer wants to confirm that an S3 bucket policy they just wrote actually grants the intended cross-account access without accidentally being more permissive than intended. Which practice should the developer follow before deploying the policy?",
+      "options": [
+        "Assume the policy is correct as long as it uses a Deny statement somewhere in it",
+        "Skip testing since S3 bucket policies cannot be more permissive than the account's default settings",
+        "Deploy the policy directly to production and monitor CloudTrail logs afterward for any unexpected access",
+        "Use the IAM policy simulator (or a policy analysis tool such as IAM Access Analyzer's policy validation) to test the specific access scenarios the policy is intended to allow and deny"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because the mere presence of a Deny statement does not guarantee the policy's overall effect matches the developer's intent; specific scenarios must be tested. Option B is incorrect because S3 bucket policies can absolutely be written more permissively than intended by a developer, which is exactly why validation before deployment matters. Option C is incorrect because waiting to observe unexpected access after deployment is a reactive approach that risks actual unauthorized access occurring before the mistake is caught. Option D is correct because testing specific allow and deny scenarios against the policy before deployment helps confirm the policy behaves as intended and does not inadvertently grant broader access than planned. Testing specific access scenarios against a policy before deployment, using tools like the policy simulator or Access Analyzer, helps catch unintended permissiveness before it becomes a live security exposure.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html"
+    },
+    {
+      "id": 35,
+      "domain": "Security",
+      "type": "single",
+      "question": "A company wants developers to be able to create and manage their own DynamoDB tables freely in a development AWS account, but explicitly prevent them from ever creating a table without encryption at rest enabled, even though DynamoDB tables are encrypted by default using an AWS owned key. The security team specifically wants to require that all tables use a customer managed KMS key instead of the default. How should this be enforced?",
+      "options": [
+        "Enable DynamoDB point-in-time recovery as a substitute for the KMS key requirement",
+        "Add an IAM policy condition on dynamodb:CreateTable requiring the SSESpecification's KMSMasterKeyId to match one of the approved customer managed key ARNs",
+        "Rely on DynamoDB's default encryption at rest, since all tables are already encrypted regardless of key type",
+        "Use an SCP that blocks dynamodb:CreateTable entirely for developers"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because point-in-time recovery is a backup and restore capability unrelated to which encryption key is used for a table. Option B is correct because conditioning the CreateTable action on the specific KMS key ID used for the table's encryption specification enforces that only tables encrypted with an approved customer managed key can be created, rather than relying on the default AWS owned key. Option C is incorrect because default encryption uses an AWS owned key unless a customer managed key is explicitly specified, and the requirement specifically calls for a customer managed key, not just any encryption at rest. Option D is incorrect because completely blocking table creation would prevent developers from creating tables at all, which contradicts the requirement to let them create and manage tables freely while just enforcing the specific key requirement. IAM conditions on the specific encryption specification parameters of CreateTable can enforce that only approved customer managed keys are used, rather than relying on any encryption at rest existing by default.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/EncryptionAtRest.html"
+    },
+    {
+      "id": 36,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer wants a Lambda function's execution role permissions to be automatically reviewed for unused permissions over time, to help tighten the policy toward least privilege as the function's actual usage becomes clear. Which AWS capability supports this?",
+      "options": [
+        "AWS Config's resource relationship view",
+        "IAM Access Analyzer's unused access findings (or the IAM Access Advisor's last-accessed information)",
+        "AWS Trusted Advisor's fault tolerance checks",
+        "Amazon Inspector's network reachability findings"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because the resource relationship view shows how resources relate to each other, not which specific IAM permissions on a role have gone unused. Option B is correct because Access Analyzer's unused access analysis and Access Advisor both surface information about which granted permissions have not actually been used, helping identify candidates for removal to tighten a policy toward least privilege. Option C is incorrect because fault tolerance checks focus on resilience and redundancy recommendations, not unused IAM permission analysis. Option D is incorrect because Inspector's network reachability analysis evaluates network exposure of resources like EC2 instances, not unused IAM permissions on a role. IAM Access Analyzer's unused access findings (and Access Advisor) are specifically designed to help identify and remove permissions a role has not actually used, supporting least-privilege refinement over time.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-unused-access.html"
+    },
+    {
+      "id": 37,
+      "domain": "Security",
+      "type": "single",
+      "question": "A team runs a Lambda function that needs to call an internal API Gateway REST API in the same account that is configured with a resource policy restricting invocation to requests originating from within a specific VPC (using a VPC endpoint condition). The Lambda function currently runs outside any VPC. What must change for the function to successfully call this private API?",
+      "options": [
+        "Increase the Lambda function's timeout so it has more time to reach the API",
+        "Attach the Lambda function to the VPC (in private subnets) and route its calls to the API Gateway private endpoint through an interface VPC endpoint (PrivateLink) for execute-api, so the request originates from within the VPC as the resource policy requires",
+        "Make the API Gateway REST API's endpoint type EDGE instead of PRIVATE",
+        "Grant the function's execution role the execute-api:Invoke IAM permission and leave networking unchanged"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because timeout duration does not change where the function's network traffic originates from, and does not satisfy a VPC-based resource policy condition. Option B is correct because the API's resource policy requires requests to originate from within a specific VPC via its endpoint, so the Lambda function itself must be attached to that VPC and route its calls through the corresponding interface VPC endpoint to satisfy the condition. Option C is incorrect because switching to an edge-optimized public endpoint type would remove the private VPC restriction rather than satisfy it, and does not match the described resource policy requirement. Option D is incorrect because IAM permission to invoke the API is necessary but not sufficient here, since the resource policy's VPC-based condition also requires the network path itself to originate from within the specific VPC. When an API Gateway resource policy restricts calls to a specific VPC endpoint, the calling function itself must be attached to that VPC and route through the matching interface endpoint, not just have IAM invoke permission.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-apis.html"
+    },
+    {
+      "id": 38,
+      "domain": "Security",
+      "type": "multi",
+      "question": "A developer is reviewing how AWS Certificate Manager (ACM) works for securing a custom domain used by both CloudFront and an Application Load Balancer. Which TWO statements are correct? (Select TWO)",
+      "options": [
+        "ACM can only issue certificates for AWS-owned domain names, not customer-owned domains",
+        "ACM certificates never expire and do not require any renewal process",
+        "ACM can automatically renew certificates it manages before they expire, as long as domain validation remains successfully configured",
+        "A public ACM certificate used with CloudFront must be requested in the us-east-1 Region, regardless of which Region the rest of the application resources are in",
+        "The same ACM certificate can be used across any Region without restriction for both CloudFront and regional services like ALB"
+      ],
+      "correctAnswers": [
+        2,
+        3
+      ],
+      "explanation": "Option A is incorrect because ACM issues certificates for domain names the requester can prove ownership or control of, which is typically the customer's own domain, not just AWS-owned domains. Option B is incorrect because ACM certificates do have validity periods and require renewal, which ACM automates for certificates it manages, but this does not mean they never expire. Option C is correct because ACM handles automatic renewal for its managed certificates, provided the DNS or email validation used to prove domain ownership remains valid. Option D is correct because CloudFront specifically requires public certificates for custom domains to be requested or imported in the us-east-1 Region. Option E is incorrect because a certificate used with an ALB must exist in the same Region as the ALB, and CloudFront specifically requires the certificate in us-east-1, so certificates are not universally usable across every Region without regard to the service. Know that CloudFront specifically requires certificates in us-east-1, that ACM handles automatic renewal, and that Region-specific requirements differ between CloudFront and regional services like ALB.",
+      "reference": "https://docs.aws.amazon.com/acm/latest/userguide/acm-regions.html"
+    },
+    {
+      "id": 39,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants a CodeBuild project to produce a build artifact (a ZIP file of compiled application code) that CodePipeline then deploys through a subsequent CodeDeploy action. Which section of the buildspec.yml file defines what files are included in this output artifact?",
+      "options": [
+        "The artifacts section, specifying the files to include and the base directory",
+        "The cache section",
+        "The env section",
+        "The phases section alone, with no artifacts section"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because the artifacts section explicitly defines which files, produced during the build phases, are packaged as the build's output artifact for downstream pipeline stages. Option B is incorrect because the cache section defines which directories are cached between builds for performance; it does not define the deployable output artifact. Option C is incorrect because the env section defines environment variables and exported variables available during the build; it does not define which files become the output artifact. Option D is incorrect because while phases define the build commands themselves, the artifacts section is specifically needed to tell CodeBuild which resulting files to package as output. The artifacts section of buildspec.yml is specifically responsible for defining the build's output files for downstream pipeline stages.",
+      "reference": "https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html#build-spec-ref-syntax"
+    },
+    {
+      "id": 40,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A CloudFormation template provisions an RDS database instance using a DBInstanceIdentifier that is hardcoded and shared between the 'staging' and 'production' deployments of the same template (deployed as two separate stacks in the same account and Region). The staging stack deployment fails with an error that the DB instance identifier already exists. What is the correct fix?",
+      "options": [
+        "Add a DependsOn attribute between the staging and production stacks",
+        "Switch the RDS engine from MySQL to PostgreSQL",
+        "Increase the RDS instance's allocated storage",
+        "Parameterize the DBInstanceIdentifier (or omit it entirely and let CloudFormation generate a unique name) so each stack creates a uniquely named RDS instance"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because DependsOn only affects ordering within a single stack's resources; it does not resolve a naming collision between two separately deployed stacks. Option B is incorrect because the specific database engine used has no bearing on a naming collision caused by a duplicate, hardcoded resource identifier. Option C is incorrect because storage size configuration is unrelated to a naming collision caused by a duplicate DBInstanceIdentifier. Option D is correct because RDS instance identifiers must be unique within an account and Region, so hardcoding the same identifier across two separately deployed stacks causes a naming collision; parameterizing it (or omitting it to let CloudFormation generate a unique physical name) resolves the conflict. RDS instance identifiers must be unique per account/Region; parameterizing or omitting hardcoded resource names avoids collisions when the same template is deployed multiple times.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-rds-database-instance.html"
+    },
+    {
+      "id": 41,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants their CodePipeline to run a manual approval step, but only for deployments targeting the production stage, while deployments to a staging stage should proceed automatically without requiring approval. How should the pipeline be structured to achieve this?",
+      "options": [
+        "Add a Manual Approval action to every stage in the pipeline, including staging",
+        "Use a CloudFormation Condition inside the buildspec.yml to skip approval for staging",
+        "Add a Manual Approval action as its own action within the stage immediately before the production deployment action, while the staging stage has no approval action",
+        "Rely on IAM permissions alone to prevent unauthorized production deployments, with no approval action anywhere"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because adding approval to every stage would require manual approval for staging as well, which contradicts the requirement that staging proceed automatically. Option B is incorrect because buildspec.yml is not a CloudFormation template and does not support CloudFormation Conditions; pipeline stage/action structure is configured in the pipeline definition itself. Option C is correct because placing the Manual Approval action specifically before the production deployment action, and omitting it from the staging stage, lets staging deploy automatically while production requires explicit human approval. Option D is incorrect because IAM permissions control who can perform actions but do not implement the pipeline's explicit human-in-the-loop workflow gate that a Manual Approval action provides. Placing a Manual Approval action selectively before the specific stage or action that requires it is the standard way to gate only certain deployments (like production) while others proceed automatically.",
+      "reference": "https://docs.aws.amazon.com/codepipeline/latest/userguide/approvals-action-add.html"
+    },
+    {
+      "id": 42,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A team's CloudFormation stack has an Auto Scaling group behind an Application Load Balancer, and the stack's UpdatePolicy for the Auto Scaling group is configured with an AutoScalingRollingUpdate that has a PauseTime of PT0S (zero seconds). During a stack update that replaces the launch template, all instances are replaced almost simultaneously, causing a brief service disruption despite the rolling update configuration seemingly being in place. What is the most likely cause?",
+      "options": [
+        "AutoScalingRollingUpdate is deprecated and no longer takes effect for launch template changes",
+        "The Application Load Balancer's health check interval is the sole cause and is unrelated to PauseTime",
+        "MinInstancesInService was not set, which forces an all-at-once replacement",
+        "A PauseTime of zero seconds gives CloudFormation no time to wait for newly launched instances to become healthy (or for a configured WaitOnResourceSignals/health check grace period) before proceeding to replace the next batch, effectively causing all instances to be replaced in rapid succession"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because AutoScalingRollingUpdate remains a valid, functioning UpdatePolicy for launch template or configuration changes affecting an Auto Scaling group. Option B is incorrect because while health check timing also matters for detecting instance health, the described near-simultaneous replacement across all instances specifically points to an inadequate PauseTime not allowing the rolling process to actually pace itself. Option C is incorrect because while MinInstancesInService is also relevant to maintaining capacity, an all-at-once-like rapid replacement, given an otherwise configured rolling update, is most directly explained by an effectively zero PauseTime not pacing the batches. Option D is correct because PauseTime controls how long CloudFormation waits after launching new instances in a batch before continuing to the next batch; a value of zero seconds means the rolling update proceeds essentially without waiting for the new instances to actually be verified healthy, which can result in an outage despite a rolling configuration being present. PauseTime, alongside health check grace periods and MinInstancesInService, governs how deliberately a rolling update paces itself; an insufficient value can effectively negate the intended gradual rollout.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-updatepolicy.html"
+    },
+    {
+      "id": 43,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants CodeBuild to automatically use the latest available version of a specific managed build image (for example, the standard Amazon Linux image) without manually updating the image reference in the project configuration every time AWS releases an update. Which CodeBuild image specification should the developer use?",
+      "options": [
+        "Use the project's cache configuration to always pull a fresh copy of the current image",
+        "Reference the image using the ':latest' floating tag understanding that this always points to the most recently published version of that managed image, or explicitly select 'Always use the latest image for this runtime version' in the console/CLI setting where offered",
+        "Build a completely custom Docker image from scratch and store it in ECR",
+        "Pin the image to a specific dated tag and manually update it whenever a new managed image version is released"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because the cache configuration controls dependency/build caching between builds; it does not control which specific managed build image version is used. Option B is correct because using the ':latest' tag (or an equivalent 'always latest' setting) means CodeBuild automatically uses the newest published revision of the specified managed image without manual reference updates. Option C is incorrect because building and maintaining a custom image from scratch is unnecessary overhead when the requirement is simply to track AWS's own managed image updates automatically. Option D is incorrect because pinning to a specific dated tag requires manual updates whenever a new version is released, which is the opposite of automatically tracking the latest version. Using the ':latest' floating tag (or equivalent setting) for a managed CodeBuild image lets the project automatically track the newest published image version without manual updates.",
+      "reference": "https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html"
+    },
+    {
+      "id": 44,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A team's SAM template defines an HTTP API (API Gateway v2) with a Lambda function integration, and the team wants API Gateway to automatically deploy a new stage whenever the SAM template changes, without a separate manual deployment step for the API stage itself. Which SAM template configuration accomplishes this?",
+      "options": [
+        "Set the DeploymentPreference property to LINEAR10PercentEvery1Minute on the HttpApi resource",
+        "Add a custom Lambda-backed custom resource that manually triggers a new API Gateway deployment after every stack update",
+        "Manually run aws apigateway create-deployment after every sam deploy",
+        "Rely on SAM's default behavior for AWS::Serverless::HttpApi, which automatically creates a new API Gateway deployment and updates the specified stage whenever sam deploy applies template changes affecting the API"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because DeploymentPreference relates to Lambda alias traffic shifting for gradual code deployment, not to whether the API Gateway stage itself is automatically redeployed on template changes. Option B is incorrect because SAM already handles automatic deployment of stage updates natively for its transform-managed API resources; adding custom logic here duplicates functionality SAM already provides. Option C is incorrect because running a separate manual deployment command after every sam deploy is unnecessary extra process, since SAM's transform already manages this automatically for its own API resource types. Option D is correct because SAM automatically manages API Gateway deployments and stage updates as part of applying template changes for its Serverless::HttpApi (and Serverless::Api) resource types, so a separate manual deployment step for the API is not required. SAM's transform natively manages API Gateway deployments and stage updates for its own Serverless API resource types, without requiring a manual or custom deployment step.",
+      "reference": "https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-httpapi.html"
+    },
+    {
+      "id": 45,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants a CloudFormation stack update to automatically roll back if a newly created CloudWatch alarm enters the ALARM state shortly after the update completes, indicating the new deployment is unhealthy. Which CloudFormation feature supports this?",
+      "options": [
+        "An UpdatePolicy on the affected resource",
+        "Stack update rollback triggers, referencing the relevant CloudWatch alarm(s) as monitoring times and rollback conditions",
+        "A DeletionPolicy on the affected resource",
+        "A CreationPolicy on the affected resource"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because UpdatePolicy governs how certain resource types (like Auto Scaling groups) are updated, such as rolling replacement behavior; it does not itself implement automatic rollback triggered by an external CloudWatch alarm. Option B is correct because rollback triggers let a stack update specify one or more CloudWatch alarms to monitor for a configured period after the update; if a specified alarm enters ALARM state during that window, CloudFormation automatically rolls back the update. Option C is incorrect because DeletionPolicy controls what happens to a resource when it is removed from the stack or the stack is deleted; it is unrelated to monitoring alarms after an update completes. Option D is incorrect because CreationPolicy governs how CloudFormation waits for signals during initial resource creation, not automatic rollback based on post-update alarm state. Stack update rollback triggers are the CloudFormation feature specifically designed to automatically roll back based on CloudWatch alarm state after a stack update.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-monitor-rollback-triggers.html"
+    },
+    {
+      "id": 46,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A team's CDK app defines a Lambda function whose handler code is in a local directory, and the team wants CDK to automatically bundle the code (installing dependencies from a requirements.txt or package.json) inside a Docker container matching the Lambda runtime, without a separate manual build step before cdk deploy. Which CDK construct feature supports this?",
+      "options": [
+        "A CDK Aspect that intercepts and modifies the Lambda function's code property after synthesis",
+        "A CloudFormation Transform macro applied to the CDK-generated template",
+        "The CDK bootstrap stack, which automatically bundles all Lambda code for every stack in the account",
+        "The Lambda function construct's bundling options (such as Code.fromAsset with a bundling configuration specifying a Docker image and build commands), which CDK automatically executes during synthesis/deployment"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because Aspects apply cross-cutting modifications to constructs; they are not the standard mechanism for defining how a function's asset should be built and bundled. Option B is incorrect because CDK's own asset bundling, not a raw CloudFormation macro, is the standard mechanism for this kind of code build/bundling step in a CDK app. Option C is incorrect because the bootstrap stack provisions shared staging resources like an S3 bucket; it does not perform per-function code bundling itself. Option D is correct because CDK's asset bundling feature runs specified build commands inside a Docker container as part of the deploy process, automatically producing a properly packaged deployment artifact without requiring the developer to run a separate manual build step beforehand. CDK's built-in asset bundling (via Code.fromAsset bundling options) automatically runs build steps inside Docker as part of deployment, eliminating a separate manual build step.",
+      "reference": "https://docs.aws.amazon.com/cdk/v2/guide/bundling.html"
+    },
+    {
+      "id": 47,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants to know which specific CloudFormation stack was responsible for creating a particular EC2 instance found in the account, in order to trace it back to the source template. Which approach directly answers this?",
+      "options": [
+        "Check the instance's security group rules for a naming pattern",
+        "Check the EC2 instance's tags for the aws:cloudformation:stack-name (and related) tags that CloudFormation automatically applies to resources it creates",
+        "Check the VPC's route table for a stack reference",
+        "Check the instance's AMI ID for an embedded stack identifier"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because security group rules do not reliably or officially indicate which CloudFormation stack created an associated instance. Option B is correct because CloudFormation automatically tags resources it creates with stack identification tags, which can be inspected directly on the resource to trace it back to its owning stack. Option C is incorrect because route tables define network routing paths and do not carry stack-attribution information for individual instances. Option D is incorrect because AMI IDs identify the machine image used to launch the instance; they do not carry stack attribution information. CloudFormation automatically applies stack-identifying tags to the resources it creates, providing a direct way to trace a resource back to its owning stack.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resource-tags.html"
+    },
+    {
+      "id": 48,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer's CodePipeline includes a source stage connected to a GitHub repository via a CodeStar connection, a build stage using CodeBuild, and a deploy stage using CloudFormation. After a recent change, the pipeline stopped triggering automatically on new commits to the main branch, though manually starting the pipeline still works and completes successfully. What should the developer check first?",
+      "options": [
+        "Whether the CodeBuild project's compute type is too small",
+        "Whether the CloudFormation stack's termination protection is enabled",
+        "Whether the CodeStar connection's status is still 'Available' (not 'Pending' or revoked) and whether the webhook/EventBridge rule tied to the source action is still correctly configured for the main branch",
+        "Whether the deploy stage's IAM role has sufficient permissions"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because compute type affects build performance, not whether the pipeline is triggered automatically by new commits. Option B is incorrect because termination protection affects whether a stack can be deleted; it does not affect whether the pipeline itself is triggered by new source commits. Option C is correct because if the underlying CodeStar connection has become unavailable (for example due to a revoked authorization) or the event-based trigger configuration no longer matches the branch, new commits will not automatically start the pipeline, even though a manual start still works since it does not depend on the same trigering path. Option D is incorrect because the deploy stage's permissions would affect whether a triggered pipeline execution succeeds, not whether new commits trigger execution to begin with, and the scenario states manual starts complete successfully. Automatic triggering upon new commits depends on the health of the CodeStar connection and its associated trigger configuration, independent of whether a manually started execution can succeed.",
+      "reference": "https://docs.aws.amazon.com/codepipeline/latest/userguide/connections.html"
+    },
+    {
+      "id": 49,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants a CodeBuild project to fail immediately if any command in the build phase exits with a non-zero status, rather than continuing to subsequent commands and only reporting failure at the end. What is the default behavior of CodeBuild regarding command failures within a phase, and does it already meet this requirement?",
+      "options": [
+        "By default, CodeBuild treats any command that exits with a non-zero status within a phase as a failure and stops that phase, so this default behavior already matches the requirement without additional configuration",
+        "CodeBuild has no concept of command-level success or failure within a phase",
+        "By default, CodeBuild always continues executing all remaining commands in a phase regardless of failures, requiring 'set -e' to be added manually",
+        "Command failures are only detected if a post_build phase explicitly checks a $CODEBUILD_BUILD_SUCCEEDING variable"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because CodeBuild's default execution behavior for buildspec commands is to fail the phase (and generally the build) as soon as a command returns a non-zero exit code, which is the behavior the requirement is asking for. Option B is incorrect because CodeBuild does track the success or failure of each command executed within a phase, which is used to determine whether the phase and the overall build succeeded. Option C is incorrect because this describes the opposite of CodeBuild's actual default behavior; CodeBuild does not continue past a failing command by default without needing an explicit flag for this specific behavior. Option D is incorrect because while that variable exists and can be checked, CodeBuild's default phase execution already stops on a failing command without requiring this manual check. CodeBuild's default behavior already halts a phase on a command's non-zero exit code, which directly satisfies the stated fail-fast requirement.",
+      "reference": "https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html"
+    },
+    {
+      "id": 50,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A team uses CloudFormation StackSets to deploy a standard set of security guardrail resources (such as a CloudTrail trail and an IAM role) across all accounts in their AWS Organization. A new account is created in the organization, and the team wants the guardrail stack to be automatically deployed to it without any manual StackSet operation. Which StackSets configuration enables this?",
+      "options": [
+        "Enable AWS Config aggregation across the organization",
+        "Configure the StackSet with self-managed permissions and a manually maintained list of account IDs",
+        "Use CloudFormation nested stacks instead of StackSets",
+        "Configure the StackSet with service-managed permissions and automatic deployment enabled, targeting the relevant Organizational Unit (OU)"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because Config aggregation provides a consolidated view of configuration compliance across accounts; it does not deploy StackSet stack instances to new accounts. Option B is incorrect because self-managed permissions with a static account ID list require the team to manually add each new account's ID and run an update operation; new accounts are not automatically included. Option C is incorrect because nested stacks operate within a single stack in a single account and are not designed for deploying the same set of resources automatically across many accounts in an organization. Option D is correct because service-managed StackSets with automatic deployment enabled will automatically deploy the stack instance to new accounts as they are added to the targeted OU, without requiring a manual StackSet operation for each new account. Service-managed StackSets with automatic deployment targeting an OU will automatically extend to new accounts joining that OU, unlike self-managed StackSets with a static account list.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-associate-stackset-with-org.html"
+    },
+    {
+      "id": 51,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants their CDK app's Lambda function to automatically be assigned a new version on every deployment where the function's code changes, so that CodeDeploy-based traffic shifting can reference specific versions. Which CDK construct or option should the developer use?",
+      "options": [
+        "Use the function's logRetention property",
+        "Set the function's memorySize property to a fixed value",
+        "Enable currentVersion on the Lambda Function construct (or use the higher-level lambda.Function with versioning configured), producing a new Version resource whenever the underlying code changes",
+        "Set reservedConcurrentExecutions on the function"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because log retention configuration controls how long CloudWatch Logs are kept; it is unrelated to Lambda function versioning behavior. Option B is incorrect because memory size configuration is unrelated to whether new published versions are created on code changes. Option C is correct because accessing currentVersion (or equivalently configuring the function for versioning) causes CDK to create a new immutable Version resource tied to the function's code, which CodeDeploy-based traffic shifting can then reference for its deployment configuration. Option D is incorrect because reserved concurrency controls capacity allocation and has no relationship to whether new published versions are automatically created. Accessing currentVersion (or otherwise configuring function versioning) in CDK is what produces new immutable Lambda versions on code changes, needed for CodeDeploy-based gradual traffic shifting.",
+      "reference": "https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.Function.html"
+    },
+    {
+      "id": 52,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants to know exactly which resources a CloudFormation stack update will add, modify, or delete before applying it, including any resources that would be replaced (requiring downtime). Which CloudFormation feature provides this information before the update is applied?",
+      "options": [
+        "A drift detection report",
+        "A change set",
+        "The Outputs section of the current template",
+        "A stack policy"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because drift detection identifies differences between a stack's expected and actual resource configuration due to out-of-band changes; it does not preview an upcoming, not-yet-applied update. Option B is correct because a change set previews the proposed changes a stack update would make, including which resources would be added, modified, deleted, or replaced, without actually applying them until explicitly executed. Option C is incorrect because outputs expose specific values after a stack is created or updated; they do not preview what a proposed future update would change. Option D is incorrect because a stack policy restricts which update actions are allowed on specific resources; it does not itself preview the proposed changes of a specific update. Change sets are the CloudFormation feature specifically for previewing a proposed update's effects before applying it.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html"
+    },
+    {
+      "id": 53,
+      "domain": "Deployment",
+      "type": "multi",
+      "question": "A team is reviewing their CI/CD pipeline's use of AWS developer tools. Which TWO statements correctly describe how CodePipeline, CodeBuild, and CodeDeploy relate to each other? (Select TWO)",
+      "options": [
+        "CodeBuild performs the actual deployment shifting of traffic between application versions",
+        "CodeDeploy is required as a stage in every CodePipeline pipeline",
+        "CodeBuild can be used standalone, outside of a CodePipeline pipeline, to run builds triggered directly by source repository events",
+        "CodePipeline cannot invoke CodeBuild projects that were created outside of the pipeline's own configuration",
+        "CodePipeline orchestrates the overall release workflow, invoking CodeBuild for build/test actions and CodeDeploy for deployment actions as part of its stages"
+      ],
+      "correctAnswers": [
+        2,
+        4
+      ],
+      "explanation": "Option A is incorrect because traffic-shifting deployment logic, such as canary or blue/green, is CodeDeploy's role, not CodeBuild's, which is focused on building and testing. Option B is incorrect because CodePipeline supports many deployment providers, such as CloudFormation or ECS actions directly, and does not require CodeDeploy specifically in every pipeline. Option C is correct because CodeBuild projects can be triggered independently of CodePipeline, for example directly by webhook events from a source repository, without requiring a pipeline to invoke them. Option D is incorrect because CodePipeline can invoke existing, independently created CodeBuild projects as build actions within its stages. Option E is correct because CodePipeline is the orchestration layer that sequences source, build, test, and deploy actions, delegating the actual build work to CodeBuild and the actual deployment work to CodeDeploy. Understand each tool's distinct role: CodePipeline orchestrates, CodeBuild builds/tests (and can run standalone), and CodeDeploy specifically handles deployment traffic shifting.",
+      "reference": "https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html"
+    },
+    {
+      "id": 54,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer wants their SAM template to define a Lambda function's memory and timeout differently for a 'dev' vs 'prod' deployment, using the same template file for both. Which SAM/CloudFormation feature supports this without maintaining two separate template files?",
+      "options": [
+        "Only the AWS CLI's --parameter-overrides flag can vary configuration, and SAM templates themselves cannot reference parameters",
+        "CloudFormation Parameters combined with Mappings (or Conditions), selecting different memory/timeout values based on a passed-in environment parameter at deploy time",
+        "A separate, hardcoded template file is always required for each environment",
+        "SAM does not support any way to vary configuration by environment within a single template"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because SAM templates directly support referencing Parameters within Mappings, Conditions, and resource properties; the CLI's parameter overrides are how values are supplied, but the template itself must be built to use them. Option B is correct because using a parameter to indicate the target environment, combined with a mapping or condition that selects different property values accordingly, lets a single template file produce different configurations for dev and prod without duplicating the entire template. Option C is incorrect because maintaining separate hardcoded template files per environment is unnecessary duplication when Parameters and Mappings/Conditions can parameterize a single template. Option D is incorrect because SAM templates are CloudFormation templates under the hood and fully support Parameters, Mappings, and Conditions for environment-specific configuration. CloudFormation Parameters combined with Mappings or Conditions let a single SAM template file support different property values across separate environment deployments.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/mappings-section-structure.html"
+    },
+    {
+      "id": 55,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer notices that a Lambda function's billed duration is consistently close to a round number (for example, always billed in 100ms increments even though actual execution varies), and wants to understand Lambda's billing granularity to better estimate costs. What should the developer know?",
+      "options": [
+        "Lambda bills in 1ms increments (rounded up) based on actual execution duration, so billed duration should closely track actual duration rather than being artificially rounded to large fixed increments",
+        "Lambda billing is based on the function's configured timeout value rather than actual execution duration",
+        "Lambda bills only for cold starts and does not charge for warm invocations",
+        "Lambda always bills in fixed 100ms increments regardless of actual execution time"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Lambda's current billing model measures duration to the nearest millisecond, so a consistent appearance of coarse rounding in cost estimates is more likely an artifact of how the developer is aggregating or estimating costs, not Lambda's actual billing granularity. Option B is incorrect because billing is based on actual measured execution duration (up to the timeout, if reached), not simply the configured timeout value regardless of how long the function actually ran. Option C is incorrect because both cold and warm invocations are billed based on their actual execution duration and configured memory; warm invocations are not free. Option D is incorrect because this reflects an outdated billing granularity; current Lambda billing uses 1ms increments, not a fixed 100ms rounding. Lambda's billing granularity is per-millisecond based on actual measured duration, not a coarse fixed increment or the configured timeout value.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-pricing.html"
+    },
+    {
+      "id": 56,
+      "domain": "Troubleshooting and Optimization",
+      "type": "multi",
+      "question": "A team's DynamoDB table using on-demand capacity mode occasionally throttles during a daily batch job that performs a large number of Scan operations to generate a report, even though no other workload runs against the table at that time and the account has no other tables approaching limits. What are TWO likely causes, and what should the team consider? (Select TWO)",
+      "options": [
+        "The batch job must be using an unsupported API, since Scan operations are deprecated",
+        "Point-in-time recovery must be disabled during the Scan to free up capacity",
+        "A full-table Scan consumes read capacity proportional to the entire dataset scanned (not just returned), so a large, infrequent Scan can spike consumed capacity well above the table's recent average, triggering throttling even in on-demand mode",
+        "DynamoDB Streams must be disabled during the batch job to avoid throttling",
+        "On-demand tables scale based on recent traffic patterns, and a sudden large spike in consumed capacity (like a big Scan) can exceed the table's current scaling headroom before it adjusts"
+      ],
+      "correctAnswers": [
+        2,
+        4
+      ],
+      "explanation": "Option A is incorrect because Scan is a fully supported, standard DynamoDB API operation, not a deprecated one. Option B is incorrect because point-in-time recovery does not consume provisioned or on-demand read/write capacity and is unrelated to this throttling. Option C is correct because Scan operations read every item in the scanned segment regardless of filters, so a large, batchy Scan can create a significant capacity spike relative to typical steady-state traffic, which on-demand mode may not have scaled to accommodate instantly. Option D is incorrect because enabling Streams does not consume table read/write capacity and would not explain Scan-related throttling. Option E is correct because on-demand capacity adapts based on observed traffic history, so an unusually large and sudden spike, such as an infrequent large Scan, can outpace how quickly the table's effective capacity has scaled up. Large, infrequent Scan operations can spike capacity consumption well beyond typical traffic, and on-demand capacity's adaptive scaling may not react instantly to such a spike, both contributing to throttling.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html"
+    },
+    {
+      "id": 57,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer wants to determine the specific line of code or operation within a Lambda function that is consuming the most time during a slow invocation, beyond what the overall REPORT log line shows. Which approach provides this level of detail?",
+      "options": [
+        "Check the function's IAM role's last-accessed information",
+        "Increase the function's memory allocation and observe whether duration changes",
+        "Enable CloudWatch detailed monitoring on the function",
+        "Add X-Ray subsegments around specific blocks of code (or use X-Ray's automatic instrumentation where available) to break down the function's internal execution time into named, measurable segments"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because the role's last-accessed information shows when the role was last used for any action, not internal code-level timing detail. Option B is incorrect because adjusting memory and observing overall duration changes gives only an indirect, coarse signal and does not pinpoint which specific code section is slow. Option C is incorrect because detailed monitoring changes the granularity of certain EC2-related metrics; for Lambda, it does not provide code-level timing breakdowns within a single invocation. Option D is correct because custom X-Ray subsegments let a developer explicitly measure and label specific blocks of code within a function, providing visibility into internal timing beyond the single aggregate duration reported by the REPORT log line. Custom X-Ray subsegments are the way to get fine-grained, code-level timing detail within a single Lambda invocation, beyond the single aggregate duration in the REPORT line.",
+      "reference": "https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-subsegments.html"
+    },
+    {
+      "id": 58,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A team observes that an Application Load Balancer's TargetResponseTime metric looks healthy (low and stable), but end users report intermittent slow page loads. Investigation shows the affected requests all involve a large static asset served through the same ALB and target, not through CloudFront. What is a likely explanation, and what would improve it?",
+      "options": [
+        "The target's CPU utilization must be maxed out, since that is the only possible explanation for user-perceived slowness",
+        "TargetResponseTime always includes total download time over the client's network, so the metric itself must be misreported",
+        "The ALB's idle timeout must be misconfigured, since it directly controls page load speed for static assets",
+        "TargetResponseTime measures the time for the target to start responding, not the total time to transfer a large response body over the network to the end user; adding a CDN like CloudFront in front of static assets would reduce perceived latency for those large files by serving them from an edge location closer to the user"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because the scenario indicates TargetResponseTime (reflecting backend processing) looks healthy, pointing away from backend CPU exhaustion as the primary explanation for the specific large-asset-download slowness described. Option B is incorrect because TargetResponseTime is documented as measuring time from the ALB forwarding the request to the target to receiving the start of the response, not the full client-side download time of a large payload. Option C is incorrect because idle timeout determines how long the ALB keeps an inactive connection open; it does not directly determine transfer speed of a large asset's data to the end user. Option D is correct because TargetResponseTime reflects the target's processing time for generating the initial response, not the full end-to-end download time of a large payload over the client's network path, so a CDN addressing that transfer time (rather than backend processing time) would directly help with the reported slow loads for large static assets. TargetResponseTime measures backend response initiation time, not full asset transfer time; a CDN in front of large static assets addresses the actual download latency users experience.",
+      "reference": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html"
+    },
+    {
+      "id": 59,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer wants to quickly determine whether a specific Lambda function invocation was a cold start or a warm start, for a particular request that a customer reported as slow. Where can this information be found?",
+      "options": [
+        "The function's reserved concurrency setting",
+        "The IAM execution role's last-used timestamp",
+        "The function's configured memory size in the console",
+        "The REPORT log line for that specific invocation in CloudWatch Logs, which includes an Init Duration field only when a cold start (new execution environment initialization) occurred"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option A is incorrect because reserved concurrency is a capacity control and does not record whether a specific invocation was a cold or warm start. Option B is incorrect because the role's last-used timestamp only shows when the role was last used for any action, not whether a specific invocation was a cold or warm start. Option C is incorrect because configured memory size is a static setting and does not indicate whether any specific past invocation was a cold or warm start. Option D is correct because the presence of an Init Duration field in the REPORT log line specifically indicates that invocation involved initializing a new execution environment (a cold start); its absence indicates a warm start reusing an existing environment. The REPORT log line's Init Duration field is the direct, per-invocation indicator of whether a cold start occurred.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html"
+    },
+    {
+      "id": 60,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer's Step Functions Standard state machine execution failed with a States.Timeout error on a Task state that invokes a Lambda function, even though the Lambda function's own CloudWatch Logs show it completed successfully well within its configured Lambda timeout. What is the most likely explanation?",
+      "options": [
+        "The Task state's own TimeoutSeconds field (a Step Functions-level setting, separate from the Lambda function's own timeout) was set to a value shorter than the actual time the state took to receive a completed response, causing Step Functions to time out the state independently of the Lambda function's own successful completion",
+        "States.Timeout errors only occur due to IAM permission issues",
+        "The Lambda function must have thrown an unhandled exception, which Step Functions incorrectly reports as a timeout",
+        "Lambda functions cannot be invoked from Step Functions Task states, so this must be a misconfiguration of the integration entirely"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Step Functions Task states have their own independently configurable timeout, separate from the invoked resource's own timeout; if this Step Functions-level TimeoutSeconds is set too short, the state can time out even though the underlying Lambda function completed successfully within its own configured limit. Option B is incorrect because States.Timeout specifically indicates a timeout condition was reached, which is a timing issue, not an IAM permission problem (which would typically surface as a different error type). Option C is incorrect because the scenario states the function's own logs show successful completion, which points to a Step Functions-level timeout configuration issue rather than a Lambda-side exception being mislabeled. Option D is incorrect because Step Functions Task states directly and commonly invoke Lambda functions as one of its core supported integration patterns. Step Functions Task states have their own independently configurable timeout setting, which can trigger a States.Timeout error even when the underlying invoked resource (like a Lambda function) completed successfully.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-task-state.html"
+    },
+    {
+      "id": 61,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer wants to reduce the cost of an API Gateway REST API that receives a high volume of repeated identical GET requests for data that changes only once every few hours. Which change would most directly reduce cost while keeping data reasonably fresh?",
+      "options": [
+        "Enable API Gateway response caching with a TTL of a few hours on the relevant GET method",
+        "Switch the API from a REST API to a WebSocket API",
+        "Increase the Lambda function's memory allocation behind the API",
+        "Disable API Gateway logging entirely"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because caching repeated identical GET requests for a TTL matching how often the underlying data actually changes reduces the number of times the backend integration (and its associated cost) is invoked, while keeping served data reasonably current. Option B is incorrect because WebSocket APIs are designed for persistent, bidirectional connections and do not inherently provide response caching for repeated GET-style requests. Option C is incorrect because more memory may speed up individual invocations but does not reduce the number of times the backend is invoked for repeated identical requests, which is the primary cost driver here. Option D is incorrect because disabling logging can reduce a small amount of logging-related cost but does not address the larger cost driver of repeated backend invocations for identical requests. API Gateway response caching directly reduces backend invocation cost for repeated identical requests, matching the cache TTL to how frequently the underlying data changes.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html"
+    },
+    {
+      "id": 62,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer notices that an ECS service running on Fargate occasionally has tasks marked unhealthy and replaced by the ALB target group health check, even though application logs show the container was healthy and actively serving traffic at the time. The health check path is a lightweight endpoint that normally responds in under 10ms. What should the developer investigate as a likely cause?",
+      "options": [
+        "The ALB's idle timeout must be shorter than the task's startup time",
+        "Whether the container is CPU-throttled during brief traffic spikes (due to the Fargate task's CPU allocation being fully consumed by request-handling work), delaying the health check endpoint's response long enough to exceed the configured health check timeout",
+        "ECS Fargate does not support Application Load Balancer health checks",
+        "The container's Docker image must be corrupted"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option A is incorrect because idle timeout affects how long the ALB waits on an idle connection, not the responsiveness of an already-running, healthy container's specific health check endpoint. Option B is correct because if the task's CPU allocation is fully consumed by other request-handling work during a spike, even a normally fast health check endpoint can be delayed beyond the configured timeout, causing a health check failure despite the application otherwise functioning correctly. Option C is incorrect because Fargate tasks are fully supported as ALB targets with standard health check functionality. Option D is incorrect because a corrupted image would typically prevent the container from starting or running successfully at all, not cause intermittent health check failures during otherwise successful operation. CPU contention during traffic spikes can delay even lightweight health check responses past the configured timeout, a common but easy-to-overlook cause of intermittent health check failures on otherwise healthy tasks.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html"
+    },
+    {
+      "id": 63,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer wants a quick way to see, across all recent invocations of a Lambda function, what percentage resulted in errors, without manually counting log entries. Which CloudWatch metric and statistic combination provides this most directly?",
+      "options": [
+        "Use the Errors and Invocations metrics with a metric math expression (Errors/Invocations) graphed over the desired time range",
+        "Use the IteratorAge metric",
+        "Use only the Duration metric, since higher duration always correlates with more errors",
+        "Use the ConcurrentExecutions metric alone"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because dividing the Errors metric by the Invocations metric using CloudWatch metric math directly computes the error rate as a percentage over any chosen time range, without manual log counting. Option B is incorrect because IteratorAge is specific to stream-based event sources (like Kinesis or DynamoDB Streams) and measures processing lag, not general invocation error rate. Option C is incorrect because Duration measures execution time and does not directly or reliably indicate error rate. Option D is incorrect because ConcurrentExecutions measures how many invocations are running simultaneously; it does not indicate the proportion of those invocations that resulted in errors. Combining the Errors and Invocations metrics with metric math is the direct way to compute and visualize a function's error rate over any time range.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/using-metric-math.html"
+    },
+    {
+      "id": 64,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer's Lambda function connects to an external API over HTTPS and occasionally experiences hanging connections that eventually cause the function to time out at its full configured timeout of 30 seconds, wasting execution time and cost. The external API's typical response time is under 500ms. What should the developer implement to fail fast on these rare hanging connections instead of waiting the full 30 seconds?",
+      "options": [
+        "Increase the function's memory to make the external API respond faster",
+        "Reduce the function's own configured timeout to 5 seconds instead",
+        "Set an explicit, short HTTP client-level timeout (for example, 3-5 seconds) on the outbound request, well below the function's overall 30-second timeout, so a hanging connection is aborted quickly and the function can respond with an error or fallback instead of waiting the full duration",
+        "Add unlimited automatic retries with no timeout to eventually succeed"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because increasing the Lambda function's own memory has no effect on the response time of an external third-party API. Option B is incorrect because reducing the overall function timeout could prematurely cut off legitimate, slightly slower-than-typical successful calls, rather than specifically targeting only the rare hanging-connection case with a scoped client-level timeout. Option C is correct because setting a client-level timeout specific to the outbound call, well under the function's overall timeout, ensures the function detects and reacts to a hanging connection quickly rather than being forced to wait for the full function timeout to be reached. Option D is incorrect because unlimited retries without any timeout could compound the problem by repeatedly waiting on hanging connections, rather than failing a single hanging call fast. A short, explicit client-level timeout on the specific outbound call is the correct way to fail fast on a hanging dependency, without over-constraining the function's overall timeout for otherwise normal calls.",
+      "reference": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+    },
+    {
+      "id": 65,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer wants to understand why a specific API Gateway request returned a 403 Forbidden response when calling an endpoint protected by a resource policy restricting access to a specific VPC endpoint. Which log source provides the most direct information about why the request was denied?",
+      "options": [
+        "S3 server access logs",
+        "Route 53 query logs",
+        "CloudTrail data events for API Gateway (if enabled) or the API Gateway execution logs, which can show details about the resource policy evaluation and the specific reason for denial",
+        "VPC Flow Logs alone, with no other log source"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option A is incorrect because S3 access logs record requests to S3 objects; they are unrelated to an API Gateway resource policy denial. Option B is incorrect because Route 53 query logs record DNS resolution requests; they do not provide information about an API Gateway resource policy evaluation. Option C is correct because CloudTrail data events and API Gateway's own execution logging can capture details about how a request was evaluated against a resource policy, providing direct insight into why a specific request was denied. Option D is incorrect because Flow Logs record network-level traffic metadata (source/destination IPs, ports, accept/reject at the network layer) but do not explain an application-layer resource policy denial reason. CloudTrail data events and API Gateway execution logging provide the most direct, application-layer insight into why a resource-policy-based denial occurred.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-logging.html"
+    }
+  ]
+}

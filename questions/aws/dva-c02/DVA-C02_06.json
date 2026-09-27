@@ -1,0 +1,1131 @@
+{
+  "examTitle": "AWS Certified Developer – Associate (DVA-C02)",
+  "questions": [
+    {
+      "id": 1,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A Lambda function with a 90-second timeout consumes messages from an Amazon SQS standard queue through an event source mapping. The queue still uses the default visibility timeout of 30 seconds. CloudWatch shows that many messages are processed successfully but are delivered to the function again shortly afterward, and some eventually land in the dead-letter queue. What should the developer do to stop the duplicate deliveries?",
+      "options": [
+        "Set the queue's visibility timeout to at least six times the function timeout",
+        "Convert the queue to a FIFO queue so that SQS guarantees exactly-once delivery to the consumer",
+        "Reduce the function timeout to 15 seconds so processing finishes before the default visibility timeout expires",
+        "Enable ReportBatchItemFailures in the event source mapping's FunctionResponseTypes"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because the messages become visible again after 30 seconds while the function is still working on them. Lambda's guidance is to set the queue visibility timeout to at least six times the function timeout so in-flight messages stay hidden, even when invocations are retried after throttling. Option B is incorrect because FIFO queues also use a visibility timeout and redeliver a message when it expires. Deduplication only applies to messages sent within the deduplication interval, not to redelivery after a timeout. Option C is incorrect because the work legitimately needs up to 90 seconds, so shortening the timeout would cause valid invocations to fail and the messages would still be retried. Option D is incorrect because partial batch responses control which messages of a failed batch are returned to the queue. They do not keep in-flight messages hidden longer than the visibility timeout. Key takeaway: A message is redelivered whenever the visibility timeout expires before the consumer deletes it, so the queue's timeout must comfortably exceed the function timeout (AWS recommends six times).",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html"
+    },
+    {
+      "id": 2,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A Lambda function processes SQS standard-queue messages in batches of 10 and calls a payment provider that is not idempotent. When one malformed message causes an exception, all 10 messages return to the queue and the nine valid ones are charged again. The team wants only the failed message to be retried and wants to keep the batch size at 10. Which change meets these requirements?",
+      "options": [
+        "Set the event source mapping's BatchSize to 1 so that each invocation handles a single message and only the failing message is retried",
+        "Enable ReportBatchItemFailures on the event source mapping and return the failed message's ID in batchItemFailures",
+        "Increase the queue's visibility timeout so that the failed batch stays hidden for longer",
+        "Configure a dead-letter queue on the Lambda function that uses an on-failure destination, so that failed messages are captured separately"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because this avoids the problem only by giving up batching, which contradicts the requirement to keep the batch size at 10 and reduces throughput. Option B is correct because with partial batch responses Lambda deletes the messages that were not reported as failed and returns only the reported ones to the queue, so the valid messages are not reprocessed and the batch size stays at 10. Option C is incorrect because a longer visibility timeout only delays the redelivery. When it expires, the entire batch, including the valid messages, is still delivered again. Option D is incorrect because function-level dead-letter queues and destinations apply to asynchronous invocations. For an SQS event source, failed messages are handled by the source queue's redrive policy, and this would not prevent the whole batch from being retried. Key takeaway: By default a Lambda error returns the whole SQS batch to the queue. Partial batch responses (ReportBatchItemFailures) make Lambda return only the messages you identify as failed.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html"
+    },
+    {
+      "id": 3,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "An IoT platform stores sensor readings in a DynamoDB table that uses provisioned capacity with auto scaling. The partition key is region (five possible values) and the sort key is readingTime. During peaks, writes are throttled with ProvisionedThroughputExceededException even though consumed capacity across the table is well below the provisioned amount. The application must still retrieve one device's readings for a time range. Which key design change should the developer make?",
+      "options": [
+        "Use deviceId as the partition key and readingTime as the sort key",
+        "Use readingTime as the partition key and deviceId as the sort key",
+        "Increase the table's provisioned write capacity units",
+        "Keep region as the partition key and add a global secondary index with deviceId as its partition key"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because a high-cardinality partition key spreads writes across many partitions, and the deviceId and readingTime pair still supports a Query for one device over a time range. Option B is incorrect because timestamps are written in order, so all current writes hit the same partition, and querying one device over time would require scanning many partitions. Option C is incorrect because capacity is divided across partitions and each partition has its own throughput ceiling. More table-level capacity does not help when a few partition key values receive most of the traffic. Option D is incorrect because every write still lands on one of five hot base-table partitions, so throttling continues. The index only adds a second copy of each write. Key takeaway: Choose a partition key with many distinct values and even access patterns; low-cardinality keys such as region create hot partitions that throttle even when table-level capacity is available.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html"
+    },
+    {
+      "id": 4,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer adds a global secondary index (GSI) with customerId as its partition key to an orders table whose partition key is orderId. Immediately after writing an order, the application queries the GSI with ConsistentRead set to true so that it sees the new order. The call fails with a ValidationException. What should the developer do so that the application can guarantee it reads the order it just wrote?",
+      "options": [
+        "Enable DynamoDB Streams so that the GSI query reflects committed writes",
+        "Increase the read capacity of the GSI so that it catches up before the query runs",
+        "Read the order from the base table by using GetItem with ConsistentRead set to true",
+        "Recreate the index as a local secondary index, which supports strongly consistent reads"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because Streams record item changes for consumers and do not change the consistency model of index queries. Option B is incorrect because capacity affects throttling, not consistency. GSIs do not support strongly consistent reads at any capacity. Option C is correct because strongly consistent reads are supported on the base table, and the application already knows the orderId it just wrote. Option D is incorrect because a local secondary index must use the same partition key as the base table (orderId) and can only be created when the table is created, so it cannot index by customerId. Key takeaway: Global secondary indexes are eventually consistent only. If read-after-write guarantees matter, read from the base table with ConsistentRead.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html"
+    },
+    {
+      "id": 5,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A payment service must decrement a balance on an item in an Accounts table and insert a matching record into a Ledger table. Either both changes must be applied or neither may be applied, even if the Lambda function fails between the two operations. Which DynamoDB API call should the developer use?",
+      "options": [
+        "An Update on the account and a DynamoDB Streams consumer that writes the ledger record afterward",
+        "TransactWriteItems with an Update action for the account and a Put action for the ledger record",
+        "BatchWriteItem with PutRequest entries for the account and the ledger record",
+        "A conditional UpdateItem on the account followed by a separate PutItem on the ledger"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because the stream consumer runs asynchronously and could fail or lag, so the ledger record is only eventually written. Option B is correct because transactions provide all-or-nothing behavior across multiple items and tables in a single request. Option C is incorrect because BatchWriteItem is not atomic, can return UnprocessedItems after a partial success, and does not support update expressions. Option D is incorrect because two independent calls leave a window in which the first succeeds and the second does not, so the changes are not atomic. Key takeaway: Use TransactWriteItems (or TransactGetItems) when several items must succeed or fail together; batch operations are for throughput, not atomicity.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html"
+    },
+    {
+      "id": 6,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "Two Lambda functions read an inventory item, compute a new quantity, and write it back with UpdateItem. Occasionally one function's write silently overwrites the other's, causing lost updates. The team wants a writer to detect that the item changed since it was read, so it can re-read and retry, without introducing a separate locking service. Which approach meets this requirement?",
+      "options": [
+        "Read the item with ConsistentRead set to true immediately before every write, so that each writer always starts from the latest committed value",
+        "Use ReturnValues set to ALL_OLD on UpdateItem and compare the old and new values in application code to detect a conflicting write",
+        "Wrap each update in a TransactWriteItems call that contains a single Update action and no condition expression, so that writes are serialized",
+        "Store a version attribute, update with a condition that the version equals the value that was read, and retry on ConditionalCheckFailedException"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because a strongly consistent read returns the latest data at that instant, but another writer can still change the item between the read and the write, so lost updates remain possible. Option B is incorrect because the comparison happens after the write has already been applied, so the overwritten data cannot be protected. Option C is incorrect because a transaction without a condition still writes the value the client computed from its stale read, so the last writer wins. Option D is correct because the conditional write is evaluated atomically by DynamoDB, so a stale writer is rejected and can re-read the item (optimistic locking). Key takeaway: Optimistic locking in DynamoDB is implemented with a version attribute and a condition expression; the database rejects the write if the item changed after it was read.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html"
+    },
+    {
+      "id": 7,
+      "domain": "Development with AWS Services",
+      "type": "multi",
+      "question": "A producer writes clickstream events to a Kinesis data stream with eight provisioned shards by using PutRecords. Every record uses the partition key \"web\". CloudWatch shows WriteProvisionedThroughputExceeded on one shard while the other seven are nearly idle, and some records in each PutRecords response fail with ProvisionedThroughputExceededException. Which TWO actions should the developer take? (Select TWO)",
+      "options": [
+        "Use a high-cardinality partition key, such as a session ID, so that records are distributed across all shards",
+        "Use UpdateShardCount to double the number of shards and keep the partition key unchanged",
+        "Increase the stream's data retention period to seven days",
+        "Enable enhanced fan-out for the consumer applications",
+        "Resend only the records that are reported as failed in the PutRecords response, using exponential backoff"
+      ],
+      "correctAnswers": [
+        0,
+        4
+      ],
+      "explanation": "Correct answers: Option A and Option E. Option A is correct because Kinesis maps the partition key to a shard by hashing, so a single constant key sends every record to one shard regardless of how many shards exist. Option B is incorrect because records with the same partition key always hash to the same hash key value, so they still map to a single shard after resharding. Option C is incorrect because retention determines how long records are kept and has no effect on per-shard write limits. Option D is incorrect because enhanced fan-out increases read throughput per consumer. The problem is on the write path. Option E is correct because PutRecords can partially succeed. Retrying only the failed records with backoff is the documented way to handle throttled writes without duplicating the successful ones. Key takeaway: A hot shard is a key-design problem, not a capacity problem: the partition key must vary. Producers must also handle partial failures by retrying only the failed records.",
+      "reference": "https://docs.aws.amazon.com/streams/latest/dev/troubleshooting-producers.html"
+    },
+    {
+      "id": 8,
+      "domain": "Development with AWS Services",
+      "type": "multi",
+      "question": "A Lambda function reads a Kinesis data stream through an event source mapping with a batch size of 500. One malformed record makes the function fail on every attempt, so processing of the shard is stuck and the iterator age keeps growing. The team wants the bad record isolated automatically, wants processing to move on after a bounded number of attempts, and wants metadata about the discarded records kept for later analysis. Which THREE settings should the developer configure on the event source mapping? (Select THREE)",
+      "options": [
+        "Set MaximumRetryAttempts (and, optionally, MaximumRecordAgeInSeconds) to a finite value",
+        "Set ParallelizationFactor to 10",
+        "Enable BisectBatchOnFunctionError",
+        "Configure an on-failure destination such as an SQS queue or SNS topic",
+        "Configure a dead-letter queue on the Lambda function"
+      ],
+      "correctAnswers": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Correct answers: Option A, Option C, and Option D. Option A is correct because by default Lambda retries until the records expire, which blocks the shard. Finite limits let processing move past the failing records. Option B is incorrect because a higher parallelization factor processes more batches from a shard concurrently, but the failing batch is still retried without limit and no metadata is kept. Option C is correct because Lambda splits a failing batch in two and retries each half, which isolates the malformed record from the healthy ones. Option D is correct because records that exhaust the retry limits are discarded, and the destination receives metadata about the failed batch, including the shard and sequence number range, for later analysis. Option E is incorrect because function-level dead-letter queues apply to asynchronous invocations. Stream event source mappings use an on-failure destination configured on the mapping. Key takeaway: For stream sources, combine batch bisecting, bounded retries or record age, and an on-failure destination to keep a poison record from blocking a shard.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html"
+    },
+    {
+      "id": 9,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "An S3 upload asynchronously invokes a Lambda function. After each invocation the team needs to send the function's return value to a Step Functions state machine when it succeeds, and the error details to an SQS queue when it fails after all retries. Which configuration meets these requirements?",
+      "options": [
+        "Configure two S3 event notifications for the same upload, one for Step Functions and one for SQS",
+        "Invoke the function synchronously and inspect the response's status code and payload in the caller",
+        "Configure an on-success destination and an on-failure destination in the function's asynchronous invocation settings",
+        "Configure a dead-letter queue on the function and poll it for both successful and failed events"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because S3 does not know the outcome of the Lambda invocation, so both targets would receive the event regardless of success or failure. Option B is incorrect because S3 notifications invoke Lambda asynchronously, so there is no caller that receives the function's response. Option C is correct because destinations route the invocation record, including the response on success and the error on failure, to the target that you choose for each outcome. Option D is incorrect because a dead-letter queue only receives events that failed after retries, and it contains the original event rather than the function's response. Key takeaway: Lambda destinations replace much of the DLQ pattern for asynchronous invocations: they support both success and failure outcomes and carry the response or error details.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-retain-records.html"
+    },
+    {
+      "id": 10,
+      "domain": "Development with AWS Services",
+      "type": "multi",
+      "question": "A Lambda function is attached to two private subnets so that it can reach an Amazon RDS instance. Since the change, the function times out when it writes to a DynamoDB table and when it calls a partner's public HTTPS API. The subnets' route tables contain only the local VPC route. Security policy requires that DynamoDB traffic not traverse the public internet. Which TWO changes will fix the timeouts? (Select TWO)",
+      "options": [
+        "Create an interface VPC endpoint for the Lambda service",
+        "Move the function to public subnets that have a route to an internet gateway so that Lambda assigns a public IP address",
+        "Create a gateway VPC endpoint for DynamoDB and associate it with the private subnets' route tables",
+        "Add an inbound rule for TCP port 443 to the function's security group",
+        "Create a NAT gateway in a public subnet and add a default route in the private subnets' route tables that targets it"
+      ],
+      "correctAnswers": [
+        2,
+        4
+      ],
+      "explanation": "Correct answers: Option C and Option E. Option A is incorrect because this lets clients in the VPC call the Lambda API privately. It provides no route to DynamoDB or the partner's API. Option B is incorrect because Lambda functions attached to a VPC never receive public IP addresses, even in a public subnet, so they cannot use an internet gateway directly. Option C is correct because the gateway endpoint adds a route that keeps DynamoDB traffic on the AWS network without an internet path. Option D is incorrect because the timeouts affect outbound connections, and security groups are stateful, so inbound rules are irrelevant to the function's outgoing requests. Option E is correct because the partner API is on the public internet, and VPC-attached functions can reach it only through a NAT gateway (or NAT instance). Key takeaway: A Lambda function in a VPC loses default internet access: use VPC endpoints for AWS services and a NAT gateway for public endpoints.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc-internet.html"
+    },
+    {
+      "id": 11,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "An order-processing Lambda function is invoked by API Gateway and by an SQS queue. It writes to a relational database that supports at most 60 concurrent connections. Other functions in the account share the Region's concurrency pool, and during surges the order function sometimes exceeds 60 concurrent executions while a reporting function is starved. The team wants to cap the order function at 60 and guarantee that this capacity is always available to it. Which setting should the developer configure?",
+      "options": [
+        "Reserved concurrency of 60 on the order function",
+        "A maximum concurrency of 60 on the SQS event source mapping",
+        "Provisioned concurrency of 60 on the order function",
+        "A usage plan on the API stage with a rate limit of 60 requests per second"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because reserved concurrency both guarantees that amount of concurrency for the function and acts as its maximum, and it applies to every invocation source. Option B is incorrect because this limits only the SQS-triggered invocations, so API Gateway invocations could still push total concurrency above 60, and it does not reserve capacity. Option C is incorrect because provisioned concurrency pre-initializes 60 environments but does not cap the function, which can still scale beyond 60 using unreserved concurrency. Option D is incorrect because a request rate is not the same as concurrency, it covers only the API Gateway path, and it does not guarantee capacity for the function. Key takeaway: Reserved concurrency is both a guarantee and a ceiling for a function; provisioned concurrency only controls pre-warmed environments.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html"
+    },
+    {
+      "id": 12,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A Java 21 Lambda function that initializes a dependency-injection framework has cold starts of about six seconds. Traffic is spiky. The team wants to cut cold-start latency substantially with minimal code changes and without paying for pre-initialized capacity around the clock. Which solution meets these requirements?",
+      "options": [
+        "Enable SnapStart, publish a version, and invoke the function through an alias that points to that version",
+        "Enable SnapStart and keep invoking the unqualified $LATEST version of the function",
+        "Package the function as a container image so that framework initialization runs faster on each cold start",
+        "Configure provisioned concurrency on the $LATEST version so that initialized environments are always available"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because SnapStart snapshots the initialized execution environment when a version is published and restores it on cold starts, typically without code changes and without a charge for idle capacity. Option B is incorrect because SnapStart takes effect only for published versions and aliases that point to them, so invocations of $LATEST get no benefit. Option C is incorrect because container images do not shorten framework initialization, and SnapStart itself does not support container images. Option D is incorrect because provisioned concurrency cannot be configured on $LATEST, and it would bill continuously for pre-initialized environments. Key takeaway: SnapStart reduces cold starts for supported managed runtimes (Java 11+, Python 3.12+, .NET 8+), but only on published versions and aliases, and it cannot be combined with provisioned concurrency.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html"
+    },
+    {
+      "id": 13,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A REST API in Amazon API Gateway proxies POST /orders to a Lambda function. Clients occasionally send bodies that are missing the required customerId and items fields, and the function is invoked and billed just to return a 400 error. The developer wants API Gateway to reject these requests with a 400 response before the function is invoked. Which solution meets these requirements?",
+      "options": [
+        "Define a JSON schema model for the body and enable a request validator on the POST method that validates the body",
+        "Add a mapping template to the integration request that returns a 400 status when required fields are missing from the body",
+        "Migrate to an HTTP API, which validates request bodies against a JSON schema before invoking the integration",
+        "Attach a Lambda authorizer that inspects the request body and returns a Deny policy when the required fields are missing"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because REST APIs can validate the body against a model and return a 400 response without calling the integration. Option B is incorrect because mapping templates transform the payload that is sent to the backend. They cannot stop the request from being forwarded to the integration. Option C is incorrect because HTTP APIs do not offer request validation. Request validation is one of the features that is available only for REST APIs. Option D is incorrect because authorizers receive headers, query strings, and context but not the request body, and each authorizer invocation is itself a billed Lambda call. Key takeaway: Use API Gateway request validators with models (REST APIs) to reject malformed requests before they reach the backend.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-method-request-validation.html"
+    },
+    {
+      "id": 14,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A Python Lambda function is integrated with an API Gateway REST API by using Lambda proxy integration. The function ends with return {\"message\": \"created\", \"id\": order_id}. Clients receive a 502 Bad Gateway response, while the function's CloudWatch logs show a successful invocation. What should the developer do?",
+      "options": [
+        "Switch to a non-proxy integration because proxy integrations cannot return JSON bodies",
+        "Return an object that contains a statusCode and a string body, plus optional headers",
+        "Add a resource-based policy that allows apigateway.amazonaws.com to invoke the function",
+        "Reduce the function's timeout below API Gateway's integration timeout"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because proxy integrations can return JSON, provided the response has the required structure. Switching integration types is unnecessary. Option B is correct because with proxy integration API Gateway expects the function to return this response structure, and any other shape produces a malformed-response 502 error. Option C is incorrect because missing invoke permission would prevent the function from running at all. The logs show that the invocation succeeded. Option D is incorrect because an integration timeout produces a 504 Gateway Timeout, and the function completed normally. Key takeaway: Lambda proxy integrations require a specific response format (statusCode, headers, body as a string); a malformed response is reported as 502.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html"
+    },
+    {
+      "id": 15,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer must process new items written to a DynamoDB table. Only INSERT events are relevant, each event must be enriched by calling an existing Lambda function that returns customer details, and the enriched event must be delivered to an SQS queue. The team wants to minimize custom polling and glue code. Which solution meets these requirements?",
+      "options": [
+        "Create an EventBridge rule on the default event bus that uses the DynamoDB stream as its event source and targets the SQS queue, with the Lambda function as a second target",
+        "Write a Lambda function on the stream that filters INSERT events, calls the enrichment function through the SDK, and then calls SendMessage on the queue",
+        "Create a Firehose delivery stream that reads the DynamoDB stream and delivers records to the SQS queue after a Lambda transformation",
+        "Create an EventBridge pipe with the DynamoDB stream as the source, an INSERT filter, the Lambda function as enrichment, and the SQS queue as the target"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because DynamoDB streams are not events on an event bus, so a rule cannot use them as a source. Polling a stream requires Pipes or a Lambda event source mapping. Option B is incorrect because this can work but it is exactly the custom glue code that the team wants to avoid. Option C is incorrect because Firehose cannot use a DynamoDB stream as a source and does not support SQS as a destination. Option D is correct because EventBridge Pipes provides managed polling of the stream, event filtering, an optional enrichment step, and a target, with no custom integration code. Key takeaway: EventBridge Pipes connects a supported source (DynamoDB streams, Kinesis, SQS, and others) to a target with optional filtering and enrichment, without integration code.",
+      "reference": "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-pipes.html"
+    },
+    {
+      "id": 16,
+      "domain": "Development with AWS Services",
+      "type": "multi",
+      "question": "A loan-processing workflow must pause after a credit check and wait for a human underwriter to approve or reject the application. Approvals typically take one to three days. The workflow must retain its execution history for auditing and must resume as soon as the underwriter responds. Which TWO design choices meet these requirements? (Select TWO)",
+      "options": [
+        "Create the state machine as an Express workflow to handle the high volume",
+        "Add a Wait state with a fixed duration of three days before the next state",
+        "Use the .sync integration pattern with the approval system",
+        "Create the state machine as a Standard workflow",
+        "Use the .waitForTaskToken integration pattern, pass the task token to the approval system, and have it call SendTaskSuccess or SendTaskFailure"
+      ],
+      "correctAnswers": [
+        3,
+        4
+      ],
+      "explanation": "Correct answers: Option D and Option E. Option A is incorrect because Express workflows run for at most five minutes and do not support the callback (.waitForTaskToken) pattern. Option B is incorrect because the workflow would not resume when the underwriter responds, and it would wait even when the decision arrives sooner. Option C is incorrect because .sync waits for a job run by a supported AWS service to complete, and it cannot wait for a human response. Option D is correct because Standard workflows can run for up to a year and keep a full execution history. Option E is correct because the workflow pauses until the token is returned, then resumes immediately with the underwriter's decision. Key takeaway: Use Standard workflows with the callback (.waitForTaskToken) pattern for long-running steps that wait on an external system or person.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html#connect-wait-token"
+    },
+    {
+      "id": 17,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A Task state invokes a Lambda function that calls a partner API, which sometimes returns HTTP 503. In those cases the function raises a custom error named PartnerUnavailable. The team wants up to four retries with increasing delays. If all retries fail, the workflow must run a compensation state instead of failing the execution. How should the developer configure the state machine?",
+      "options": [
+        "Add a Choice state after the Task that loops back to the Task while a retry counter is below four, without a Wait state between the attempts, and route to compensation when the counter reaches four",
+        "Set TimeoutSeconds on the Task state and rely on the default retry behavior of Step Functions to retry the failed task",
+        "Add a Retry block for PartnerUnavailable (IntervalSeconds, BackoffRate, MaxAttempts of 4) and a Catch block that routes to the compensation state",
+        "Add only a Catch block and set its ResultPath so that the failed Task is invoked again with the error output"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because this retries immediately with no increasing delay, and it re-implements what Retry already does. Option B is incorrect because Step Functions does not retry failed tasks by default. A failure without Retry or Catch fails the execution. Option C is correct because Retry provides built-in exponential backoff for named errors, and Catch runs after the retries are exhausted to transition to a fallback state. Option D is incorrect because Catch transitions to another state and ResultPath decides where the error output is stored. Neither retries the same Task. Key takeaway: Use Retry for transient errors (with backoff) and Catch for fallback paths; combine them to handle third-party failures inside the state machine.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html"
+    },
+    {
+      "id": 18,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A Lambda function calls a third-party fulfillment API. When the API is degraded, every invocation waits until its 25-second timeout, which exhausts concurrency and delays unrelated requests. The team wants a circuit breaker so that after repeated failures all invocations fail fast for 60 seconds and then probe the API again. Where should the circuit state be stored?",
+      "options": [
+        "In a shared store, such as a DynamoDB item that uses conditional writes and TTL, or an ElastiCache cache",
+        "In a Lambda environment variable that the function updates by calling UpdateFunctionConfiguration when the circuit opens",
+        "In the /tmp directory of the execution environment so that the state survives between invocations",
+        "In a global variable in the handler module, which persists across invocations of the same execution environment"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because all execution environments run in parallel and are stateless with respect to each other, so the circuit state must live in a store that they all read and update. Option B is incorrect because configuration updates are control-plane calls that are rate limited and recycle execution environments, so they are unsuitable for runtime state. Option C is incorrect because /tmp is also local to a single execution environment and is not shared between concurrent environments. Option D is incorrect because each execution environment has its own memory, so other environments would not see that the circuit is open, and the state is lost on a cold start. Key takeaway: Lambda execution environments are isolated and ephemeral. Any state that must be shared across concurrent invocations belongs in an external store.",
+      "reference": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/circuit-breaker.html"
+    },
+    {
+      "id": 19,
+      "domain": "Development with AWS Services",
+      "type": "multi",
+      "question": "A session table enables TTL on an attribute named expiresAt. Items are written with expiresAt set to an ISO-8601 string such as 2026-10-01T12:00:00Z. Days later, expired sessions are still returned by queries and the item count has not decreased. Which TWO actions should the developer take? (Select TWO)",
+      "options": [
+        "Create a global secondary index on expiresAt so that TTL can locate expired items",
+        "Store expiresAt as a Number that contains the expiration time in Unix epoch seconds",
+        "Increase the table's provisioned write capacity so that TTL deletions are not throttled",
+        "Enable DynamoDB Streams so that the TTL process has a stream to write deletions to",
+        "Add a filter expression on reads that excludes items whose expiresAt is in the past"
+      ],
+      "correctAnswers": [
+        1,
+        4
+      ],
+      "explanation": "Correct answers: Option B and Option E. Option A is incorrect because TTL does not use indexes to find expired items. Option B is correct because DynamoDB TTL only processes items whose TTL attribute is of the Number type and contains an epoch timestamp in seconds, so items with a string value are ignored. Option C is incorrect because TTL deletions do not consume write capacity. Option D is incorrect because TTL does not depend on Streams. Streams only record deletions for downstream consumers. Option E is correct because TTL deletion runs in the background after the expiration time, so expired items can still be returned until they are removed. Filtering makes the application ignore them in the meantime. Key takeaway: TTL needs a Number attribute in epoch seconds, and because deletion is asynchronous, reads should filter out expired items.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html"
+    },
+    {
+      "id": 20,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A developer uses the AWS SDK to call Query for all events that share a partition key. For heavily used keys the application processes only the first portion of the results, and the response contains a LastEvaluatedKey. What should the developer do to retrieve all matching items?",
+      "options": [
+        "Call Query repeatedly, passing the previous LastEvaluatedKey as ExclusiveStartKey until none is returned, or use the SDK paginator",
+        "Use Scan with ConsistentRead set to true because Scan returns results across the whole partition, including items that share the partition key",
+        "Set the Limit parameter to a very large value so that the whole partition is returned in a single response, since Limit has no upper bound",
+        "Increase the table's read capacity units so that DynamoDB returns larger result pages to the application in each response"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because a Query response is limited to 1 MB of data, and the LastEvaluatedKey is the cursor for the next page. Option B is incorrect because Scan is paginated at 1 MB in the same way and is less efficient for a known partition key. Option C is incorrect because Limit can only reduce the number of items evaluated, and the 1 MB response cap still applies. Option D is incorrect because the page-size cap is not related to provisioned capacity. Key takeaway: Query and Scan return at most 1 MB per call; loop with LastEvaluatedKey and ExclusiveStartKey (or use SDK paginators) to read everything.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html"
+    },
+    {
+      "id": 21,
+      "domain": "Development with AWS Services",
+      "type": "single",
+      "question": "A retail company keeps its product catalog in DynamoDB. The search page needs full-text queries with typo tolerance, relevance ranking, and faceted filtering across several attributes, at high query volume. DynamoDB Query and Scan operations either require exact keys or read too much data. Which approach meets these requirements?",
+      "options": [
+        "Replicate catalog changes to OpenSearch Service, for example with DynamoDB Streams or zero-ETL, and run the search queries against OpenSearch",
+        "Create a global secondary index for each searchable attribute and use begins_with conditions on the sort keys of those indexes to match search terms",
+        "Scan the table with contains() filter expressions and sort the results in the application code to approximate relevance ranking",
+        "Cache the results of each search term in Amazon ElastiCache for Redis and serve repeated searches from the cache"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because OpenSearch Service is designed for full-text search, fuzzy matching, relevance scoring, and aggregations, and it can be kept in sync with the table. Option B is incorrect because key conditions match exact or prefix values and provide no fuzzy matching or relevance ranking. Option C is incorrect because a Scan reads the whole table and charges for every item read, and filter expressions provide no relevance scoring. Option D is incorrect because caching repeated queries does not provide full-text search, and the first query for each term would still hit the same limitations. Key takeaway: Choose specialized data stores by access pattern: DynamoDB for key-based access, OpenSearch Service for full-text search and analytics-style queries.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/OpenSearchIngestionForDynamoDB.html"
+    },
+    {
+      "id": 22,
+      "domain": "Security",
+      "type": "single",
+      "question": "A mobile app authenticates users with an Amazon Cognito user pool. After sign-in, the app must upload each user's photos directly to a prefix in an S3 bucket by using the AWS SDK, without routing the data through a backend service. What should the developer add to the architecture?",
+      "options": [
+        "A Cognito identity pool that trusts the user pool, so the app can exchange the user's tokens for temporary credentials for an IAM role",
+        "Sending the user pool ID token in the S3 request so that Amazon S3 validates the token against the user pool",
+        "A user pool app client setting that returns AWS access keys and a secret key inside the access token after sign-in",
+        "A dedicated IAM user for each app user, with long-lived access keys that are embedded in the app and rotated with each app release"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because identity pools issue temporary AWS credentials through AWS STS to authenticated users, and the IAM role scopes what those credentials can do. Option B is incorrect because Amazon S3 authorizes requests with AWS credentials and does not accept Cognito JWTs. Option C is incorrect because user pool tokens are JSON Web Tokens that carry identity and scope claims. They never contain AWS access keys. Option D is incorrect because long-lived keys embedded in a client application can be extracted, and managing one IAM user per app user does not scale. Key takeaway: User pools authenticate users and issue JWTs; identity pools exchange those tokens for temporary AWS credentials for direct access to AWS services.",
+      "reference": "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html"
+    },
+    {
+      "id": 23,
+      "domain": "Security",
+      "type": "single",
+      "question": "A REST API method uses a Cognito user pool authorizer, and the method has the authorization scope https://api.example.com/orders.read configured. The mobile client signs in and sends the user's ID token in the Authorization header. Every call returns 401 Unauthorized, while calls to a different method that has no scopes configured succeed with the same token. What should the developer change?",
+      "options": [
+        "Configure the authorizer's token validation expression to match the aud claim of the ID token",
+        "Have the client send the user pool access token, which carries the scope claim",
+        "Replace the Cognito authorizer with a Lambda authorizer because API Gateway cannot validate ID tokens",
+        "Grant the API Gateway service role permission to call cognito-idp:GetUser for the user pool"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because the validation expression checks the audience of an ID token and does not add or check OAuth scopes. Option B is correct because when authorization scopes are configured on a method, API Gateway validates the scopes in the access token. Without scopes, it expects an ID token. Option C is incorrect because API Gateway does validate ID tokens for methods without scopes, which is why the other method works. Option D is incorrect because the authorizer validates the JWT signature and claims locally against the user pool's public keys and does not use a GetUser call. Key takeaway: With a Cognito user pool authorizer on a REST API, send an ID token when no scopes are configured, and an access token when scopes are configured on the method.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html"
+    },
+    {
+      "id": 24,
+      "domain": "Security",
+      "type": "single",
+      "question": "Users of a web app sign in through a Cognito identity pool and read their own records directly from a DynamoDB table named UserData. The table's partition key is the user's identity ID. Which statement in the authenticated role's IAM policy ensures that each user can access only items whose partition key matches that user's own identity?",
+      "options": [
+        "{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:Query\"],\"Resource\":\"arn:aws:dynamodb:us-east-1:111122223333:table/UserData\",\"Condition\":{\"StringEquals\":{\"cognito-identity.amazonaws.com:aud\":\"us-east-1:example-pool-id\"}}}",
+        "{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:Query\"],\"Resource\":\"arn:aws:dynamodb:us-east-1:111122223333:table/UserData\",\"Condition\":{\"ForAllValues:StringEquals\":{\"dynamodb:LeadingKeys\":[\"${cognito-identity.amazonaws.com:sub}\"]}}}",
+        "{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:Query\"],\"Resource\":\"arn:aws:dynamodb:us-east-1:111122223333:table/UserData/${cognito-identity.amazonaws.com:sub}\"}",
+        "{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:Query\"],\"Resource\":\"arn:aws:dynamodb:us-east-1:111122223333:table/UserData\",\"Condition\":{\"ForAllValues:StringEquals\":{\"dynamodb:Attributes\":[\"${cognito-identity.amazonaws.com:sub}\"]}}}"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because the aud condition checks which identity pool issued the credentials. Every user of the pool would pass it, so users could read each other's items. Option B is correct because the dynamodb:LeadingKeys condition key restricts access by partition key value, and the ${cognito-identity.amazonaws.com:sub} policy variable resolves to the caller's identity ID. Option C is incorrect because DynamoDB resource ARNs identify tables and indexes, not individual items, so this ARN does not match any resource. Option D is incorrect because dynamodb:Attributes limits which attribute names can be accessed. It does not limit which items (partition key values) are accessible. Key takeaway: Fine-grained access to DynamoDB items is enforced with the dynamodb:LeadingKeys condition and policy variables such as ${cognito-identity.amazonaws.com:sub}.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/specifying-conditions.html"
+    },
+    {
+      "id": 25,
+      "domain": "Security",
+      "type": "single",
+      "question": "A multi-tenant SaaS application runs on Lambda. For each request, the function calls sts:AssumeRole on a shared TenantAccess role and passes the tenant ID as a session tag named tenant_id. TenantAccess allows DynamoDB access only where the leading key equals ${aws:PrincipalTag/tenant_id}. The role's trust policy allows sts:AssumeRole for the Lambda execution role, but every call now fails with AccessDenied. What is the least change that fixes this?",
+      "options": [
+        "Call AssumeRoleWithWebIdentity instead, because AssumeRole does not support session tags",
+        "Add iam:PassRole for TenantAccess to the Lambda execution role's policy",
+        "Add sts:TagSession to the Action list of the trust policy statement for the Lambda execution role",
+        "Attach a tenant_id tag to the TenantAccess role by using iam:TagRole"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because AssumeRole does support session tags. It needs the sts:TagSession permission. Option B is incorrect because iam:PassRole lets a principal hand a role to an AWS service. It has no role in calling AssumeRole. Option C is correct because passing session tags requires the sts:TagSession permission in addition to sts:AssumeRole. Without it in the trust policy, the AssumeRole call is denied. Option D is incorrect because tags on the role resource are different from session tags that are passed at AssumeRole time, and they do not permit passing tags. Key takeaway: Session tags (used for attribute-based access control, such as tenant isolation) require sts:TagSession in addition to the AssumeRole permission.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html"
+    },
+    {
+      "id": 26,
+      "domain": "Security",
+      "type": "multi",
+      "question": "Account A owns an S3 bucket whose objects are encrypted with SSE-KMS by using the AWS managed key aws/s3. A Lambda function's role in account B has s3:GetObject in its identity policy, and the bucket policy allows that role. GetObject calls fail with AccessDenied, and CloudTrail shows a denied kms:Decrypt. Which TWO actions will let account B read the objects? (Select TWO)",
+      "options": [
+        "Call CreateGrant on the aws/s3 key from account B for the Lambda role",
+        "Add a statement that allows the account B role to the key policy of aws/s3",
+        "Encrypt the objects with a customer managed KMS key in account A by changing the bucket's default encryption and re-encrypting the existing objects",
+        "Enable S3 Bucket Keys on the bucket",
+        "Allow the account B role to use kms:Decrypt in the customer managed key's key policy, and grant the role kms:Decrypt in its own identity policy"
+      ],
+      "correctAnswers": [
+        2,
+        4
+      ],
+      "explanation": "Correct answers: Option C and Option E. Option A is incorrect because a grant can only be created if the key policy allows it, and the key policy of an AWS managed key cannot allow another account. Option B is incorrect because the key policies of AWS managed keys are read-only, so they cannot be changed to allow another account. Option C is correct because only customer managed keys have a key policy that can be edited to trust another account. AWS managed keys cannot be used across accounts. Option D is incorrect because Bucket Keys reduce the number of KMS requests that S3 makes. They do not change who is authorized to use the key. Option E is correct because for cross-account use, the key policy of the key in account A and the identity policy of the principal in account B must both allow the operation. Key takeaway: Cross-account use of SSE-KMS data requires a customer managed key with a key policy (and an identity policy in the calling account) that allows the other account.",
+      "reference": "https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying-external-accounts.html"
+    },
+    {
+      "id": 27,
+      "domain": "Security",
+      "type": "single",
+      "question": "An application encrypts 300 MB report files before uploading them to S3. The developer calls the AWS KMS Encrypt operation with the file contents and receives a validation error. The developer must keep the KMS key inside KMS and must not send the file contents to KMS. What should the developer do?",
+      "options": [
+        "Call GenerateDataKeyWithoutPlaintext and use the returned data key to encrypt the file locally, keeping the encrypted key in the file header",
+        "Split the file into 4 KB chunks and call the Encrypt operation for each chunk, storing the ciphertext chunks in order",
+        "Call GenerateDataKey, encrypt the file locally with the plaintext data key, and store the encrypted data key with the file",
+        "Request a quota increase for the maximum plaintext size that the Encrypt operation accepts, then encrypt the whole file"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because this operation returns only the encrypted copy of the data key, which cannot be used to encrypt data locally until it is decrypted. Option B is incorrect because this sends the file contents to KMS, which the requirement forbids, and it would need a huge number of calls. Option C is correct because this is envelope encryption. The plaintext data key encrypts the large file locally, and the KMS key protects only the small data key. Option D is incorrect because the 4,096-byte limit of Encrypt is a fixed size limit and not a quota that can be raised. Key takeaway: KMS Encrypt handles at most 4 KB. For larger data, use envelope encryption with GenerateDataKey.",
+      "reference": "https://docs.aws.amazon.com/kms/latest/developerguide/data-keys.html"
+    },
+    {
+      "id": 28,
+      "domain": "Security",
+      "type": "multi",
+      "question": "A developer enables automatic rotation on a symmetric customer managed KMS key that protects data in S3 and DynamoDB. A teammate worries that existing ciphertext will become undecryptable and that applications will need to be updated. Which TWO statements about this rotation are correct? (Select TWO)",
+      "options": [
+        "Rotation creates a new key ID, so aliases must be repointed to the new key",
+        "AWS KMS retains the earlier key material so it can decrypt data that was encrypted before the rotation",
+        "Existing ciphertext must be re-encrypted with the new key material before the old material is retired",
+        "The key ID, key ARN, and aliases do not change, so applications continue to reference the same key",
+        "The same automatic rotation setting can be enabled on asymmetric KMS keys and on keys with imported key material"
+      ],
+      "correctAnswers": [
+        1,
+        3
+      ],
+      "explanation": "Correct answers: Option B and Option D. Option A is incorrect because the key ID stays the same, so there is nothing to repoint. Option B is correct because rotation adds new key material to the same KMS key while keeping the previous material available for decryption. Option C is incorrect because the old material is retained, so no re-encryption is required. Option D is correct because rotation replaces the cryptographic material, not the KMS key resource. Option E is incorrect because automatic rotation is supported only for symmetric encryption keys, and not for asymmetric keys or keys with imported key material. Key takeaway: Automatic KMS key rotation is transparent: same key ID and ARN, old key material kept for decryption, and no re-encryption or application change needed.",
+      "reference": "https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys.html"
+    },
+    {
+      "id": 29,
+      "domain": "Security",
+      "type": "single",
+      "question": "A Lambda function connects to an Amazon RDS for PostgreSQL database by using credentials from AWS Secrets Manager. The secret is rotated every 30 days with the single-user rotation strategy. During each rotation, a few connections briefly fail authentication because the database password changes while some clients still hold the previous one. The team wants rotation without authentication failures for clients that retrieved the secret just before the rotation. What should the developer do?",
+      "options": [
+        "Increase the rotation interval to 90 days",
+        "Cache the secret value permanently in the function's global scope",
+        "Configure a rotation window so that rotation runs during off-peak hours",
+        "Change the secret to the alternating users rotation strategy"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because this reduces how often the failures occur but does not remove them. Option B is incorrect because the cached password becomes invalid after the next rotation, so the function would fail continuously. Option C is incorrect because a rotation window only chooses when rotation happens. The single-user strategy still invalidates the previous password immediately. Option D is correct because Secrets Manager keeps two database users and rotates the password of the one that is not currently in use, so credentials that were retrieved just before rotation remain valid until the next rotation. Key takeaway: Use the alternating users strategy in Secrets Manager when clients must keep working across rotations; single-user rotation changes the only password in place.",
+      "reference": "https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotating-secrets_strategies.html"
+    },
+    {
+      "id": 30,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer creates a new S3 general purpose bucket in September 2026 and uploads objects by calling PutObject with the SSE-C headers (x-amz-server-side-encryption-customer-*). The same code worked for buckets that were created years ago, but every request to the new bucket now returns 403 AccessDenied even though the caller has s3:* permissions. What is the most likely cause?",
+      "options": [
+        "SSE-C is disabled by default on new general purpose buckets and must be enabled explicitly with PutBucketEncryption, or replaced by SSE-S3 or SSE-KMS",
+        "New buckets require kms:GenerateDataKey for every write because all new buckets default to SSE-KMS, so the PutObject call is denied",
+        "SSE-C requests are accepted only over unencrypted HTTP endpoints, so the HTTPS endpoint rejects them with an AccessDenied error",
+        "S3 Block Public Access rejects any request that carries customer-provided encryption headers because it treats them as public requests"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because since April 2026, new general purpose buckets reject write requests that specify SSE-C unless the bucket configuration explicitly allows it. Option B is incorrect because the base level of encryption for every bucket is SSE-S3, not SSE-KMS. The failure is caused by the SSE-C headers. Option C is incorrect because SSE-C requires HTTPS, because the key is sent with each request. Option D is incorrect because Block Public Access controls public ACLs and policies. It does not evaluate encryption headers. Key takeaway: S3 now disables SSE-C by default on new general purpose buckets (April 2026). Applications that still need it must enable it explicitly; SSE-S3 or SSE-KMS are preferred.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerSideEncryptionCustomerKeys.html"
+    },
+    {
+      "id": 31,
+      "domain": "Security",
+      "type": "multi",
+      "question": "A static site's assets are stored in a private S3 bucket that is encrypted with SSE-KMS by using a customer managed key. The team puts a CloudFront distribution in front of the bucket. Direct access to the bucket must remain blocked, and CloudFront must be able to read the encrypted objects. Which TWO configurations are required? (Select TWO)",
+      "options": [
+        "Use an origin access identity (OAI) and grant the OAI's canonical user read access in the bucket policy",
+        "Enable S3 static website hosting and use the website endpoint as a custom origin",
+        "Configure CloudFront signed URLs for viewers so that S3 accepts the signed requests",
+        "Add a key policy statement that allows the cloudfront.amazonaws.com service principal to use kms:Decrypt and kms:GenerateDataKey*, with a condition on the distribution's ARN",
+        "Create an origin access control (OAC) for the S3 origin and add a bucket policy statement that allows the cloudfront.amazonaws.com service principal with a condition on the distribution's ARN"
+      ],
+      "correctAnswers": [
+        3,
+        4
+      ],
+      "explanation": "Correct answers: Option D and Option E. Option A is incorrect because OAI is the legacy mechanism and does not support SSE-KMS encrypted objects. Option B is incorrect because website endpoints do not support OAC or private buckets, which conflicts with keeping the bucket private. Option C is incorrect because signed URLs authorize viewers to CloudFront. They do not give CloudFront permission to read from S3. Option D is correct because CloudFront needs permission to use the key to read SSE-KMS objects, and that permission must come from the key policy. Option E is correct because OAC signs the origin requests, and the bucket policy limits read access to that specific distribution. Key takeaway: Use origin access control (not OAI) for private S3 origins, and add the CloudFront service principal to the KMS key policy when the objects use SSE-KMS.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html"
+    },
+    {
+      "id": 32,
+      "domain": "Security",
+      "type": "single",
+      "question": "A REST API uses a Lambda TOKEN authorizer with a 300-second result cache. The authorizer validates a JWT and returns an IAM policy that allows execute-api:Invoke only on the ARN of the method being called. Users report that the first call succeeds, but calls to other methods within a few minutes fail with 403 and then work later. The team wants to keep caching enabled to limit authorizer invocations. What should the developer change?",
+      "options": [
+        "Set the authorizer cache TTL to 0 seconds so that the authorizer runs on every request and returns a method-specific policy",
+        "Return a policy whose Resource covers every method that the token may access, such as a wildcard on the stage",
+        "Add lambda:InvokeFunction permission for apigateway.amazonaws.com to the authorizer function's resource-based policy",
+        "Increase the cache TTL beyond 3,600 seconds so that the first policy is reused for a longer period"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because this would fix the 403 responses by disabling caching, but that contradicts the requirement to keep caching enabled. Option B is correct because the cached policy is reused for all requests that present the same token during the TTL, so it must cover every resource that the caller may access. Option C is incorrect because missing permission would make every call fail, not just calls to other methods. Option D is incorrect because the maximum TTL is 3,600 seconds, and a longer cache would make the problem worse. Key takeaway: Lambda authorizer policies are cached per token, so a policy scoped to a single method breaks other methods until the cache expires.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html"
+    },
+    {
+      "id": 33,
+      "domain": "Security",
+      "type": "single",
+      "question": "A Fargate task pulls its image from a private Amazon ECR repository and sends logs to CloudWatch Logs, and both work. The application code inside the container calls DynamoDB and now receives AccessDeniedException. Which IAM role should the developer update?",
+      "options": [
+        "The task role that is referenced by taskRoleArn in the task definition",
+        "The ECS service-linked role AWSServiceRoleForECS that ECS uses to manage resources on the team's behalf",
+        "The instance profile of the underlying EC2 instance that hosts the task",
+        "The task execution role that is referenced by executionRoleArn in the task definition"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because the task role provides the credentials that the application code in the containers uses to call AWS services. Option B is incorrect because this role lets ECS manage resources such as network interfaces and load balancer registrations on your behalf, and application code does not use it. Option C is incorrect because Fargate tasks do not run on instances that you manage, so there is no instance profile to update. Option D is incorrect because the execution role is used by the ECS agent to pull images and write logs, not by the application code. Key takeaway: Use the task role for application permissions and the task execution role for the ECS agent's image pulls and log delivery.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html"
+    },
+    {
+      "id": 34,
+      "domain": "Security",
+      "type": "single",
+      "question": "A Java service on Amazon EC2 uses the SDK's default credential provider chain. The instance profile role allows only read access to S3. During troubleshooting last month, a developer set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for that developer's own IAM user in the service's systemd unit file. The service can now delete S3 objects, which the instance role does not allow. What explains this behavior?",
+      "options": [
+        "Instance profile credentials take precedence, but the IAM user's policies are added to the instance role's policies",
+        "IAM users always take precedence over IAM roles during policy evaluation, regardless of which credentials signed the request",
+        "The SDK merges the permissions of every credential source that it discovers in the chain and applies the combined permissions to each request",
+        "Environment variables come before the instance profile in the default chain, so the SDK signs requests as the developer's IAM user"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because instance profile credentials are not used in this case, and IAM policies are never merged across principals. Option B is incorrect because policy evaluation has no such precedence. The request is evaluated for the single principal whose credentials signed it. Option C is incorrect because the SDK selects one set of credentials, and it does not combine permissions from several sources. Option D is correct because the default chain checks sources in a fixed order, and environment variables come before container and instance profile credentials. Key takeaway: The default credential provider chain uses the first source that it finds; environment variables outrank the instance profile, so stray keys silently override the role.",
+      "reference": "https://docs.aws.amazon.com/sdkref/latest/guide/standardized-credentials.html"
+    },
+    {
+      "id": 35,
+      "domain": "Security",
+      "type": "single",
+      "question": "A CI role runs a deployment that calls lambda:CreateFunction and specifies an existing execution role named OrdersFnRole. The call fails with an error that the CI role is not authorized to perform iam:PassRole on OrdersFnRole. The CI role already has lambda:*. Which statement should be added to the CI role's identity policy to fix this with least privilege?",
+      "options": [
+        "{\"Effect\":\"Allow\",\"Action\":\"iam:PassRole\",\"Resource\":\"*\",\"Condition\":{\"StringEquals\":{\"iam:PassedToService\":\"lambda.amazonaws.com\"}}}",
+        "{\"Effect\":\"Allow\",\"Action\":[\"iam:GetRole\",\"iam:ListRoles\",\"iam:ListAttachedRolePolicies\"],\"Resource\":\"arn:aws:iam::111122223333:role/OrdersFnRole\"}",
+        "{\"Sid\":\"AssumeOrdersRole\",\"Effect\":\"Allow\",\"Action\":\"sts:AssumeRole\",\"Resource\":\"arn:aws:iam::111122223333:role/OrdersFnRole\",\"Condition\":{\"StringEquals\":{\"sts:ExternalId\":\"orders-ci\"}}}",
+        "{\"Effect\":\"Allow\",\"Action\":\"iam:PassRole\",\"Resource\":\"arn:aws:iam::111122223333:role/OrdersFnRole\",\"Condition\":{\"StringEquals\":{\"iam:PassedToService\":\"lambda.amazonaws.com\"}}}"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because this would fix the error, but it allows the CI role to pass any role in the account, so it violates least privilege. Option B is incorrect because reading role information does not authorize passing the role to a service. Option C is incorrect because the CI role does not assume OrdersFnRole. The Lambda service assumes it, and passing the role requires iam:PassRole. Option D is correct because the CI role needs permission to pass this specific role, and the condition limits the target service to Lambda. Key takeaway: When a principal hands an IAM role to an AWS service (Lambda, ECS, CloudFormation), it needs iam:PassRole on that role, ideally scoped with iam:PassedToService.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_passrole.html"
+    },
+    {
+      "id": 36,
+      "domain": "Security",
+      "type": "single",
+      "question": "A Lambda function logs request payloads that sometimes contain customers' email addresses and payment card numbers. Compliance requires that these values are masked in CloudWatch Logs and that only designated auditors can view the unmasked values, without modifying the application code. Which solution meets these requirements?",
+      "options": [
+        "Encrypt the log group with a customer managed KMS key and allow only the auditors' role to use that key for reading logs",
+        "Enable AWS X-Ray active tracing on the function so that sensitive fields are stripped from the segments and log lines",
+        "Apply a CloudWatch Logs data protection policy with a mask action to the log group, and grant logs:Unmask only to the auditors' role",
+        "Add a metric filter to the log group that matches the sensitive patterns and replaces them with masked values in the stored log events"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because encryption restricts who can read the logs at all. It does not mask values for the other readers who need to see the logs. Option B is incorrect because X-Ray records traces and does not mask log events in CloudWatch Logs. Option C is correct because data protection policies detect sensitive data and mask it in query results and log views, and only principals with the logs:Unmask permission can see the original values. Option D is incorrect because metric filters extract metric values from log events. They do not alter or redact the stored logs. Key takeaway: CloudWatch Logs data protection policies mask sensitive data without code changes; the logs:Unmask permission controls who can see the original values.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/mask-sensitive-log-data.html"
+    },
+    {
+      "id": 37,
+      "domain": "Security",
+      "type": "single",
+      "question": "A healthcare application stores patient notes in DynamoDB. Company policy states that sensitive attribute values, such as ssn and diagnosis, must never exist in plaintext inside the DynamoDB service and must be decryptable only by the application by using a specific KMS key. Which solution meets this requirement?",
+      "options": [
+        "Require TLS for all connections to the DynamoDB endpoints and reject any request that arrives over an unencrypted channel",
+        "Enable DynamoDB encryption at rest with a customer managed KMS key and restrict the key policy to the application role",
+        "Use the AWS Database Encryption SDK for DynamoDB to encrypt the sensitive attributes on the client before writing them, with a KMS key",
+        "Add an IAM condition on dynamodb:Attributes that denies reads of the sensitive attributes for all principals except the application"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because TLS protects data in transit, and the data is decrypted inside the service. Option B is incorrect because encryption at rest is server-side. DynamoDB decrypts the data with the key before it returns it, so the service handles plaintext. Option C is correct because client-side encryption means that DynamoDB stores and processes only ciphertext for the protected attributes. This SDK is the renamed DynamoDB Encryption Client. Option D is incorrect because this controls who can read the attributes but does not encrypt them, so the plaintext still exists in the service. Key takeaway: Use client-side encryption (the AWS Database Encryption SDK, formerly the DynamoDB Encryption Client) when the service itself must never see plaintext values.",
+      "reference": "https://docs.aws.amazon.com/database-encryption-sdk/latest/devguide/dynamodb-encryption-client.html"
+    },
+    {
+      "id": 38,
+      "domain": "Security",
+      "type": "single",
+      "question": "A developer creates a new Lambda function URL with the AWS_IAM auth type in a new account. A service in the same account, running under an IAM role, signs requests with SigV4 and receives 403 Forbidden. The role's identity policy allows lambda:InvokeFunctionUrl on the function's ARN, and the function has no resource-based policy. What is the minimal change that fixes the error?",
+      "options": [
+        "Add lambda:InvokeFunctionUrl to the function's resource-based policy for the account root, because identity policies can never authorize function URLs",
+        "Create an interface VPC endpoint for Lambda so that requests stay on the AWS network",
+        "Change the auth type to NONE and add a CORS configuration",
+        "Allow lambda:InvokeFunction on the function in the role's identity policy, in addition to lambda:InvokeFunctionUrl"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because the premise is wrong. Identity-based policies can authorize a same-account caller, and the missing piece is the second action. Option B is incorrect because network path does not affect IAM authorization, and a 403 from authorization is not fixed by a VPC endpoint. Option C is incorrect because this removes authentication from the endpoint, which is not a minimal or safe fix, and CORS has nothing to do with a 403 from IAM authorization. Option D is correct because function URLs that are created after October 2025 require both lambda:InvokeFunctionUrl and lambda:InvokeFunction to authorize a caller. Key takeaway: New Lambda function URLs (from October 2025) need both lambda:InvokeFunctionUrl and lambda:InvokeFunction to authorize AWS_IAM callers.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/urls-auth.html"
+    },
+    {
+      "id": 39,
+      "domain": "Deployment",
+      "type": "multi",
+      "question": "A team's CloudFormation template defines an AWS::DynamoDB::Table resource. A planned change to the table's key schema requires replacement of the table. Before executing the update, the team must be able to preview whether the production table will be replaced. If a replacement occurs, the original table and its data must be kept instead of being deleted. Which TWO actions should the developer take? (Select TWO)",
+      "options": [
+        "Set UpdateReplacePolicy to Retain on the table resource",
+        "Enable termination protection on the stack",
+        "Set only DeletionPolicy to Retain on the table resource",
+        "Create a change set for the update and review the Replacement value for the table resource before executing it",
+        "Run drift detection on the stack before the update"
+      ],
+      "correctAnswers": [
+        0,
+        3
+      ],
+      "explanation": "Correct answers: Option A and Option D. Option A is correct because UpdateReplacePolicy controls what happens to the old physical resource when an update replaces it. With Retain, the old table is kept. Option B is incorrect because termination protection prevents deletion of the whole stack. It does not preview or control replacement of a resource. Option C is incorrect because DeletionPolicy applies when a resource is removed from the template or its stack is deleted. It does not control the old resource during a replacement. Option D is correct because change sets show each resource change and whether it requires replacement, without applying anything. Option E is incorrect because drift detection compares live resources to the template and does not predict what an update will do. Key takeaway: Use change sets to preview updates (including Replacement), and UpdateReplacePolicy to protect resources that are replaced; DeletionPolicy covers deletion only.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-updatereplacepolicy.html"
+    },
+    {
+      "id": 40,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A CloudFormation template creates an Auto Scaling group whose instances install and start an application through user data, which takes about eight minutes. The stack reaches CREATE_COMPLETE as soon as the instances are running, before the application is ready, so downstream stacks start too early. How should the developer make CloudFormation wait until the instances finish bootstrapping?",
+      "options": [
+        "Add a DependsOn attribute on the downstream resources that references the Auto Scaling group, so they wait for its creation to finish",
+        "Add a CreationPolicy with a ResourceSignal to the Auto Scaling group and run cfn-signal at the end of the user data script",
+        "Add an UpdatePolicy with AutoScalingRollingUpdate to the group and set a PauseTime that matches the bootstrapping time",
+        "Increase the Auto Scaling group's health check grace period to 600 seconds so that instances are given time to start"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because DependsOn waits for the group to be created, which happens when the instances launch, not when the application is ready. Option B is correct because the resource does not reach CREATE_COMPLETE until the required number of success signals arrive, or the timeout expires and the creation fails. Option C is incorrect because UpdatePolicy applies to stack updates and not to the initial creation. Option D is incorrect because the grace period affects Auto Scaling health checks. CloudFormation does not use it to decide when creation is complete. Key takeaway: CreationPolicy plus cfn-signal makes CloudFormation wait for instances to report that bootstrapping finished.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-creationpolicy.html"
+    },
+    {
+      "id": 41,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A SAM template deploys a Lambda function behind an alias named live. The team wants each deployment to send 10 percent of live traffic to the new version for 5 minutes, then shift the remaining 90 percent, and to roll back automatically if a CloudWatch alarm on function errors enters the ALARM state during the shift. Which SAM configuration meets these requirements?",
+      "options": [
+        "AutoPublishAlias: live alone, which shifts traffic gradually by default",
+        "A DeploymentPreference of Type AllAtOnce with a PreTraffic hook that runs a smoke test",
+        "AutoPublishAlias: live with a DeploymentPreference of Type Linear10PercentEvery10Minutes and Alarms that reference the error alarm",
+        "AutoPublishAlias: live with a DeploymentPreference of Type Canary10Percent5Minutes and Alarms that reference the error alarm"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because without a DeploymentPreference, the alias is updated to the new version immediately. Option B is incorrect because all-at-once moves all traffic immediately, so there is no gradual shift, and a hook does not monitor alarms during the shift. Option C is incorrect because linear deployments move traffic in equal steps every interval, and they do not send 10 percent and then the remainder after 5 minutes. Option D is correct because SAM creates a CodeDeploy deployment that shifts 10 percent first, then the rest after 5 minutes, and CodeDeploy rolls back if a listed alarm fires. Key takeaway: In SAM, AutoPublishAlias plus DeploymentPreference (Canary, Linear, or AllAtOnce types) with Alarms and Hooks gives gradual Lambda deployments and automatic rollback through CodeDeploy.",
+      "reference": "https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/automate-safe-lambda-deployments.html"
+    },
+    {
+      "id": 42,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "An in-place CodeDeploy deployment updates a web application on EC2 instances that are registered with an Application Load Balancer. After the new version has started, a script must call the application's health endpoint and fail the deployment for that instance if the check fails, before the instance receives production traffic again. In which lifecycle event should the developer run this script?",
+      "options": [
+        "BeforeInstall",
+        "ValidateService",
+        "AfterInstall",
+        "AfterAllowTraffic"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because BeforeInstall runs before the new files are copied to the instance, so there is no new version to validate. Option B is correct because ValidateService runs after ApplicationStart and is the final deployment lifecycle event for verifying that the deployment succeeded, and it runs before the instance is allowed to receive traffic. Option C is incorrect because AfterInstall runs before ApplicationStart, so the application is not running yet and the health check would fail. Option D is incorrect because this event runs after the instance has been registered with the load balancer again, so a failing version would already be receiving traffic. Key takeaway: Order matters in CodeDeploy's EC2 lifecycle: ApplicationStart starts the app, ValidateService verifies it, and the traffic events control load balancer registration.",
+      "reference": "https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html"
+    },
+    {
+      "id": 43,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A pipeline in a tooling account deploys to a production account through a cross-account role. The build stage succeeds, but the deploy action fails with AccessDenied when the production role reads the artifact from the pipeline's S3 artifact bucket. The bucket policy already grants the production role s3:GetObject. The artifact store is configured with the default aws/s3 KMS key. What should the developer do?",
+      "options": [
+        "Create a customer managed KMS key in the tooling account, allow the production role in its key policy, and use it for the artifact store",
+        "Disable encryption on the artifact bucket so that the production role can read plaintext artifacts without KMS permissions",
+        "Replicate the artifact bucket to a bucket in the production account and point the deploy action at the replicated copy of the artifacts",
+        "Add the production role to the key policy of the aws/s3 key so that the role can decrypt the pipeline's artifacts"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because cross-account pipelines require a customer managed key because the key policy of the AWS managed key cannot grant access to another account. Option B is incorrect because S3 always encrypts new objects, and disabling encryption is not possible or appropriate for pipeline artifacts. Option C is incorrect because this adds infrastructure and does not address the KMS permission that is causing the failure. Option D is incorrect because key policies of AWS managed keys cannot be modified. Key takeaway: Cross-account CodePipeline deployments need a customer managed KMS key for the artifact store, with a key policy that trusts the target account's role.",
+      "reference": "https://docs.aws.amazon.com/codepipeline/latest/userguide/pipelines-create-cross-account.html"
+    },
+    {
+      "id": 44,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A monorepo hosts several services. A team wants its CodePipeline to start only when files under services/orders/ change on the main branch, or when a Git tag that starts with orders-v is pushed, and not on any other commit. What should the developer do?",
+      "options": [
+        "Add a first CodeBuild action that exits early if no files under services/orders/ changed, so that later stages are skipped",
+        "Keep a V1 pipeline and add file path filters to the source action's polling configuration for the services/orders/ directory",
+        "Create an EventBridge rule that starts the pipeline on every push to the repository and add a manual approval action after the source stage",
+        "Use a V2 pipeline with trigger filters: the main branch with a file path include of services/orders/**, plus a push filter for the tag pattern orders-v*"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because the pipeline execution would still start and consume resources for every commit, and it would not filter by tag. Option B is incorrect because V1 pipelines do not support file path or tag trigger filters. Option C is incorrect because the pipeline would still start for every commit, and the approval only adds a delay. Option D is correct because V2 pipelines support trigger filters on Git branches, tags, and file paths. Key takeaway: CodePipeline V2 pipelines add trigger filters (branches, tags, file paths) and execution modes that V1 pipelines lack.",
+      "reference": "https://docs.aws.amazon.com/codepipeline/latest/userguide/pipelines-filter.html"
+    },
+    {
+      "id": 45,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A CodeBuild project needs a database password that is stored in the AWS Secrets Manager secret prod/db (JSON key password) while it runs integration tests. The password must not appear in the buildspec, in plaintext project environment variable definitions, or in the source repository. Which approach meets this requirement?",
+      "options": [
+        "Define the password as a PLAINTEXT environment variable on the CodeBuild project so that the buildspec can reference it by name",
+        "Map a variable in env.secrets-manager to prod/db:password and grant the CodeBuild service role secretsmanager:GetSecretValue",
+        "Commit a KMS-encrypted copy of the password to the repository and decrypt it in pre_build with IAM user access keys that are stored as environment variables",
+        "Add the password to env.variables in buildspec.yml and restrict who can read the repository, so that the value stays inside the team"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because plaintext values are visible to anyone who can view the project configuration. Option B is correct because CodeBuild resolves the reference at build time, using the service role, and injects the value as an environment variable without storing it in the buildspec. Option C is incorrect because a copy of the secret is still stored in the repository, and the long-lived access keys would be stored as plaintext variables. Option D is incorrect because the secret would be stored in source control, which the requirement forbids. Key takeaway: CodeBuild can pull secrets at build time through env.secrets-manager or env.parameter-store references, provided the service role can read them.",
+      "reference": "https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html"
+    },
+    {
+      "id": 46,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A team runs a containerized service on Amazon ECS behind an Application Load Balancer. For each release they want 5 percent of production traffic sent to the new task revision for 15 minutes, with automatic rollback if a CloudWatch alarm fires. They do not want to create or maintain CodeDeploy applications or AppSpec files. Which configuration meets these requirements?",
+      "options": [
+        "Use the CODE_DEPLOY deployment controller with the CodeDeployDefault.ECSCanary10Percent5Minutes configuration and an AppSpec file",
+        "Use the rolling update deployment type with the deployment circuit breaker enabled and a minimum healthy percent of 100",
+        "Use the ECS service's built-in canary strategy with a canary percentage and bake time, and associate CloudWatch alarms for rollback",
+        "Use the EXTERNAL deployment controller and adjust the load balancer's target group weights with a custom script after each release"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because this requires CodeDeploy resources and AppSpec files, and the predefined configuration is 10 percent for 5 minutes. Option B is incorrect because rolling updates replace tasks gradually. They do not send a fixed percentage of traffic to the new revision or wait through a bake period. Option C is correct because ECS now supports canary, linear, and blue/green strategies natively, with bake time, lifecycle hooks, and alarm-based rollback, without CodeDeploy. Option D is incorrect because this makes the team build and operate the traffic-shifting logic that ECS provides natively. Key takeaway: Amazon ECS has built-in blue/green, linear, and canary deployment strategies with lifecycle hooks and alarm-based rollback, so CodeDeploy is no longer required for gradual releases.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/canary-deployment.html"
+    },
+    {
+      "id": 47,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A REST API integrates with a Lambda function by using an integration URI that contains the stage variable ${stageVariables.fnAlias}. The dev stage sets fnAlias to my-func:dev. Calls to the dev stage return a 500 error with the message that there are invalid permissions on the Lambda function, although the function and alias exist. What should the developer do?",
+      "options": [
+        "Replace the stage variable with a hard-coded integration URI, because stage variables cannot reference function aliases",
+        "Add a resource-based policy statement (Lambda add-permission) that lets apigateway.amazonaws.com invoke the alias ARN",
+        "Attach AWSLambdaBasicExecutionRole to the function's execution role so that the function is allowed to run",
+        "Publish a new version of the function and update the alias so that API Gateway detects the change in the target"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because stage variables can reference function aliases, which is the standard way to map stages to aliases. Option B is correct because when a stage variable supplies the function, API Gateway does not add the invoke permission automatically, so it must be granted explicitly. Option C is incorrect because the execution role controls what the function can do, not who can invoke the function. Option D is incorrect because the alias resolves correctly. The invocation is being denied because of permissions. Key takeaway: When a Lambda integration uses a stage variable, you must grant API Gateway permission to invoke each function or alias that the variable can reference.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/amazon-api-gateway-using-stage-variables.html"
+    },
+    {
+      "id": 48,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A data science team packages a Lambda function with pandas, SciPy, and a 700 MB machine learning model. Deploying the .zip fails with an error that the unzipped size must be smaller than 262144000 bytes, even after moving the dependencies into layers. The function must not be attached to a VPC. Which deployment option resolves the issue?",
+      "options": [
+        "Mount an Amazon EFS file system and load the model from it",
+        "Upload the .zip through Amazon S3 instead of directly",
+        "Package the function and its dependencies as a container image stored in Amazon ECR",
+        "Split the dependencies across five layers, because each layer has its own 250 MB limit"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because an EFS file system can be mounted only when the function is attached to a VPC, which the requirements exclude. Option B is incorrect because using S3 raises the limit on the size of the zipped upload, but the unzipped size limit still applies. Option C is correct because container images can be up to 10 GB, which is far above the 250 MB unzipped limit of .zip deployments. Option D is incorrect because the unzipped size of the function code and all its layers combined must stay under 250 MB. Key takeaway: A .zip deployment is limited to 250 MB unzipped (including layers); use a container image (up to 10 GB) for larger packages.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html"
+    },
+    {
+      "id": 49,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A Lambda-based service must roll out a new pricing feature flag gradually to its callers, watch an error-rate CloudWatch alarm during the rollout, and automatically revert the flag if the alarm fires, all without redeploying the function. The function should read flag values with low latency and few extra API calls. Which solution meets these requirements?",
+      "options": [
+        "Store the flag in AWS Secrets Manager and use a rotation function to change the value gradually across the callers over time",
+        "Use an AppConfig feature flag profile with a gradual deployment strategy that monitors the alarm, and read it through the Lambda extension",
+        "Store the flag in a Lambda environment variable and change it by calling UpdateFunctionConfiguration when the rollout begins",
+        "Store the flag in a Systems Manager Parameter Store standard parameter and call GetParameter on every invocation of the function"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because rotation is designed for credentials and not for staged rollouts of configuration, and it has no alarm-based rollback. Option B is correct because AppConfig supports gradual deployments with alarm monitoring and automatic rollback, and the extension caches the configuration locally in the function's environment. Option C is incorrect because each change creates a new function configuration that applies to all callers at once, with no gradual rollout or alarm-based rollback. Option D is incorrect because Parameter Store has no gradual rollout, alarm monitoring, or automatic rollback, and calling it on every invocation adds latency and API calls. Key takeaway: AWS AppConfig provides validated, gradual configuration deployments with alarm-based rollback, and the Lambda extension keeps reads fast and cheap.",
+      "reference": "https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html"
+    },
+    {
+      "id": 50,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A production Elastic Beanstalk environment must meet the following deployment requirements: full capacity is maintained throughout the deployment, a failed deployment must not modify the existing instances, all traffic switches to the new version at once after health checks pass (no percentage-based traffic split), and rollback must require only terminating the new instances. Which deployment policy should the developer choose?",
+      "options": [
+        "All at once",
+        "Rolling",
+        "Immutable",
+        "Rolling with additional batch"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because all instances are updated together and briefly out of service, which violates the capacity requirement. Option B is incorrect because rolling deployments take each batch out of service while it updates, which reduces capacity, and they also update instances in place. Option C is correct because immutable deployments launch a temporary Auto Scaling group with new instances, and the existing instances are untouched. If the new instances fail, they are terminated and nothing else needs to be undone. Option D is incorrect because this keeps capacity by launching an extra batch, but it updates the existing instances in place, so a failure leaves some instances on the new version and rolling back requires another deployment. Key takeaway: Immutable deployments use fresh instances in a new Auto Scaling group, preserving capacity and making rollback a matter of terminating the new instances.",
+      "reference": "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.rolling-version-deploy.html"
+    },
+    {
+      "id": 51,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A frontend team hosts a React application with AWS Amplify Hosting connected to a GitHub repository. Reviewers want a temporary, isolated URL with the built app for each pull request, and each preview must be deleted when its pull request closes, even if the source branch remains. What should the developer enable?",
+      "options": [
+        "Web previews for pull requests in the Amplify app settings",
+        "A CloudFront distribution with one origin per feature branch",
+        "A separate Amplify app for every pull request, created by a CloudFormation stack",
+        "Automatic branch creation for feature branches"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because Amplify builds every pull request into its own preview URL and removes the preview when the pull request is closed. Option B is incorrect because this does not build the pull request, and it would require custom routing and cleanup. Option C is incorrect because this is a heavy manual process, and the stacks would have to be cleaned up on every pull request. Option D is incorrect because this deploys branches that match a pattern. It is not tied to pull requests, and it would not remove the deployment when the pull request closes if the branch remains. Key takeaway: Amplify Hosting web previews build every pull request into a temporary environment and delete it when the pull request is closed.",
+      "reference": "https://docs.aws.amazon.com/amplify/latest/userguide/pr-previews.html"
+    },
+    {
+      "id": 52,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer is writing a Lambda function that is triggered by S3 ObjectCreated events. Before deploying, the developer wants to run the function locally with a realistic S3 event payload for a specific bucket and key. Which approach should the developer use?",
+      "options": [
+        "Run sam local start-api and send the S3 event to the local endpoint with curl so that the function receives the payload",
+        "Run sam local generate-event s3 put with the bucket and key, then pass the JSON event to sam local invoke with --event",
+        "Run sam sync --watch so that S3 delivers real events to the function while the developer edits the code locally",
+        "Run sam validate with the --lint option so that a sample S3 event is generated from the template's function definition"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because start-api emulates API Gateway endpoints. It does not emulate S3 event notifications. Option B is correct because the generate-event command produces sample event payloads for many AWS services, and sam local invoke runs the function in a local container with that event. Option C is incorrect because sam sync updates resources in the cloud and does not run the function locally. Option D is incorrect because sam validate checks that the template is valid, and it does not create event payloads. Key takeaway: sam local generate-event creates realistic test events, and sam local invoke runs a function locally against them.",
+      "reference": "https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-local-generate-event.html"
+    },
+    {
+      "id": 53,
+      "domain": "Deployment",
+      "type": "single",
+      "question": "A developer runs cdk deploy for a stack that includes a Lambda function whose code comes from a local directory. The command fails with an error that the stack uses assets and that the environment must be bootstrapped. What should the developer do?",
+      "options": [
+        "Run cdk synth first, because synthesis uploads the assets to an S3 bucket in the target account before deployment begins",
+        "Move the function code inline into the template so that no asset needs to be uploaded to the target environment, then redeploy",
+        "Run cdk deploy with the --hotswap option so that the assets are not required for the deployment of the changed function",
+        "Run cdk bootstrap for the target account and Region so that CDK creates the S3 bucket and ECR repository that it uses for assets"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because synthesis produces the CloudFormation template and asset manifests locally. It does not upload assets. Option B is incorrect because inline code is limited to very small functions and does not resolve the need for a bootstrapped environment in general. Option C is incorrect because hotswap speeds up development deployments of supported resource changes, and it still uses the bootstrap resources for assets. Option D is correct because assets such as Lambda code and Docker images are uploaded to bootstrap resources before CloudFormation deploys the stack. Key takeaway: CDK apps that use assets (Lambda code, container images) require a bootstrapped environment: run cdk bootstrap once per account and Region.",
+      "reference": "https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html"
+    },
+    {
+      "id": 54,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A developer must determine the 95th percentile of invocation duration, in five-minute intervals, for a Lambda function by using CloudWatch Logs Insights on the function's log group. Which query returns this result?",
+      "options": [
+        "filter @type = \"REPORT\" | stats max(@duration) as maxDuration by bin(5m)",
+        "filter @type = \"REPORT\" | stats pct(@duration, 95) as p95 by @timestamp",
+        "filter @type = \"REPORT\" | stats pct(@duration, 95) as p95 by bin(5m)",
+        "filter @type = \"REPORT\" | sort @duration desc | limit 20"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because this returns the maximum duration in each interval, not the 95th percentile. Option B is incorrect because grouping by @timestamp produces one row per distinct timestamp instead of five-minute intervals. Option C is correct because REPORT lines carry the duration of each invocation, pct() calculates the percentile, and bin(5m) groups the results into five-minute buckets. Option D is incorrect because this lists the 20 slowest invocations and does not calculate a percentile per interval. Key takeaway: Logs Insights discovers Lambda fields such as @duration on REPORT lines; use pct() for percentiles and bin() for time buckets.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_AnalyzeLogData-discoverable-fields.html"
+    },
+    {
+      "id": 55,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A Lambda function processes thousands of orders per second, and the team wants custom CloudWatch metrics (Count and Latency) with an OrderType dimension. Calling PutMetricData from the handler on every order adds latency and causes API throttling. Which approach publishes these metrics with the least added latency and without PutMetricData calls?",
+      "options": [
+        "Buffer the metrics in memory and call PutMetricData once at the end of each invocation instead of once per order event",
+        "Enable X-Ray active tracing and use the trace summaries in the service map as the source of the metrics",
+        "Enable the Lambda Insights extension so that CloudWatch collects the order metrics from the function automatically",
+        "Write log events in CloudWatch embedded metric format to standard output so that CloudWatch extracts the metrics"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because this still calls the API on every invocation, so throttling and added latency remain. Option B is incorrect because X-Ray traces are not CloudWatch custom metrics with the dimensions that the team defines. Option C is incorrect because Lambda Insights collects system-level metrics such as CPU and memory, and it does not publish application-defined metrics like order counts. Option D is correct because EMF log lines are ingested with the function's normal logging, and CloudWatch turns them into metrics asynchronously, so the handler makes no metrics API calls. Key takeaway: Embedded metric format lets functions emit custom metrics as structured logs, avoiding synchronous PutMetricData calls.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html"
+    },
+    {
+      "id": 56,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A team has enabled active tracing on an order-processing Lambda function. They want to search traces in the X-Ray console for requests where customerTier is gold, and they also want the full request payload attached to each trace for debugging, without making it searchable. How should the developer record these values?",
+      "options": [
+        "Record customerTier as metadata and the request payload as an annotation",
+        "Write both values to CloudWatch Logs and search them with an X-Ray filter expression",
+        "Record both values as annotations",
+        "Record customerTier as an annotation and the request payload as metadata"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because metadata is not indexed, so traces could not be searched by customerTier, and annotations accept only simple scalar values. Option B is incorrect because X-Ray filter expressions search trace data and not CloudWatch Logs. Option C is incorrect because a request payload is a structured object and cannot be stored in an annotation, and annotations are limited in number per trace. Option D is correct because annotations are indexed key-value pairs that can be used in filter expressions, while metadata can hold any object but is not indexed. Key takeaway: Use annotations for values you want to search or filter on, and metadata for extra data you only need to see.",
+      "reference": "https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-annotations"
+    },
+    {
+      "id": 57,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A team is building a new Java microservice on Amazon ECS and wants distributed traces in AWS X-Ray. The architects note that the X-Ray SDKs and daemon entered maintenance mode on February 25, 2026, with end of support planned for February 25, 2027, and they do not want to build new services on deprioritized instrumentation. Which instrumentation approach should the developer use?",
+      "options": [
+        "Add the AWS X-Ray SDK for Java to the service and run the X-Ray daemon as a sidecar container in the task",
+        "Instrument the service with OpenTelemetry, for example the AWS Distro for OpenTelemetry, and send the traces to X-Ray",
+        "Enable VPC Flow Logs and correlate the flow records with application logs to build a trace for each request",
+        "Use CloudTrail data events to reconstruct the request traces between the service's components after each call"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Correct answer: Option B. Option A is incorrect because this is the instrumentation path that is in maintenance mode and headed for end of support. Option B is correct because AWS positions OpenTelemetry as the primary instrumentation standard for X-Ray, and traces can still be viewed in X-Ray and CloudWatch. Option C is incorrect because flow logs record network metadata for IP traffic and do not contain request-level trace information. Option D is incorrect because CloudTrail records API activity in your account and does not trace requests between application components. Key takeaway: For new workloads, AWS recommends OpenTelemetry-based instrumentation (such as ADOT) for tracing; the X-Ray SDKs and daemon are in maintenance mode.",
+      "reference": "https://docs.aws.amazon.com/xray/latest/devguide/xray-instrumenting-your-app.html"
+    },
+    {
+      "id": 58,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A latency-sensitive function behind an API shows cold-start latency every weekday at 08:55, when traffic jumps from near zero to thousands of requests. Traffic is otherwise low. The team wants no cold starts from 09:00 to 12:00 and wants to pay for pre-initialized capacity only during that window. Which solution meets these requirements?",
+      "options": [
+        "Use EventBridge Scheduler to invoke the function every minute all day so that execution environments stay warm",
+        "Configure provisioned concurrency on the $LATEST version and schedule the increase for 08:45 with Application Auto Scaling scheduled actions",
+        "Set reserved concurrency to 1,000 for the function for the whole day so that capacity is guaranteed at 09:00",
+        "Publish a version, create an alias, and use Application Auto Scaling scheduled actions to change the alias's provisioned concurrency"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because periodic pings only keep a few environments warm, cannot guarantee thousands of initialized environments, and run all day. Option B is incorrect because provisioned concurrency cannot be configured on $LATEST. Option C is incorrect because reserved concurrency guarantees capacity but does not pre-initialize execution environments, so cold starts still occur. Option D is correct because provisioned concurrency is configured on a version or alias, and scheduled scaling changes the amount to match the expected window. Key takeaway: Provisioned concurrency removes cold starts for the environments it provisions; use aliases or versions and scheduled scaling to control its cost.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html"
+    },
+    {
+      "id": 59,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A CPU-bound Lambda function is configured with 1,024 MB. CloudWatch REPORT lines show a Max Memory Used of about 180 MB and an average duration of 2.4 seconds. A colleague proposes lowering the setting to 256 MB to reduce cost. What is the best way to find the setting that minimizes cost?",
+      "options": [
+        "Run the function at several memory settings, for example with AWS Lambda Power Tuning, and compare cost and duration",
+        "Set the memory to 256 MB because Lambda bills per MB configured, and the function uses only about 180 MB at peak",
+        "Keep 1,024 MB and enable provisioned concurrency so that the billed duration of every invocation is reduced",
+        "Increase the timeout to 30 seconds, then lower the memory to the minimum that the function can start with"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because CPU power scales with configured memory, so a lower setting can lengthen the duration enough to cost more, and only measurement shows the cost-optimal point. Option B is incorrect because cost is memory multiplied by duration, and less memory also means less CPU, so the CPU-bound function would run longer. Option C is incorrect because provisioned concurrency reduces cold-start latency and does not shorten the execution duration. Option D is incorrect because a longer timeout only prevents timeouts and does not make the function cheaper. Key takeaway: Lambda cost depends on memory and duration, and CPU scales with memory; measure across settings instead of sizing to Max Memory Used.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-memory.html"
+    },
+    {
+      "id": 60,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "An SNS topic delivers order events to three SQS queues. The publisher sends a JSON body such as {\"orderType\":\"refund\",\"amount\":120} and does not set message attributes. The subscription for the refunds queue has the filter policy {\"orderType\":[\"refund\"]}. The other two queues, which have no filter policy, receive every message, but the refunds queue receives nothing. What should the developer do?",
+      "options": [
+        "Enable raw message delivery on the refunds subscription",
+        "Convert the topic to an SNS FIFO topic so that filtering can use the payload",
+        "Set the refunds subscription's FilterPolicyScope attribute to MessageBody",
+        "Add a queue policy that allows sns.amazonaws.com to send messages to the refunds queue"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because raw delivery changes the message envelope and does not change how the filter policy is evaluated. Option B is incorrect because FIFO topics use the same filter policy scopes, and the default is still MessageAttributes. Option C is correct because the default scope is MessageAttributes, so the policy is evaluated against attributes that the publisher never set. MessageBody evaluates it against the JSON payload. Option D is incorrect because the other queues receive messages from the same topic, so delivery permissions are not the problem. Key takeaway: SNS filter policies apply to message attributes by default; set FilterPolicyScope to MessageBody to filter on the JSON payload.",
+      "reference": "https://docs.aws.amazon.com/sns/latest/dg/sns-message-filtering-scope.html"
+    },
+    {
+      "id": 61,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A CloudFront distribution serves a product API. Responses vary only by the lang query string. The origin also needs the X-Client-Version header and all other query strings for request logging, but they do not change the response. The cache hit ratio is low because the distribution currently caches on all query strings and headers. How should the developer configure the distribution?",
+      "options": [
+        "Use only an origin request policy that forwards lang, and set the minimum TTL to 0 so that every request reaches the origin",
+        "Use the legacy forwarded values settings to whitelist lang and X-Client-Version in the distribution's cache behavior",
+        "Use a cache policy with only lang in the cache key, and an origin request policy that forwards X-Client-Version and all query strings",
+        "Use a cache policy that includes all query strings and X-Client-Version so that the origin receives every value"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Correct answer: Option C. Option A is incorrect because disabling caching removes the benefit of CloudFront and does not address the hit ratio. Option B is incorrect because whitelisted headers and query strings are also added to the cache key, so X-Client-Version would still fragment the cache. Option C is correct because the cache policy defines what varies the cached object, and the origin request policy forwards extra values to the origin without adding them to the cache key. Option D is incorrect because anything in the cache key fragments the cache, which is what causes the low hit ratio. Key takeaway: Cache policies decide the cache key; origin request policies decide what else is forwarded to the origin without affecting caching.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/controlling-the-cache-key.html"
+    },
+    {
+      "id": 62,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "A team puts a DAX cluster in front of a DynamoDB table and points the application's SDK client at the DAX endpoint. Read latency for hot items stays at single-digit milliseconds, and DAX cache hit metrics stay near zero. The application calls GetItem with ConsistentRead set to true on every request. What should the developer do to benefit from DAX for these reads?",
+      "options": [
+        "Increase the DAX item cache TTL so that strongly consistent reads are served from the cache for longer",
+        "Add more nodes to the DAX cluster and enable multi-AZ placement to improve the cache hit ratio for the hot items",
+        "Replace GetItem with Query on the base table, because DAX caches the results of strongly consistent Query requests but not GetItem",
+        "Use eventually consistent reads where slightly stale data is acceptable, because DAX does not cache strongly consistent reads"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because a longer TTL does not matter, because strongly consistent reads are never served from the cache. Option B is incorrect because more nodes add capacity and availability, but the requests still bypass the cache. Option C is incorrect because DAX also passes strongly consistent Query requests through to DynamoDB. Option D is correct because DAX passes strongly consistent reads through to DynamoDB and does not serve them from its cache, so only eventually consistent reads can be cached. Key takeaway: DAX accelerates eventually consistent reads; strongly consistent reads always go to DynamoDB.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.consistency.html"
+    },
+    {
+      "id": 63,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "An SNS topic publishes to an SQS queue in the same account. The queue policy allows sns.amazonaws.com to send messages from the topic ARN. After the team enables SSE-KMS on the queue with the AWS managed key alias/aws/sqs, messages stop arriving and SNS delivery status logs show KMS access denied errors. Company policy requires SSE-KMS with a key that the company controls. What should the developer do?",
+      "options": [
+        "Add a statement for sns.amazonaws.com to the key policy of alias/aws/sqs that allows the required KMS actions",
+        "Switch the queue from SSE-KMS to SSE-SQS (SQS-owned keys), so that SNS can deliver without any KMS key policy changes",
+        "Add kms:GenerateDataKey and kms:Decrypt statements to the SNS topic's access policy for the queue's encryption key",
+        "Use a customer managed KMS key for the queue, with a key policy that allows sns.amazonaws.com to call kms:GenerateDataKey and kms:Decrypt"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Correct answer: Option D. Option A is incorrect because AWS managed key policies cannot be modified. Option B is incorrect because this could deliver messages, but the policy requires SSE-KMS with a company-controlled key. Option C is incorrect because KMS permissions are granted in the key policy, and the topic's access policy does not control the use of another resource's key. Option D is correct because SNS must be granted permission to use the queue's key, and only a customer managed key has a key policy that can grant it. Key takeaway: To let an AWS service send to an SSE-KMS encrypted queue, use a customer managed key and grant the service principal kms:GenerateDataKey and kms:Decrypt in its key policy.",
+      "reference": "https://docs.aws.amazon.com/sns/latest/dg/sns-enable-encryption-for-topic-sqs-queue-subscriptions.html"
+    },
+    {
+      "id": 64,
+      "domain": "Troubleshooting and Optimization",
+      "type": "single",
+      "question": "An ECS service on Fargate runs behind an Application Load Balancer. The application needs about 100 seconds to warm up before its /health endpoint returns 200. The target group checks every 30 seconds with an unhealthy threshold of 2. New tasks are repeatedly stopped and replaced by the ECS service scheduler shortly after they start, although the application would eventually be healthy. What should the developer change?",
+      "options": [
+        "Set the ECS service's health check grace period to a value longer than the warm-up time",
+        "Increase the load balancer's idle timeout to 120 seconds so that slow responses are not dropped by the load balancer",
+        "Increase the target group's deregistration delay to 120 seconds so that new tasks get more time to become healthy",
+        "Reduce the health check interval to 5 seconds so that the load balancer evaluates each new task sooner"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Correct answer: Option A. Option A is correct because during the grace period the scheduler ignores load balancer health check failures, which gives slow-starting tasks time to become healthy. Option B is incorrect because the idle timeout applies to open client connections and does not affect health check evaluation. Option C is incorrect because deregistration delay controls how long in-flight requests can drain when a target is removed, not how long new targets have to start. Option D is incorrect because this makes the load balancer detect failures faster, so the tasks would be replaced even sooner. Key takeaway: Use the ECS health check grace period so that slow-starting tasks are not killed by load balancer health checks before they are ready.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-load-balancing.html"
+    },
+    {
+      "id": 65,
+      "domain": "Troubleshooting and Optimization",
+      "type": "multi",
+      "question": "A production Lambda function written in Python uses the standard logging module and emits DEBUG logs that inflate CloudWatch Logs costs. The team wants to stop DEBUG output from being ingested in production without changing code, and later wants to search logs by fields such as the request ID in Logs Insights. Which TWO actions should the developer take? (Select TWO)",
+      "options": [
+        "Set the function's application log level to INFO",
+        "Set a custom LOG_LEVEL environment variable to INFO",
+        "Add a subscription filter that drops DEBUG events",
+        "Set only the system log level to WARN",
+        "Set the function's log format to JSON"
+      ],
+      "correctAnswers": [
+        0,
+        4
+      ],
+      "explanation": "Correct answers: Option A and Option E. Option A is correct because Lambda then drops application log events below INFO before they are sent to CloudWatch Logs. Option B is incorrect because Lambda does not act on an arbitrary environment variable. It would work only if the code read it and configured the logger. Option C is incorrect because subscription filters forward copies of events to other destinations and do not prevent ingestion or storage. Option D is incorrect because the system log level applies to logs that Lambda generates, such as START and REPORT lines, and not to logs from the function code. Option E is correct because log-level filtering is available only for the JSON log format, and structured JSON logs make fields searchable in Logs Insights. Key takeaway: Lambda advanced logging controls filter application logs by level without code changes, but they require the JSON log format.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs-log-level.html"
+    }
+  ]
+}

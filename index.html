@@ -869,7 +869,7 @@
         };
 
         var allQuestionsCache = [];
-        var certCatalog = []; // [{id, title, banks: [{id, file, title, description}]}]
+        var certCatalog = []; // [{id, title, banks: [{id, file, title}]}]
 
         // ---------- Theme ----------
         function applyTheme(mode) {
@@ -1062,8 +1062,39 @@
                 'banks.json must contain a non-empty "certifications" array.',
               );
             }
-            return data.certifications;
+            return data.certifications.map(normalizeCertBanks);
           });
+        }
+
+        // Derive each bank's id from its file name (no folders, no ".json")
+        // and its title from its position within the cert's banks array.
+        function bankIdFromFile(file) {
+          var name = String(file || "")
+            .split(/[\\/]/)
+            .pop();
+          return name.replace(/\.json$/i, "");
+        }
+
+        function normalizeCertBanks(cert) {
+          var banks = Array.isArray(cert.banks) ? cert.banks : [];
+          var normalized = banks.map(function (b, index) {
+            var copy = {};
+            Object.keys(b).forEach(function (k) {
+              copy[k] = b[k];
+            });
+            copy.id = bankIdFromFile(b.file) || b.id || "bank" + (index + 1);
+            copy.title = "Bank " + (index + 1);
+            // description is optional; default to empty when omitted
+            copy.description =
+              typeof b.description === "string" ? b.description : "";
+            return copy;
+          });
+          var out = {};
+          Object.keys(cert).forEach(function (k) {
+            out[k] = cert[k];
+          });
+          out.banks = normalized;
+          return out;
         }
 
         function loadBankFile(bank) {
@@ -1196,7 +1227,9 @@
 
         function updateBankDesc() {
           var bank = getSelectedBank();
-          el.bankDesc.textContent = bank ? bank.description || "" : "";
+          var desc = bank && bank.description ? bank.description : "";
+          el.bankDesc.textContent = desc;
+          el.bankDesc.classList.toggle("hidden", !desc);
         }
 
         function showSelectionNotice(msg) {
