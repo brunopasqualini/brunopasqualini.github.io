@@ -32,13 +32,14 @@ function CanvasInner() {
   const nodes: Node[] = useMemo(() => {
     if (!draft) return [];
     const liveIds = new Set(live?.nodes.map((n) => n.id));
+    const liveCfg = new Map(live?.nodes.map((n) => [n.id, JSON.stringify(n.config)]));
     return draft.nodes.map((n) => {
       const m = snap?.nodes[n.id];
       const flag = report?.flags[n.id];
       const isNetwork = entryOf(n.kind).role === 'network';
       const data: ArchNodeData = {
         node: n, metrics: m, status: m ? visualStatus(m.status, flag) : 'idle', insecure: flag?.insecure, misconfigured: flag?.misconfigured,
-        pending: !liveIds.has(n.id), isNetwork, minute: snap?.minute ?? 0,
+        pending: !liveIds.has(n.id), changed: liveIds.has(n.id) && liveCfg.get(n.id) !== JSON.stringify(n.config), isNetwork, minute: snap?.minute ?? 0,
       };
       if (entryOf(n.kind).role === 'lb' && snap) {
         const tiles: Tile[] = [];
