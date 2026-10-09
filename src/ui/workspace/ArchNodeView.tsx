@@ -13,6 +13,8 @@ export interface ArchNodeData extends Record<string, unknown> {
   insecure?: string;
   misconfigured?: string;
   pending: boolean;
+  /** Config edited in the draft but not deployed yet: the live system still runs the old settings. */
+  changed?: boolean;
   isNetwork: boolean;
   minute: number;
   /** Downstream fleet of a load balancer: its targets' instances. */
@@ -91,6 +93,7 @@ export function ArchNodeView({ data, selected }: NodeProps) {
         </>
       )}
       {d.pending && <div className="anode-flag">pending deploy</div>}
+      {!d.pending && d.changed && <div className="anode-flag" title="Settings changed but not deployed: the running system still uses the old ones. Open Plan → Deploy changes.">edited · not deployed</div>}
       {d.status !== 'healthy' && d.status !== 'idle' && !d.isNetwork && <div className={`anode-tag tag-${d.status}`}>{d.status}</div>}
       {n.kind === 'sg' && <Lock className="anode-lock" size={12} />}
       <Handle type="source" position={Position.Right} className="h" />
