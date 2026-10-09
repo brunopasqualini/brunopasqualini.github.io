@@ -320,3 +320,20 @@ textarea { resize: vertical; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 .skip { position: absolute; left: -999px; top: 6px; z-index: 100; background: var(--cyan); color: #00222b; padding: 6px 12px; border-radius: 8px; } .skip:focus { left: 8px; }
+
+/* collapsible navigation */
+.brand-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.nav-toggle { flex: none; }
+.nav-toggle-top { display: none; margin-right: 6px; }
+.nav-fab { display: none; position: fixed; left: 10px; top: 10px; z-index: 45; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line2); background: var(--panel2); color: var(--cyan); cursor: pointer; place-items: center; box-shadow: var(--shadow); }
+.app.nav-hidden { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.app.nav-hidden .sidenav { display: none; }
+.app.nav-hidden .nav-toggle-top { display: inline-flex; }
+.crumbs { align-items: center; }
+@media (min-width: 681px) { .nav-toggle-top { display: inline-flex; } }
+@media (max-width: 680px) {
+  .nav-toggle-top { display: none !important; }
+  .app.nav-hidden .nav-fab { display: grid; }
+  .brand-row { flex: none; }
+  .app.nav-hidden .statusbar { padding-left: 56px; }
+}

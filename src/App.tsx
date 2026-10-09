@@ -1,4 +1,4 @@
-import { Download, FlaskConical, GraduationCap, HelpCircle, Hexagon, LayoutDashboard, NotebookPen, Settings as SettingsIcon, Siren, Target, Trash2, Upload, X } from 'lucide-react';
+import { Download, FlaskConical, PanelLeftClose, PanelLeftOpen, GraduationCap, HelpCircle, Hexagon, LayoutDashboard, NotebookPen, Settings as SettingsIcon, Siren, Target, Trash2, Upload, X } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { levelFromXp } from './game/progression';
 import { useGame } from './game/store';
@@ -77,6 +77,15 @@ export default function App() {
   const finishOnboarding = useGame((s) => s.finishOnboarding);
   const [showSettings, setShowSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [navHidden, setNavHidden] = useState(() => { try { return window.localStorage.getItem('eo-nav-hidden') === '1'; } catch { return false; } });
+  const toggleNav = () => {
+    setNavHidden((v) => {
+      try { window.localStorage.setItem('eo-nav-hidden', v ? '0' : '1'); } catch { /* storage unavailable */ }
+      return !v;
+    });
+    // let the canvas re-fit once the layout has changed width
+    setTimeout(() => window.dispatchEvent(new Event('eo-fit')), 260);
+  };
   const level = levelFromXp(xp);
   const inWorkspace = route.page === 'play' || route.page === 'lab';
 
@@ -86,10 +95,13 @@ export default function App() {
   }, [route.page]);
 
   return (
-    <div className={`app ${inWorkspace ? 'app-ws' : ''}`}>
+    <div className={`app ${inWorkspace ? 'app-ws' : ''} ${navHidden ? 'nav-hidden' : ''}`}>
       <a className="skip" href="#main">Skip to content</a>
-      <nav className="sidenav" aria-label="Primary">
-        <a className="brand" href="#/" aria-label="Engineering Ops home"><Hexagon size={30} className="brand-ico" /><div><b>EngOps</b><small>Build. Break. Learn.</small></div></a>
+      <nav className="sidenav" id="primary-nav" aria-label="Primary">
+        <div className="brand-row">
+          <a className="brand" href="#/" aria-label="Engineering Ops home"><Hexagon size={30} className="brand-ico" /><div><b>EngOps</b><small>Build. Break. Learn.</small></div></a>
+          <button className="icon-btn nav-toggle" onClick={toggleNav} aria-label="Hide navigation panel" aria-expanded={!navHidden} aria-controls="primary-nav" title="Hide navigation"><PanelLeftClose size={18} /></button>
+        </div>
         <ul>
           {NAV.map((n) => { const Icon = n.icon; const active = route.page === n.id || (n.id === 'missions' && route.page === 'play' && route.id !== undefined && !['m2-db-meltdown', 'm3-deployment', 'm5-queue'].includes(route.id)) || (n.id === 'incidents' && route.page === 'play' && ['m2-db-meltdown', 'm3-deployment', 'm5-queue'].includes(route.id ?? '')); return (
             <li key={n.id}><a href={`#${n.path}`} className={active ? 'on' : ''} aria-current={active ? 'page' : undefined}><Icon size={18} /><span>{n.label}</span></a></li>
@@ -99,7 +111,9 @@ export default function App() {
       </nav>
       <div className="main">
         <header className="topbar">
-          <div className="crumbs"><span>Platform</span><i>/</i><b>{route.page === 'play' ? 'Mission' : route.page === 'command' ? 'Command Center' : NAV.find((n) => n.id === route.page)?.label}</b></div>
+          <div className="crumbs">
+            <button className="icon-btn nav-toggle-top" onClick={toggleNav} aria-label={navHidden ? 'Show navigation panel' : 'Hide navigation panel'} aria-expanded={!navHidden} aria-controls="primary-nav" title={navHidden ? 'Show navigation' : 'Hide navigation'}>{navHidden ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button>
+            <span>Platform</span><i>/</i><b>{route.page === 'play' ? 'Mission' : route.page === 'command' ? 'Command Center' : NAV.find((n) => n.id === route.page)?.label}</b></div>
           <div className="top-right">
             <span className="levelchip" title={`${xp} XP`}>Lv {level} <small>{xp} XP</small></span>
             <span className="modechip">{settings.mode}</span>
@@ -119,6 +133,7 @@ export default function App() {
           </Suspense>
         </main>
       </div>
+      {navHidden && <button className="nav-fab" onClick={toggleNav} aria-label="Show navigation panel" title="Show navigation"><PanelLeftOpen size={18} /></button>}
       <div className="toasts" role="status" aria-live="polite">
         {toasts.map((t) => <div key={t.id} className={`toast toast-${t.kind}`}>{t.text}<button className="icon-btn" aria-label="Dismiss" onClick={() => dismiss(t.id)}><X size={14} /></button></div>)}
       </div>
