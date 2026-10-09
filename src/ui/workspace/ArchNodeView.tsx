@@ -4,6 +4,7 @@ import { entryOf } from '../../sim/catalog';
 import type { ArchNode, NodeMetrics, NodeStatus } from '../../sim/types';
 import { NodeIcon } from '../icons';
 import { num } from '../fmt';
+import { QueueDots, Strip, tilesFor, type Tile } from './InstanceStrip';
 
 export interface ArchNodeData extends Record<string, unknown> {
   node: ArchNode;
@@ -13,6 +14,10 @@ export interface ArchNodeData extends Record<string, unknown> {
   misconfigured?: string;
   pending: boolean;
   isNetwork: boolean;
+  minute: number;
+  /** Downstream fleet of a load balancer: its targets' instances. */
+  fanout?: Tile[];
+  fanoutLabel?: string;
 }
 
 export function summaryOf(n: ArchNode): string {
@@ -36,6 +41,13 @@ export function summaryOf(n: ArchNode): string {
     case 'identity': return n.kind === 'iam' ? c.policy : e.name;
     default: return e.name;
   }
+}
+
+function stripLabel(n: ArchNode, m: NodeMetrics | undefined): string | undefined {
+  if (!m) return undefined;
+  if (m.role === 'compute' || m.role === 'worker') return `${m.replicas}${n.config.autoscale ? `/${n.config.maxReplicas}` : ''}`;
+  if (m.role === 'db' && n.config.readReplicas) return `${(m.replicaLagSec ?? 0).toFixed(1)}s lag`;
+  return undefined;
 }
 
 function mini(m: NodeMetrics | undefined) {
@@ -71,6 +83,10 @@ export function ArchNodeView({ data, selected }: NodeProps) {
       {!d.isNetwork && d.metrics && (
         <>
           {['compute', 'worker', 'db', 'kv', 'search', 'cache'].includes(e.role) && <div className="anode-bar"><div style={{ width: `${util * 100}%` }} /></div>}
+          {d.fanout && d.fanout.length > 0
+            ? <Strip tiles={d.fanout} label={d.fanoutLabel} />
+            : <Strip tiles={tilesFor(n, d.metrics, d.minute)} label={stripLabel(n, d.metrics)} />}
+          {e.role === 'queue' && !n.config.isDlq && <QueueDots depth={d.metrics.queueDepth ?? 0} dlq={d.metrics.dlqDepth ?? 0} />}
           <div className="anode-mini">{mini(d.metrics)}</div>
         </>
       )}

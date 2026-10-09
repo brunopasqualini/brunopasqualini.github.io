@@ -337,3 +337,21 @@ textarea { resize: vertical; }
   .brand-row { flex: none; }
   .app.nav-hidden .statusbar { padding-left: 56px; }
 }
+
+/* ---- instance strips: show the fleet behind a node ---- */
+.istrip{display:flex;align-items:flex-end;gap:3px;margin:7px 0 2px;flex-wrap:wrap}
+.istrip em{font:10px var(--mono);color:var(--muted);margin-left:auto;font-style:normal;align-self:center}
+.itile{position:relative;width:11px;height:16px;border-radius:3px;background:#0b1730;border:1px solid #29487c;overflow:hidden;display:inline-flex;align-items:flex-end;animation:tilein .45s ease-out}
+.itile i{display:block;width:100%;background:var(--cyan);transition:height .5s ease,background .3s;opacity:.9}
+.itile b{position:absolute;inset:0;display:grid;place-items:center;font:700 8px var(--mono);color:#dff6ff;text-shadow:0 0 2px #000}
+.itile.it-warm i{background:#f59e0b}.itile.it-hot i{background:#ef4444}
+.itile.it-ghost{border-style:dashed;border-color:#26395f;background:transparent;opacity:.45;animation:none}
+.itile.it-down{border-color:#ef4444;background:#3a1020}.itile.it-down i{display:none}
+.itile.it-primary{width:15px;border-color:#22d3ee}
+.itile.it-standby{width:15px;border-style:dashed;border-color:#4f78c4}.itile.it-standby i{background:#4f78c4}
+.itile.it-replica i{background:#a78bfa}.itile.it-replica.it-warm i{background:#f59e0b}.itile.it-replica.it-hot i{background:#ef4444}
+@keyframes tilein{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.qdots{display:flex;gap:2px;margin:6px 0 2px;flex-wrap:wrap}
+.qdots span{width:6px;height:6px;border-radius:50%;background:#0b1730;border:1px solid #29487c}
+.qdots span.on{background:#a78bfa;border-color:#a78bfa}.qdots span.dead{background:#ef4444;border-color:#ef4444;margin-left:3px}
+@media (prefers-reduced-motion:reduce){.itile{animation:none}.itile i{transition:none}}

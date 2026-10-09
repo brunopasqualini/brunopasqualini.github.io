@@ -4,6 +4,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { tilesFor, type Tile } from './InstanceStrip';
 import { edgeClass, makeEdge, makeNode, nodeById } from '../../sim/arch';
 import { visualStatus } from '../../sim/analysis';
 import { canConnect, entryOf } from '../../sim/catalog';
@@ -37,8 +38,22 @@ function CanvasInner() {
       const isNetwork = entryOf(n.kind).role === 'network';
       const data: ArchNodeData = {
         node: n, metrics: m, status: m ? visualStatus(m.status, flag) : 'idle', insecure: flag?.insecure, misconfigured: flag?.misconfigured,
-        pending: !liveIds.has(n.id), isNetwork,
+        pending: !liveIds.has(n.id), isNetwork, minute: snap?.minute ?? 0,
       };
+      if (entryOf(n.kind).role === 'lb' && snap) {
+        const tiles: Tile[] = [];
+        let up = 0, total = 0;
+        for (const e of draft.edges) {
+          if (e.source !== n.id) continue;
+          const t = draft.nodes.find((x) => x.id === e.target);
+          const tm = t && snap.nodes[t.id];
+          if (!t || !tm || !['compute', 'worker'].includes(tm.role)) continue;
+          const ts = tilesFor(t, tm, snap.minute).filter((x) => x.kind !== 'ghost');
+          up += ts.filter((x) => x.kind === 'on').length; total += ts.length;
+          tiles.push(...ts.map((x) => ({ ...x, key: `${t.id}-${x.key}` })));
+        }
+        if (tiles.length) { data.fanout = tiles.slice(0, 16); data.fanoutLabel = `${up}/${total} healthy`; }
+      }
       return { id: n.id, type: 'arch', position: n.position, data, selected: selection.type === 'node' && selection.id === n.id, zIndex: isNetwork ? 0 : 1 };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,7 +78,9 @@ function CanvasInner() {
         else if (em && em.errorRate > 0.05) color = '#f59e0b';
         if (em?.blocked) { color = '#ef4444'; dash = '6 4'; }
         if (cls === 'async') dash = '7 5';
-        label = em ? (em.blocked ? '✕ blocked' : rps >= 0.5 ? `${rps >= 100 ? rps.toFixed(0) : rps.toFixed(1)}/s${em.amplification > 1.25 ? ` ×${em.amplification.toFixed(1)}` : ''}${em.breakerOpen ? ' ⚡open' : ''}` : undefined) : undefined;
+        const tgt = snap?.nodes[e.target];
+        const per = em && tgt && ['compute', 'worker'].includes(tgt.role) && tgt.replicas > 1 && !em.blocked && rps >= 0.5 ? ` · ${tgt.replicas}× ≈${(rps / tgt.replicas) >= 100 ? (rps / tgt.replicas).toFixed(0) : (rps / tgt.replicas).toFixed(1)}/s` : '';
+        label = em ? (em.blocked ? '✕ blocked' : rps >= 0.5 ? `${rps >= 100 ? rps.toFixed(0) : rps.toFixed(1)}/s${em.amplification > 1.25 ? ` ×${em.amplification.toFixed(1)}` : ''}${em.breakerOpen ? ' ⚡open' : ''}${per}` : undefined) : undefined;
       } else if (cls === 'attach') { color = '#64748b'; dash = '2 5'; width = 1.2; } else { color = '#4f78c4'; dash = '3 5'; width = 1.2; }
       out.push({
         id: e.id, source: e.source, target: e.target, selected: sel, animated: running && (cls === 'traffic' || cls === 'async') && (em?.rps ?? 0) > 0.5 && !em?.blocked,
