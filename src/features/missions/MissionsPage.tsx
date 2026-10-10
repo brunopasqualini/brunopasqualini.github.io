@@ -1,4 +1,5 @@
 import { Clock, Lock } from 'lucide-react';
+import { journeyOrder, stageOfMission } from '@/content/journey';
 import { MISSIONS } from '@/content/missions';
 import { Chip } from '@/shared/ui/common';
 import { when } from '@/shared/lib/fmt';
@@ -18,7 +19,7 @@ export function MissionsPage() {
         </div>
       </header>
       <ol className="campaign">
-        {MISSIONS.map((m) => {
+        {journeyOrder(MISSIONS).map((m) => {
           const st = status(m);
           const o = progress.completed[m.id];
           const missing = unmet(m);
@@ -29,6 +30,7 @@ export function MissionsPage() {
                 <div className="row-between">
                   <h3>{m.title}</h3>
                   <div className="chips">
+                    {stageOfMission(m.id) && <Chip kind="purple">Level {stageOfMission(m.id)!.level}</Chip>}
                     <Chip kind={m.kind === 'incident' ? 'crit' : 'info'}>{m.kind}</Chip>
                     <Chip kind={m.difficulty === 'Beginner' ? 'ok' : m.difficulty === 'Intermediate' ? 'warn' : 'crit'}>
                       {m.difficulty}
@@ -39,6 +41,11 @@ export function MissionsPage() {
                   </div>
                 </div>
                 <p>{m.tagline}</p>
+                {(m.consequences ?? []).length > 0 && (
+                  <p className="tiny carried-note">
+                    <b>Reacts to your earlier decisions:</b> debts and benefits from missions you have passed shape the starting design.
+                  </p>
+                )}
                 <div className="mc-cols">
                   <div>
                     <h5>Learning objectives</h5>

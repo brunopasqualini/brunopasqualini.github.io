@@ -41,6 +41,7 @@ function fingerprint(missionId: string): string {
  */
 const KNOWN: Record<number, Record<string, string>> = {
   1: {
+    'm9-merger': '93708274',
     'm8-impatient-client': '37e67175',
     'm7-n-plus-one': '671dced4',
     'm1-monolith': 'ef7ca4b7',

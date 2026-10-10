@@ -25,9 +25,15 @@ describe('journey', () => {
     expect(currentStage(all).level).toBe(lastPlayable.level);
   });
 
-  it('reports stages without scenarios as coming soon rather than empty progress', () => {
-    const sp = stageProgress({});
-    expect(sp.find((s) => s.stage.level === 5)?.comingSoon).toBe(true);
-    expect(sp.find((s) => s.stage.level === 2)).toMatchObject({ done: 0, total: 2, complete: false });
+  it('every stage has at least one scenario today', () => {
+    expect(JOURNEY.every((s) => s.missionIds.length > 0)).toBe(true);
+    expect(stageProgress({}).some((s) => s.comingSoon)).toBe(false);
+  });
+
+  it('reports a stage without scenarios as coming soon rather than empty progress', () => {
+    const planned = [{ ...JOURNEY[0], missionIds: [] }, JOURNEY[1]];
+    const sp = stageProgress({}, planned);
+    expect(sp[0]).toMatchObject({ comingSoon: true, complete: false, total: 0 });
+    expect(sp[1]).toMatchObject({ comingSoon: false, done: 0, total: JOURNEY[1].missionIds.length });
   });
 });

@@ -247,3 +247,14 @@
     margin-top: 10px;
   }
 }
+
+@layer features {
+  .carried-note {
+    color: #c4b5fd;
+    margin: 4px 0 0;
+  }
+  .callout.carried ul,
+  .callout.decisions ul {
+    margin-top: 6px;
+  }
+}

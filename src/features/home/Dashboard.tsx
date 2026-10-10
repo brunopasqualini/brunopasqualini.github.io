@@ -7,13 +7,11 @@ import { go } from '@/shared/lib/nav';
 import { MissionButtons, useMissionState } from '@/entities/mission/MissionButtons';
 
 export function Dashboard() {
-  const { progress, saved, status, unmet } = useMissionState();
+  const { progress, saved, status, unmet, recommended } = useMissionState();
   const level = levelFromXp(progress.xp);
   const cur = xpForLevel(level);
   const nxt = xpForLevel(level + 1);
   const done = MISSIONS.filter((m) => progress.completed[m.id]?.passed).length;
-  const recommended =
-    MISSIONS.find((m) => status(m) !== 'completed' && unmet(m).length === 0) ?? MISSIONS.find((m) => status(m) !== 'completed');
   const incidents = MISSIONS.filter((m) => m.kind === 'incident' && status(m) !== 'completed');
   const resume = Object.entries(saved)
     .filter(([id, s]) => id !== 'lab' && s.ops.length > 0 && !progress.completed[id])

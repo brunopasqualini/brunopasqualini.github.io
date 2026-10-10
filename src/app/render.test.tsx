@@ -89,7 +89,8 @@ describe('home', () => {
     expect(host!.querySelectorAll('.stages .stage').length).toBe(5);
     expect(host!.querySelectorAll('.pillar').length).toBe(4);
     expect(host!.querySelectorAll('.audience').length).toBe(3);
-    expect(host!.querySelector('.stage-soon')?.textContent).toMatch(/Principal/);
+    expect(host!.querySelector('.stages .stage:last-child')?.textContent).toMatch(/Principal/);
+    expect(host!.querySelector('.stage-soon')).toBeNull();
   });
 });
 

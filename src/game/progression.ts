@@ -1,3 +1,4 @@
+import { MISSIONS } from '@/content/missions';
 import type { SkillId } from '@/content/missions/types';
 import type { Outcome } from '@/game/scoring';
 
@@ -93,9 +94,24 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'campaign',
     title: 'Campaign Complete',
-    desc: 'Pass all six campaign missions.',
-    test: (_o, p) =>
-      ['m1-monolith', 'm2-db-meltdown', 'm3-deployment', 'm4-network', 'm5-queue', 'm6-bill-shock'].every((id) => p.completed[id]?.passed),
+    desc: 'Pass every campaign mission.',
+    test: (_o, p) => MISSIONS.every((m) => p.completed[m.id]?.passed),
+  },
+  {
+    id: 'root-cause',
+    title: 'Fix the Cause',
+    desc: 'Remove the N+1 pattern in code without buying a bigger database.',
+    test: (o) =>
+      o.missionId === 'm7-n-plus-one' &&
+      o.passed &&
+      (o.decisions ?? []).some((d) => d.tag === 'm7-n-plus-one:fixed-in-code') &&
+      !(o.decisions ?? []).some((d) => d.tag === 'm7-n-plus-one:bought-a-bigger-database'),
+  },
+  {
+    id: 'principal',
+    title: 'Principal Engineer',
+    desc: 'Pass the capstone: The Merger.',
+    test: (o) => o.missionId === 'm9-merger' && o.passed,
   },
 ];
 

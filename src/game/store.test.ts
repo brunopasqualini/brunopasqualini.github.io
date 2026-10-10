@@ -131,3 +131,39 @@ describe('gameplay flow through the store', () => {
     expect(g().drill?.title).toMatch(/spike/);
   });
 });
+
+describe('decisions carry into later missions through the store', () => {
+  it('passing a mission records its decisions, and the next mission starts with the matching consequences', () => {
+    g().openMission('m7-n-plus-one', { fresh: true });
+    g().startIncident();
+    // the tempting-but-costly route: also buy a bigger database instead of fixing the pattern
+    g().editDraft((a) => {
+      a.nodes.find((n) => n.id === 'db')!.config.size = 'medium';
+      a.edges.find((e) => e.id === 'e-api-db')!.config.weight = 2; // and also batch, so the mission passes
+    });
+    g().deploy();
+    g().step(6);
+    g().submit();
+    const d = g().progress.completed['m7-n-plus-one']?.decisions ?? [];
+    expect(d.map((x) => x.tag)).toEqual(expect.arrayContaining(['m7-n-plus-one:fixed-in-code', 'm7-n-plus-one:bought-a-bigger-database']));
+
+    g().closeSession();
+    g().openMission('m9-merger', { fresh: true });
+    const s = g().session!;
+    expect(s.inherited).toContain('m7-n-plus-one:bought-a-bigger-database');
+    expect(s.consequences.map((c) => c.id)).toContain('inherited-bigger-db');
+    expect(s.draft.nodes.find((n) => n.id === 'shop-db')!.config.size).toBe('large');
+    expect(g().saved['m9-merger'].inherited).toEqual(s.inherited);
+
+    // reopening restores the same starting state from the saved tags (no progress lookup needed)
+    g().closeSession();
+    useGame.setState((st) => ({ progress: { ...st.progress, completed: {} } }));
+    g().openMission('m9-merger');
+    expect(g().session!.consequences.map((c) => c.id)).toContain('inherited-bigger-db');
+  });
+
+  it('a fresh attempt re-reads your current history, so improving an earlier mission changes the next one', () => {
+    g().openMission('m9-merger', { fresh: true });
+    expect(g().session!.consequences).toEqual([]);
+  });
+});
