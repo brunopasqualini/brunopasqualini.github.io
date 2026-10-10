@@ -49,6 +49,11 @@ Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings 
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
+Looking back: drag the timeline under the health strip (or press `[` and `]`) to see the canvas and health numbers as they were at an
+earlier minute. It is paused and read-only in effect: nothing is replayed or changed, and running, stepping or deploying returns to
+live. Markers show deploys, faults and incidents; click one to jump there. Time-series panels (charts, logs) always show the full
+history, so they keep showing the latest.
+
 ## The missions
 
 | #   | Mission                     | Kind     | Teaches                                                                                                                                  |
