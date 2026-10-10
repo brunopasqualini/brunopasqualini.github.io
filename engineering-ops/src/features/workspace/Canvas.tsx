@@ -68,7 +68,7 @@ const FIT = { padding: { top: '40px', right: '24px', bottom: '60px', left: '56px
 const REF_KEYS = ['subnet', 'sg', 'iamRole', 'nat', 'vpc', 'nacl'];
 
 function CanvasInner() {
-  const { session, snap, report } = useLive();
+  const { session, snap, report, viewing } = useLive();
   const tick = useGame((s) => s.tick);
   const running = useGame((s) => s.running);
   const selection = useGame((s) => s.selection);
@@ -361,6 +361,7 @@ function CanvasInner() {
     <div
       className="canvas"
       data-detail={detail}
+      data-viewing={viewing}
       ref={wrap}
       onDragOver={(e) => {
         e.preventDefault();
