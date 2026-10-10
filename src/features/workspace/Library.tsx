@@ -6,6 +6,7 @@ import { levelFromXp } from '@/game/progression';
 import { missionOf, LAB_ID } from '@/game/session';
 import { unlockedTier, useGame } from '@/game/store';
 import { NodeIcon } from '@/shared/ui/icons';
+import { toneOf } from '@/shared/ui/roleTone';
 
 export function Library() {
   const session = useGame((s) => s.session);
@@ -45,7 +46,8 @@ export function Library() {
   }, [items]);
 
   return (
-    <aside className="library" aria-label="Component library">
+    <section className="card-panel library" aria-label="Component library">
+      <h3 className="cp-title">Components</h3>
       <div className="lib-search">
         <Search size={14} aria-hidden="true" />
         <input placeholder="Search components…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search components" />
@@ -73,33 +75,35 @@ export function Library() {
         {groups.map(([g, list]) => (
           <section key={g}>
             <h4>{g}</h4>
-            {list.map(({ e, locked }) => (
-              <button
-                key={e.kind}
-                className={`lib-item ${locked ? 'locked' : ''}`}
-                draggable={!locked}
-                title={locked ? `Unlocks at level ${e.tier === 2 ? 2 : 4}` : e.desc}
-                onDragStart={(ev) => {
-                  ev.dataTransfer.setData('application/x-eo-kind', e.kind);
-                  ev.dataTransfer.effectAllowed = 'copy';
-                }}
-                onClick={() => {
-                  if (!locked) {
-                    window.dispatchEvent(new CustomEvent('eo-add', { detail: { kind: e.kind } }));
-                    useGame.getState().setMobilePane('canvas');
-                  }
-                }}
-                disabled={locked}
-                aria-label={`${e.name}${locked ? ' (locked)' : ''}`}
-              >
-                <span className="lib-ico">
-                  <NodeIcon name={e.icon} size={16} />
-                </span>
-                <span className="lib-name">{e.name}</span>
-                {e.aws && <span className="lib-aws">AWS</span>}
-                {locked && <Lock size={12} className="lib-lock" />}
-              </button>
-            ))}
+            <div className="lib-grid">
+              {list.map(({ e, locked }) => (
+                <button
+                  key={e.kind}
+                  className={`lib-item ${locked ? 'locked' : ''}`}
+                  draggable={!locked}
+                  title={locked ? `Unlocks at level ${e.tier === 2 ? 2 : 4}` : e.desc}
+                  onDragStart={(ev) => {
+                    ev.dataTransfer.setData('application/x-eo-kind', e.kind);
+                    ev.dataTransfer.effectAllowed = 'copy';
+                  }}
+                  onClick={() => {
+                    if (!locked) {
+                      window.dispatchEvent(new CustomEvent('eo-add', { detail: { kind: e.kind } }));
+                      useGame.getState().setMobilePane('canvas');
+                    }
+                  }}
+                  disabled={locked}
+                  aria-label={`${e.name}${locked ? ' (locked)' : ''}`}
+                >
+                  <span className={`lib-ico tone-${toneOf(e.role)}`}>
+                    <NodeIcon name={e.icon} size={17} />
+                  </span>
+                  <span className="lib-name">{e.name}</span>
+                  {e.aws && <span className="lib-aws">AWS</span>}
+                  {locked && <Lock size={12} className="lib-lock" />}
+                </button>
+              ))}
+            </div>
           </section>
         ))}
         {items.length === 0 && <p className="muted pad">No components match.</p>}
@@ -115,6 +119,6 @@ export function Library() {
           </p>
         )}
       </div>
-    </aside>
+    </section>
   );
 }
