@@ -1,3 +1,4 @@
+import { CompareTab } from './CompareTab';
 import { assessHypothesis } from '@/game/diagnosis';
 import { Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -233,7 +234,7 @@ export function Debrief() {
   const close = useGame((s) => s.closeDebrief);
   const retry = useGame((s) => s.retryMission);
   const progress = useGame((s) => s.progress);
-  const [tab, setTab] = useState<'result' | 'learn' | 'diagnosis' | 'record'>('result');
+  const [tab, setTab] = useState<'result' | 'learn' | 'compare' | 'diagnosis' | 'record'>('result');
   const m = session ? missionOf(session.missionId) : undefined;
   const next = useMemo(() => (m ? MISSIONS.find((x) => x.number === m.number + 1) : undefined), [m]);
   if (!d || !m || !session) return null;
@@ -321,6 +322,7 @@ export function Debrief() {
           [
             ['result', 'Results'],
             ['learn', 'What you should take away'],
+            ['compare', 'Before and after'],
             ['diagnosis', 'Diagnosis'],
             ['record', 'Your decisions'],
           ] as const
@@ -472,6 +474,8 @@ export function Debrief() {
           </section>
         </div>
       )}
+
+      {tab === 'compare' && <CompareTab session={session} />}
 
       {tab === 'diagnosis' && (
         <div className="learn">

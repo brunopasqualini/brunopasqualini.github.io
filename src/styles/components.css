@@ -615,6 +615,27 @@
     margin: 4px 0 0;
     color: var(--muted);
   }
+  .compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .compare th,
+  .compare td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    font-weight: 400;
+  }
+  .compare thead th {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .compare tbody th {
+    color: var(--text);
+  }
   .causes li {
     padding: 10px 12px;
     border: 1px solid var(--line);
