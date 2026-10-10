@@ -98,18 +98,25 @@
   .btn:hover:not(:disabled) {
     border-color: var(--cyan);
   }
-  .btn:disabled {
-    opacity: 0.45;
+  /* disabled stays legible: flat, dim surface and muted text instead of fading the whole control */
+  .btn:disabled,
+  .btn-primary:disabled,
+  .btn-accent:disabled {
+    opacity: 1;
     cursor: not-allowed;
+    background: #0f1b33;
+    border-color: var(--line);
+    color: var(--faint);
+    box-shadow: none;
   }
   .btn-primary {
-    background: linear-gradient(180deg, #16a5c6, #0c7c9d);
+    background: linear-gradient(180deg, #0b7694, #09627c);
     border-color: #22d3ee80;
     color: #ecfeff;
     box-shadow: 0 0 18px rgba(34, 211, 238, 0.18);
   }
   .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(180deg, #1cbbe0, #0e86a8);
+    background: linear-gradient(180deg, #0d84a5, #0a6e8b);
   }
   .btn-accent {
     background: linear-gradient(180deg, #2f6bdc, #1d4ed8);
@@ -256,7 +263,8 @@
     line-height: 16px;
   }
   .badge-crit {
-    background: var(--red);
+    background: var(--red-strong);
+    color: #fff;
   }
   .badge-warn {
     background: var(--amber);
@@ -627,8 +635,10 @@
   }
   .toasts {
     position: fixed;
-    right: 16px;
-    top: 62px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 18px;
+    align-items: center;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -665,5 +675,22 @@
       transform: translateY(8px);
       opacity: 0;
     }
+  }
+}
+
+@layer components {
+  /* Base UI renders a wrapper element around the tab list: let it shrink so long tab strips scroll instead of pushing siblings out. */
+  .tabs-root {
+    min-width: 0;
+  }
+  .dock-bar .tabs-root {
+    flex: 1;
+  }
+  .dock-bar > .icon-btn {
+    flex: none;
+  }
+  .dock-bar .tabs {
+    mask-image: linear-gradient(90deg, #000 94%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent);
   }
 }

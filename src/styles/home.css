@@ -40,10 +40,15 @@
     line-height: 1.12;
     letter-spacing: -0.02em;
     margin: 10px 0 14px;
-    background: linear-gradient(180deg, #fff, #b9ccf0);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #e8f0ff;
+  }
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    .home-hero h1 {
+      background: linear-gradient(180deg, #fff, #b9ccf0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
   }
   .lede {
     font-size: 16px;
@@ -198,8 +203,8 @@
     background: linear-gradient(90deg, var(--blue), var(--cyan));
   }
   .stage-soon {
-    opacity: 0.7;
     border-style: dashed;
+    background: #08111f;
   }
   .stage-top {
     display: flex;

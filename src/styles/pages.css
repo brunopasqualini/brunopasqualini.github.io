@@ -164,8 +164,9 @@
     padding: 12px 0;
     border-bottom: 1px solid var(--line);
   }
-  .lessons .locked {
-    opacity: 0.6;
+  .lessons .locked b,
+  .lessons .locked p {
+    color: var(--muted);
   }
   .takeaway {
     color: var(--cyan);
@@ -211,7 +212,6 @@
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--panel);
-    opacity: 0.7;
   }
   .ach p {
     margin: 2px 0 6px;

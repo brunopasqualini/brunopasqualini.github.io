@@ -17,8 +17,8 @@
 
     /* text */
     --text: #e2ecff;
-    --muted: #8fa6cc;
-    --faint: #5d7399;
+    --muted: #9fb3d6;
+    --faint: #8196bb;
 
     /* brand + status */
     --cyan: #22d3ee;
@@ -26,6 +26,8 @@
     --blue: #3b82f6;
     --amber: #f59e0b;
     --red: #ef4444;
+    --red-strong: #dc2626; /* solid fills that carry white text */
+    --red-text: #f87171; /* red used as text on dark surfaces */
     --green: #34d399;
     --purple: #a78bfa;
     --orange: #f97316;
