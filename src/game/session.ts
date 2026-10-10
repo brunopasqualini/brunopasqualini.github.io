@@ -57,6 +57,10 @@ export interface Session {
   hintsUsed: number;
   adrs: ADR[];
   postmortem?: Postmortem;
+  /** Decision tags from earlier missions that shaped this one (see Mission.consequences). */
+  inherited: string[];
+  /** Consequences actually applied at the start of this run, for display. */
+  consequences: { id: string; title: string; text: string }[];
   verified?: { outcome: Outcome; report: Report; window: Snapshot[]; at: number };
   seed: number;
 }
@@ -117,9 +121,19 @@ function withLiveFaults(draft: Arch, live: Arch): Arch {
   return { ...draft, nodes: draft.nodes.map((n) => ({ ...n, faults: faults.get(n.id) })) };
 }
 
-export function createSession(missionId: string, mode: Mode, attempt = 1, initialArch?: Arch): Session {
+export function createSession(missionId: string, mode: Mode, attempt = 1, initialArch?: Arch, inherited: string[] = []): Session {
   const mission = missionOf(missionId);
-  const arch = clone(initialArch ?? mission.initial);
+  let arch = clone(initialArch ?? mission.initial);
+  let workload = clone(mission.workload);
+  const consequences: Session['consequences'] = [];
+  if (missionId !== LAB_ID) {
+    for (const c of mission.consequences ?? []) {
+      if (!inherited.includes(c.tag)) continue;
+      if (c.apply) arch = c.apply(arch);
+      if (c.workload) workload = { ...workload, ...c.workload };
+      consequences.push({ id: c.id, title: c.title, text: c.text });
+    }
+  }
   const s: Session = {
     missionId,
     mode,
@@ -132,7 +146,7 @@ export function createSession(missionId: string, mode: Mode, attempt = 1, initia
     sim: emptyState(),
     history: [],
     flags: {},
-    workload: clone(mission.workload),
+    workload,
     chaos: [],
     events: [],
     deployLog: [...mission.deployments].map((d) => ({ ...d })),
@@ -143,6 +157,8 @@ export function createSession(missionId: string, mode: Mode, attempt = 1, initia
     chosenCauses: [],
     hintsUsed: 0,
     adrs: [],
+    inherited,
+    consequences,
     seed: mission.seed,
   };
   // Pre-roll: simulate the lead-up so the player starts with real telemetry.
@@ -311,8 +327,8 @@ export function patchWorkload(s: Session, patch: Partial<Workload>, log = true) 
 }
 
 /** Rebuild a session by deterministically replaying logged operations. */
-export function replay(missionId: string, mode: Mode, attempt: number, ops: Op[], initialArch?: Arch): Session {
-  const s = createSession(missionId, mode, attempt, initialArch);
+export function replay(missionId: string, mode: Mode, attempt: number, ops: Op[], initialArch?: Arch, inherited: string[] = []): Session {
+  const s = createSession(missionId, mode, attempt, initialArch, inherited);
   for (const o of ops) {
     switch (o.op) {
       case 'advance':
@@ -377,5 +393,6 @@ export function verify(s: Session, firstCompletion: boolean): { outcome: Outcome
     failedIncident: s.failed,
     firstCompletion,
   });
+  outcome.decisions = mission.decisions?.(a, { adrs: s.adrs, flags: s.flags }) ?? [];
   return { outcome, report, window: last5 };
 }

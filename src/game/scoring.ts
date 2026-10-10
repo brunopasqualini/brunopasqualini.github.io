@@ -1,6 +1,6 @@
 import type { Report } from '@/engine/analysis';
 import type { Arch, Snapshot, Workload } from '@/engine/types';
-import type { ADR, DimensionId, EvalCtx, Mission, Postmortem, Requirement, SkillId } from '@/content/missions/types';
+import type { ADR, Decision, DimensionId, EvalCtx, Mission, Postmortem, Requirement, SkillId } from '@/content/missions/types';
 
 export const DIMENSIONS: { id: DimensionId; label: string; blurb: string }[] = [
   { id: 'reliability', label: 'Reliability', blurb: 'Availability against the target, resilience to AZ loss, recoverability.' },
@@ -51,6 +51,8 @@ export interface Outcome {
   attempt: number;
   diagnosis?: { chosen: string[]; correct: string[]; panelsSeen: number; panelsNeeded: number };
   metrics: Record<string, number>;
+  /** Choices recorded for later missions to react to (see Mission.decisions). */
+  decisions?: Decision[];
   finishedAt: number;
 }
 

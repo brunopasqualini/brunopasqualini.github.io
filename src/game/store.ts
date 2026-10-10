@@ -43,6 +43,8 @@ export interface SavedSession {
   postmortem?: Postmortem;
   /** Simulation behaviour this log was recorded under (see game/simVersion). */
   simVersion?: number;
+  /** Decision tags inherited when this run started; replay needs them to rebuild the same start state. */
+  inherited?: string[];
   updatedAt: number;
 }
 
@@ -217,6 +219,7 @@ export const useGame = create<Store>()(
           adrs: session.adrs,
           postmortem: session.postmortem,
           simVersion: SIM_VERSION,
+          inherited: session.inherited,
           updatedAt: Date.now(),
         };
         set({ saved: { ...saved, [session.missionId]: entry } });
@@ -304,7 +307,7 @@ export const useGame = create<Store>()(
           } else if (existing && !opts.fresh && stale) {
             // The simulation changed since this run was recorded, so replaying it would give different results.
             // Keep the player's design, notes and hints; restart the clock.
-            session = createSession(id, settings.mode, existing.attempt);
+            session = createSession(id, settings.mode, existing.attempt, undefined, existing.inherited ?? []);
             session.draft = clone(existing.draft);
             session.panelsSeen = [...existing.panelsSeen];
             session.chosenCauses = [...existing.chosenCauses];
@@ -319,7 +322,7 @@ export const useGame = create<Store>()(
               },
             });
           } else if (existing && !opts.fresh) {
-            session = replay(id, existing.mode, existing.attempt, existing.ops);
+            session = replay(id, existing.mode, existing.attempt, existing.ops, undefined, existing.inherited ?? []);
             session.draft = clone(existing.draft);
             session.panelsSeen = [...existing.panelsSeen];
             session.chosenCauses = [...existing.chosenCauses];
@@ -329,7 +332,7 @@ export const useGame = create<Store>()(
             session.mode = settings.mode;
           } else {
             const attempt = (progress.attempts[id] ?? 0) + 1;
-            session = createSession(id, settings.mode, attempt);
+            session = createSession(id, settings.mode, attempt, undefined, inheritedFrom(progress.completed));
             set({
               saved: {
                 ...get().saved,
@@ -343,6 +346,7 @@ export const useGame = create<Store>()(
                   hintsUsed: 0,
                   adrs: [],
                   simVersion: SIM_VERSION,
+                  inherited: session.inherited,
                   updatedAt: Date.now(),
                 },
               },
@@ -655,6 +659,11 @@ export const useGame = create<Store>()(
     },
   ),
 );
+
+/** Every decision tag recorded by the missions the player has passed. */
+export function inheritedFrom(completed: Record<string, Outcome>): string[] {
+  return [...new Set(Object.values(completed).flatMap((o) => (o.decisions ?? []).map((d) => d.tag)))].sort();
+}
 
 export function unlockedTier(level: number, showAll: boolean): 1 | 2 | 3 {
   if (showAll) return 3;

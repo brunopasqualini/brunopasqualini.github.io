@@ -346,4 +346,27 @@ export const m2: Mission = {
   guidance: ['metrics', 'database', 'deployments'],
   needsPostmortem: true,
   needsADR: false,
+  decisions: (arch) => {
+    const db = arch.nodes.find((n) => n.id === 'db');
+    if (!db) return [];
+    if (db.config.indexed) {
+      return [
+        {
+          tag: 'm2-db-meltdown:fixed-the-query',
+          label: 'You fixed the slow query with an index.',
+          carries: 'Your database starts later missions with its hot queries indexed.',
+        },
+      ];
+    }
+    if (db.config.size !== 'small') {
+      return [
+        {
+          tag: 'm2-db-meltdown:scaled-the-database',
+          label: 'You scaled the database instead of fixing the query.',
+          carries: 'The slow query is still there; it will return as traffic grows, and the bigger instance keeps costing money.',
+        },
+      ];
+    }
+    return [];
+  },
 };

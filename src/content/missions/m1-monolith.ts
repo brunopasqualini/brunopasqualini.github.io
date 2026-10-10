@@ -282,4 +282,28 @@ export const m1: Mission = {
   needsPostmortem: false,
   needsADR: true,
   baselineCost: 520,
+  decisions: (arch) => {
+    const services = arch.nodes.filter((n) => n.kind === 'microservice').length;
+    const mono = arch.nodes.find((n) => n.kind === 'monolith');
+    if (services >= 1) {
+      return [
+        {
+          tag: 'm1-monolith:extracted-services',
+          label: `You extracted ${services} service${services === 1 ? '' : 's'} from the monolith.`,
+          carries:
+            'The platform you inherit has more moving parts to operate, and your boundaries are only as good as their data ownership.',
+        },
+      ];
+    }
+    if (mono?.config.moduleBoundaries === 'enforced') {
+      return [
+        {
+          tag: 'm1-monolith:modular-monolith',
+          label: 'You kept one deployable and enforced module boundaries.',
+          carries: 'Later missions start with clean module boundaries and a small operational footprint.',
+        },
+      ];
+    }
+    return [];
+  },
 };
