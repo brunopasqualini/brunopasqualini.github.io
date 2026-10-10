@@ -36,8 +36,8 @@ const consequences: Consequence[] = [
           ...N(
             'microservice',
             'billing',
-            700,
-            20,
+            930,
+            40,
             { domain: 'billing', ownsData: false, replicas: 2, costTag: 'team=shop' },
             'billing-service',
           ),
@@ -46,8 +46,8 @@ const consequences: Consequence[] = [
           ...N(
             'microservice',
             'accounts',
-            700,
-            360,
+            930,
+            220,
             { domain: 'accounts', ownsData: false, replicas: 2, costTag: 'team=shop' },
             'accounts-service',
           ),
@@ -183,7 +183,7 @@ export const m9: Mission = {
         'parcel-db',
       ),
       N('external-api', 'carrier', 700, 470, { rpsLimit: 400, latencyMs: 120 }, 'Carrier API'),
-      N('cloudwatch', 'cw', 440, 200, {}),
+      N('cloudwatch', 'cw', 440, 480, {}),
     ],
     edges: [
       E('users', 'shop-alb'),
