@@ -57,7 +57,11 @@ const dbFields: Field[] = [
   num('storageGB', 'Storage', 20, 20000, { unit: 'GB' }),
   bool('multiAZ', 'Multi-AZ standby', 'Synchronous standby in a second AZ. Survives an AZ outage; does not fix slow queries.'),
   num('readReplicas', 'Read replicas', 0, 5, { help: 'Spread reads. Replicas lag behind the writer.' }),
-  bool('connectionPooler', 'Connection pooler / proxy', 'Multiplexes thousands of client connections onto few database connections.'),
+  bool(
+    'connectionPooler',
+    'Connection pooler / proxy',
+    'Multiplexes thousands of client connections onto few database connections (RDS Proxy, PgBouncer).',
+  ),
   bool('indexed', 'Hot-path queries indexed', 'Resolves slow sequential scans. Found via query statistics.'),
   num('backupRetentionDays', 'Backup retention', 0, 35, { unit: 'days' }),
   bool('encrypted', 'Encryption at rest'),
@@ -488,7 +492,7 @@ E(
   'gateway',
   'Router',
   'Managed API front door with throttling and auth.',
-  'Managed gateways have hard account-level throttles and per-request pricing.',
+  'Managed gateways have account-level throttles (default quotas you can ask to raise) and per-request pricing.',
   {
     aws: true,
     scope: 'regional',
@@ -659,7 +663,7 @@ E(
   'compute',
   'Zap',
   'Event-driven functions, scaled per request.',
-  'Scales instantly but has concurrency limits and multiplies downstream connections.',
+  'Scales out quickly, within account concurrency and burst limits, and multiplies downstream connections.',
   {
     aws: true,
     scope: 'regional',

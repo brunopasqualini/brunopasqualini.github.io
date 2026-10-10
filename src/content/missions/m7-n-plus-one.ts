@@ -23,7 +23,7 @@ export const m7: Mission = {
     'Why a cache can hide a defect instead of removing it',
   ],
   story:
-    'The catalogue team shipped a “related products” strip. For every product on the page the handler asks the database for its details one row at a time, and then again for each related item. A page of 24 products now costs about twelve queries per visit. Traffic doubled after a campaign, the database CPU is pinned, and product pages take seconds. The team lead suggests either a bigger database or “just add a cache”. You have a small budget and a code change is possible.',
+    'The catalogue team shipped a “related products” strip. For every product on the page the handler asks the database for its details one row at a time, and then again for each related item. A page of 12 products now costs about twelve queries per visit: one per row, plus the list itself. Traffic doubled after a campaign, the database CPU is pinned, and product pages take seconds. The team lead suggests either a bigger database or “just add a cache”. You have a small budget and a code change is possible.',
   business: {
     context: 'Brightcart catalogue API: 40 requests/second at peak, read-heavy, one small relational database.',
     impact: 'Slow product pages lower conversion; support is being flooded with “the site is broken” tickets.',
@@ -48,7 +48,7 @@ export const m7: Mission = {
         {
           id: 'n-plus-one',
           label: 'Per-row lookups in the product list handler',
-          log: 'GET /products?category=shoes rendered 24 items; SELECT id,name,price FROM products WHERE id=$1 executed 12 times for this request',
+          log: 'GET /products?category=shoes rendered 12 items; SELECT id,name,price FROM products WHERE id=$1 executed 12 times for this request',
         },
       ]),
       N('rds', 'db', 680, 170, { size: 'small', storageGB: 100, indexed: true, multiAZ: false, costTag: 'team=catalogue' }, 'catalogue-db'),
@@ -147,7 +147,7 @@ export const m7: Mission = {
     },
     {
       id: 'paginate',
-      label: 'Show 12 products per page instead of 24',
+      label: 'Show 6 products per page instead of 12',
       description: 'Halves the work per page but does not change the pattern: the number of queries still grows with page size.',
       minutes: 6,
       available: (arch) => callsPerPage(arch) > 6,
@@ -158,7 +158,7 @@ export const m7: Mission = {
             e.id === DB_EDGE ? { ...e, config: { ...e.config, weight: Math.max(2, e.config.weight / 2) } } : e,
           ),
         },
-        log: 'Deployed v4.13: product lists are paginated to 12 items (about 6 queries per page).',
+        log: 'Deployed v4.13: product lists are paginated to 6 items (about 6 queries per page).',
       }),
     },
   ],
@@ -282,7 +282,7 @@ export const m7: Mission = {
       'Adding a cache and calling it done while the handler still issues dozens of queries.',
     ],
     aws: [
-      'RDS Performance Insights and pg_stat_statements for per-query call counts',
+      'CloudWatch Database Insights (the successor to RDS Performance Insights) and pg_stat_statements for per-query call counts',
       'X-Ray / OpenTelemetry traces show repeated spans per request',
       'ElastiCache for read-heavy lookups after the pattern is fixed',
     ],

@@ -295,7 +295,7 @@ export const m2: Mission = {
       },
       {
         title: 'Query performance vs hardware',
-        body: 'A sequential scan over millions of rows costs the same CPU however fast the instance is relative to an index lookup that costs almost nothing. Indexing fixed ~10× the work that a 4× bigger instance could only mask — at 4× the cost.',
+        body: 'A sequential scan reads every row, so its cost grows with the table; a bigger instance only lets each scan finish sooner, while an index lookup avoids the scan altogether. Indexing removed ~10× the work that a 4× bigger instance could only absorb — at 4× the cost.',
       },
       {
         title: 'Caching trade-offs',
@@ -333,7 +333,7 @@ export const m2: Mission = {
       'No alert on database CPU or connections.',
     ],
     aws: [
-      'RDS Performance Insights and slow query log',
+      'CloudWatch Database Insights (the successor to RDS Performance Insights) and the slow query log',
       'RDS Proxy for connection pooling',
       'ElastiCache (Redis) with explicit TTL and invalidation',
       'CloudWatch alarms on CPUUtilization and DatabaseConnections',

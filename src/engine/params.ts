@@ -79,8 +79,8 @@ export const LOG_LEVEL_MULT: Record<string, number> = { debug: 6, info: 1, warn:
 export const S3_PRICE: Record<string, number> = { standard: 0.023, ia: 0.0125, glacier: 0.004 };
 export const S3_LIFECYCLE_COLD_SHARE = 0.65; // share of data that transitions to cheaper classes
 
-export const DDB_READ_PER_MILLION = 0.25;
-export const DDB_WRITE_PER_MILLION = 1.25;
+export const DDB_READ_PER_MILLION = 0.125; // on-demand, after the November 2024 price reduction
+export const DDB_WRITE_PER_MILLION = 0.625;
 export const DDB_RCU_HOURLY = 0.00013;
 export const DDB_WCU_HOURLY = 0.00065;
 
