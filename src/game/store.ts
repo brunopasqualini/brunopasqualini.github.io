@@ -1,18 +1,18 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { clone, type ArchDiffItem } from '../sim/arch';
-import type { Report } from '../sim/analysis';
-import type { Chaos } from '../sim/engine';
-import type { Arch, Workload } from '../sim/types';
-import { MISSIONS, MISSION_BY_ID } from '../missions';
-import type { ADR, PanelId, Postmortem, SkillId } from '../missions/types';
-import { ACHIEVEMENTS, levelFromXp, type Evidence, type Stats } from './progression';
-import type { Outcome } from './scoring';
+import { clone, type ArchDiffItem } from '@/engine/arch';
+import type { Report } from '@/engine/analysis';
+import type { Chaos } from '@/engine/engine';
+import type { Arch, Workload } from '@/engine/types';
+import { MISSIONS, MISSION_BY_ID } from '@/content/missions';
+import type { ADR, PanelId, Postmortem, SkillId } from '@/content/missions/types';
+import { ACHIEVEMENTS, levelFromXp, type Evidence, type Stats } from '@/game/progression';
+import type { Outcome } from '@/game/scoring';
 import {
   advance, applyAction, createSession, deployDraft, LAB_ID, LAB_WORKLOAD, missionOf, replay, revertLast, setChaos, patchWorkload, verify, describeChaos,
   type Mode, type Op, type Session,
-} from './session';
-import { TEMPLATES, templateWorkload } from './templates';
+} from '@/game/session';
+import { TEMPLATES, templateWorkload } from '@/content/templates';
 
 export interface SavedSession {
   mode: Mode;

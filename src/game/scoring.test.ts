@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { m2 } from '../missions/m2-db-meltdown';
-import { m1 } from '../missions/m1-monolith';
-import { adrQuality, postmortemQuality, textDepth } from './scoring';
-import { ACHIEVEMENTS, levelFromXp, skillLevel, xpForLevel } from './progression';
-import { advance, applyAction, createSession, deployDraft, verify } from './session';
+import { m2 } from '@/content/missions/m2-db-meltdown';
+import { m1 } from '@/content/missions/m1-monolith';
+import { adrQuality, postmortemQuality, textDepth } from '@/game/scoring';
+import { ACHIEVEMENTS, levelFromXp, skillLevel, xpForLevel } from '@/game/progression';
+import { advance, applyAction, createSession, deployDraft, verify } from '@/game/session';
 
 describe('rationale scoring rewards reasoning, not length', () => {
   it('scores empty text as zero and trade-off reasoning higher than filler', () => {

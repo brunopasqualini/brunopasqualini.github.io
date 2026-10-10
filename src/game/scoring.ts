@@ -1,6 +1,6 @@
-import type { Report } from '../sim/analysis';
-import type { Arch, Snapshot, Workload } from '../sim/types';
-import type { ADR, DimensionId, EvalCtx, Mission, Postmortem, Requirement, SkillId } from '../missions/types';
+import type { Report } from '@/engine/analysis';
+import type { Arch, Snapshot, Workload } from '@/engine/types';
+import type { ADR, DimensionId, EvalCtx, Mission, Postmortem, Requirement, SkillId } from '@/content/missions/types';
 
 export const DIMENSIONS: { id: DimensionId; label: string; blurb: string }[] = [
   { id: 'reliability', label: 'Reliability', blurb: 'Availability against the target, resilience to AZ loss, recoverability.' },

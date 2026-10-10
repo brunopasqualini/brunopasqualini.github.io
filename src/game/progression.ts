@@ -1,5 +1,5 @@
-import type { SkillId } from '../missions/types';
-import type { Outcome } from './scoring';
+import type { SkillId } from '@/content/missions/types';
+import type { Outcome } from '@/game/scoring';
 
 export const SKILLS: { id: SkillId; label: string; blurb: string }[] = [
   { id: 'se', label: 'Software Engineering', blurb: 'Writing, testing and shipping maintainable code.' },
