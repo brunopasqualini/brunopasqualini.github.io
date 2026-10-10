@@ -7,6 +7,7 @@ import { useGame } from '@/game/store';
 import { Chip, diffClass } from '@/shared/ui/common';
 import { usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
+import { DesignReview } from '@/features/workspace/DesignReview';
 
 export function PlanPanel() {
   const { session, snap } = useLive();
@@ -58,6 +59,7 @@ export function PlanPanel() {
           <Undo2 size={16} /> Revert last deploy
         </button>
       </div>
+      <DesignReview />
 
       <section>
         <div className="row-between">
