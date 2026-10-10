@@ -275,3 +275,13 @@ export const LESSONS: Record<SkillId, Lesson[]> = {
     },
   ],
 };
+
+/** Find a lesson, and the skill branch it belongs to, by its id (for deep links such as /learning?lesson=sd-2). */
+export function lessonById(id: string | null | undefined): { skill: SkillId; lesson: Lesson } | undefined {
+  if (!id) return undefined;
+  for (const skill of Object.keys(LESSONS) as SkillId[]) {
+    const lesson = LESSONS[skill].find((l) => l.id === id);
+    if (lesson) return { skill, lesson };
+  }
+  return undefined;
+}
