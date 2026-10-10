@@ -125,9 +125,25 @@ export function matchShape(w: Pick<Workload, 'profile' | 'profileCycle'>): Traff
 
 export const peakMult = (shape: TrafficShape): number => Math.max(...shape.profile.map((p) => p.mult));
 
-/** `n` evenly spaced multipliers across one cycle (or the profile's length), for drawing a preview. */
-export function sampleShape(shape: TrafficShape, n = 48): number[] {
-  const span = shape.cycle ?? Math.max(1, shape.profile[shape.profile.length - 1].t);
-  const w = { baseRps: 1, profile: shape.profile, profileCycle: shape.cycle } as Workload;
+/** The multipliers of any workload profile (a shape's, or a scenario's own), `n` evenly spaced across one cycle or the profile's length. */
+export function sampleProfile(profile: Workload['profile'], cycle: number | undefined, n = 48): number[] {
+  if (!profile.length) return Array.from({ length: n }, () => 1);
+  const span = cycle && cycle > 0 ? cycle : Math.max(1, profile[profile.length - 1].t);
+  const w = { baseRps: 1, profile, profileCycle: cycle } as Workload;
   return Array.from({ length: n }, (_, i) => rpsAt(w, (i / (n - 1)) * span));
+}
+
+export const sampleShape = (shape: TrafficShape, n = 48): number[] => sampleProfile(shape.profile, shape.cycle, n);
+
+/** The highest multiplier a workload's profile reaches (1 for an empty profile). */
+export const profilePeak = (w: Pick<Workload, 'profile'>): number => (w.profile.length ? Math.max(...w.profile.map((p) => p.mult)) : 1);
+
+/**
+ * The same workload held at its busiest level. Comparing designs by running the first few minutes would, under a daily
+ * curve, measure the quiet night and call every design fine; the question is how each one copes at the peak.
+ * For a flat workload this is the workload itself.
+ */
+export function atPeak(w: Workload): Workload {
+  const peak = profilePeak(w);
+  return peak > 0 && w.profile.length ? { ...w, profile: [{ t: 0, mult: peak }], profileCycle: 0 } : w;
 }
