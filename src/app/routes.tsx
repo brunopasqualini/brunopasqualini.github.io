@@ -18,6 +18,10 @@ export const routes: RouteObject[] = [
       { path: 'learning', lazy: async () => ({ Component: (await import('@/features/academy/AcademyPage')).AcademyPage }) },
       { path: 'academy', loader: () => redirect('/learning') },
       { path: 'journal', lazy: async () => ({ Component: (await import('@/features/journal/JournalPage')).JournalPage }) },
+      {
+        path: 'achievements',
+        lazy: async () => ({ Component: (await import('@/features/achievements/AchievementsPage')).AchievementsPage }),
+      },
       { path: 'lab', lazy: async () => ({ Component: (await import('@/features/workspace/PlayPage')).LabRoute }) },
       { path: 'play/:missionId', lazy: async () => ({ Component: (await import('@/features/workspace/PlayPage')).PlayRoute }) },
       { path: '*', element: <NotFound /> },
