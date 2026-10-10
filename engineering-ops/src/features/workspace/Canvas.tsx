@@ -15,6 +15,7 @@ import {
   type NodeChange,
   type OnConnectEnd,
 } from '@xyflow/react';
+import { Redo2, Undo2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePersistentFlag } from '@/shared/hooks/usePersistentFlag';
 import { layoutArch } from '@/features/workspace/autoLayout';
@@ -26,6 +27,7 @@ import { canConnect, entryOf } from '@/engine/catalog';
 import type { Arch, ArchNode } from '@/engine/types';
 import { useGame } from '@/game/store';
 import { useLive } from '@/game/hooks';
+import { canRedo, canUndo } from '@/game/undo';
 import { ArchNodeView, type ArchNodeData } from '@/features/workspace/ArchNodeView';
 
 const nodeTypes = { arch: ArchNodeView };
@@ -72,6 +74,8 @@ function CanvasInner() {
   const tick = useGame((s) => s.tick);
   const running = useGame((s) => s.running);
   const selection = useGame((s) => s.selection);
+  const undoable = useGame((s) => s.undoState.owner === s.session && canUndo(s.undoState.stack));
+  const redoable = useGame((s) => s.undoState.owner === s.session && canRedo(s.undoState.stack));
   // semantic zoom: 2 = close (everything), 1 = overview (no metric text), 0 = far (tiles and names only)
   const detail = useStore((s) => (s.transform[2] >= 0.85 ? 2 : s.transform[2] >= 0.55 ? 1 : 0));
   const [showMap, toggleMap] = usePersistentFlag('eo-minimap', false);
@@ -381,6 +385,7 @@ function CanvasInner() {
           if (!e.id.startsWith('ref-')) useGame.getState().select('edge', e.id);
         }}
         onPaneClick={() => useGame.getState().select(null)}
+        onNodeDragStart={() => useGame.getState().recordDraft()}
         onNodesDelete={onNodesDelete}
         onEdgesDelete={onEdgesDelete}
         deleteKeyCode={['Backspace', 'Delete']}
@@ -439,6 +444,24 @@ function CanvasInner() {
         </span>
       </div>
       <div className="canvas-tools">
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => useGame.getState().undoEdit()}
+          disabled={!undoable}
+          aria-label="Undo"
+          title="Undo the last edit to the draft (Ctrl/⌘+Z)"
+        >
+          <Undo2 size={14} />
+        </button>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => useGame.getState().redoEdit()}
+          disabled={!redoable}
+          aria-label="Redo"
+          title="Redo (Ctrl/⌘+Shift+Z)"
+        >
+          <Redo2 size={14} />
+        </button>
         <button className="btn btn-ghost btn-sm" onClick={() => window.dispatchEvent(new Event('eo-fit'))}>
           Fit view
         </button>
