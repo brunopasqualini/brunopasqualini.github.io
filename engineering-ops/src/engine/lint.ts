@@ -59,7 +59,6 @@ export function lintArch(arch: Arch, workload?: Workload): LintItem[] {
       .filter((e) => e.target === id)
       .map((e) => nodeById(arch, e.source))
       .filter((n): n is ArchNode => !!n);
-  const label = (id: string) => nodeById(arch, id)?.label ?? id;
   const push = (i: Omit<LintItem, 'id'> & { id?: string }) => out.push({ ...i, id: i.id ?? `${i.rule}-${i.nodeId ?? 'design'}` });
 
   for (const n of arch.nodes) {
