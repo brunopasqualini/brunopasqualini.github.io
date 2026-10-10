@@ -1,8 +1,14 @@
 # Engineering Ops — Build. Break. Learn.
 
-A browser-based engineering **simulation game**. You design cloud architectures, deploy them, watch how they behave
-under load and failure, investigate incidents from logs/metrics/traces/changes, and learn from the *consequences* —
-not from memorising service names.
+An **engineering simulation platform**: *Build systems. Solve problems. Understand the consequences. Think like an
+engineer.* You design cloud architectures, deploy them, watch how they behave under load and failure, investigate
+incidents from logs/metrics/traces/changes, and learn from the *consequences*, not from memorising service names.
+
+It is built for aspiring engineers and career changers who need to connect concepts into a working system, working
+software/cloud/DevOps/platform engineers who want practice beyond tutorials and certification questions, and developers
+growing into system-design responsibility who need to make and defend decisions. Progress runs through five stages of
+problem complexity (Software Engineer → System Designer → Cloud Engineer → Platform/SRE → Principal/Architect); the
+last stage has no scenarios yet and is marked as such in the app.
 
 * Real, runnable **React + TypeScript + Vite** app. No backend, no account, no cloud calls.
 * A deterministic, rule-based **simulation engine** (pure TypeScript, unit-tested) with explainable causal effects.
@@ -15,8 +21,11 @@ not from memorising service names.
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # 89 unit + integration tests (vitest)
+npm test           # unit + integration tests (vitest)
 npm run typecheck
+npm run lint       # ESLint 10 flat config (react-hooks rules, import boundaries)
+npm run format     # Prettier
+npm run check      # typecheck + lint + tests
 npm run build      # static site in dist/ (relative base: host it anywhere, incl. GitHub Pages)
 npm run preview
 ```
@@ -25,14 +34,14 @@ Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings 
 
 ## How to play
 
-1. **Command Center** — level, skills, active incidents, recommended next mission. Pick *Beginner / Intermediate / Advanced*.
-2. **Mission Control** — start a mission. Read the briefing, constraints and success criteria.
+1. **Home** — the product promise, the five-stage journey, your progress and the recommended next mission. Pick *Beginner / Intermediate / Advanced*.
+2. **Missions** — start a mission. Read the briefing, constraints and success criteria.
 3. **Investigate** — dock panels under the canvas: Metrics, Logs, Traces, Dependencies, Changes & timeline, Database,
    Queues, Network inspector, Cost, Security, Alerts. (In incidents, opening a panel costs a simulated minute outside beginner mode.)
-4. **Hypothesise** — record what you think the root cause is (Mission tab). Diagnosis quality is scored.
-5. **Design** — drag components from the library, connect them (drag handle → handle), configure them in the Inspector.
+4. **Hypothesise** — record what you think the root cause is (mission panel, left). Diagnosis quality is scored.
+5. **Design** — drag components from the library, connect them (drag handle → handle), configure them in the Selected panel (right).
    Edits are a *draft*.
-6. **Deploy** — Plan tab: review the diff, validation and estimated cost change, then *Deploy*. The simulator shows
+6. **Deploy** — Plan & deploy tab: review the diff, validation and estimated cost change, then *Deploy*. The simulator shows
    **what changed and why** (e.g. “replicas 4→8 raised DB connections 80→160 of 100; 37% of new connections are refused”).
 7. **Handle consequences** — fix side effects, revert a deploy, or retry the mission.
 8. **Verify & submit** — runs a verification load test, scores 10 dimensions, shows a structured debrief.
@@ -56,18 +65,15 @@ Each has multiple valid solutions and tempting wrong ones; `src/game/missions.te
 
 ```
 src/
-  sim/            Pure simulation library (no React)
-    catalog.ts      ~80 typed components, config fields, connection rules
-    arch.ts         graph helpers, validation, diff
-    engine.ts       deterministic solver (capacity, latency, retries, queues, DB connections, cache, autoscaling, chaos)
-    net.ts          network reachability + security findings
-    cost.ts         explainable cost lines        params.ts  documented constants
-    analysis.ts     design/pipeline/observability/recovery reports, causal explanations
-    telemetry.ts    logs, traces, alert history, DB stats, cost breakdown
-  missions/       Data-driven mission definitions (+ types, helpers)
-  game/           session (replayable state machine), scoring, progression, store (zustand + persistence), academy, templates
-  ui/             App shell, pages, workspace (canvas, library, inspector, plan), evidence panels, modals
-docs/             SIMULATION.md (model & formulas), MISSIONS.md (authoring guide)
+  app/            entry, providers, routes (React Router, hash + lazy), shell (top nav), dialogs
+  engine/         pure simulation library (no React): catalog, arch, engine, net, cost, analysis, telemetry, params
+  content/        data-driven missions, academy lessons, sandbox templates, journey stages, positioning copy
+  game/           replayable session state machine, scoring, progression, zustand store + persistence, hooks
+  entities/       cross-feature domain widgets (mission buttons)
+  features/       home, missions, incidents, lab/workspace, academy, journal, achievements (no cross-imports)
+  shared/         ui (design-system components on Base UI), lib, hooks
+  styles/         tokens, base, layout, components, features, responsive: CSS cascade layers
+docs/             ARCHITECTURE.md (stack decisions and research), SIMULATION.md (model), MISSIONS.md (authoring)
 ```
 
 * **Persistence by replay.** A session is an ordered log of ops (advance / deploy / action / chaos / revert); resuming
@@ -80,7 +86,8 @@ docs/             SIMULATION.md (model & formulas), MISSIONS.md (authoring guide
 
 * **Visual states:** healthy, degraded, overloaded, unavailable, insecure, misconfigured, idle — each with a stated cause.
 * **Progressive disclosure:** the sandbox unlocks tiers by level (or all, in Settings); missions expose only relevant components.
-* **Responsive:** three-pane desktop editor; single-pane workspace with bottom navigation on tablet/phone.
+* **Responsive:** three-column desktop workspace (mission | canvas + evidence | components + inspector) with the side columns collapsible; single-pane workspace with bottom navigation on tablet/phone.
+* **Identity:** dark command-centre palette defined as design tokens in `src/styles/tokens.css`; nodes are category-coloured icon tiles; the canvas shows the real fleet behind each node (instances, replicas, queue depth).
 * **Accessibility:** semantic landmarks, labelled controls, dialogs with focus handling, keyboard-operable controls,
   `prefers-reduced-motion` respected, status never conveyed by colour alone (text tags + reasons).
 
