@@ -298,7 +298,43 @@ export const m9: Mission = {
       body: 'Peak is three times normal. Which components have no headroom? Which would be lost with one availability zone? Which squads depend on the same schema?',
     },
   ],
-  rootCauses: [],
+  rootCauses: [
+    {
+      id: 'public-db',
+      label: 'Parcelly’s database is reachable from the internet, which fails the audit',
+      correct: true,
+      evidencePanels: ['security'],
+      why: 'The security findings include a critical public database endpoint on the acquired platform.',
+    },
+    {
+      id: 'peak-db',
+      label: 'At three times traffic the storefront database becomes the bottleneck',
+      correct: true,
+      evidencePanels: ['metrics', 'database'],
+      why: 'Database utilisation and the peak projection show it saturating first; the app tier has headroom.',
+    },
+    {
+      id: 'unattributed',
+      label: 'Half the spend cannot be attributed to a team',
+      correct: true,
+      evidencePanels: ['cost'],
+      why: 'Cost allocation tags are missing on much of the acquired stack.',
+    },
+    {
+      id: 'rewrite',
+      label: 'The storefront must be rewritten as services before peak',
+      correct: false,
+      evidencePanels: ['dependencies'],
+      why: 'Nothing requires it. Convergence is a cost, so only converge what the audit and the peak force.',
+    },
+    {
+      id: 'second-region',
+      label: 'The platform needs a second region',
+      correct: false,
+      evidencePanels: ['alerts'],
+      why: 'The requirement is surviving the loss of one availability zone, which a single region with Multi-AZ meets.',
+    },
+  ],
   actions: [],
   requirements: [
     {
@@ -456,7 +492,7 @@ export const m9: Mission = {
       },
       {
         name: 'Freeze changes until after peak',
-        when: 'Risk tolerance is low.',
+        when: 'Risk tolerance is very low and the audit date can be moved.',
         tradeoffs: 'Does not fix the audit findings; leaves the zone and capacity risks in place.',
       },
     ],
@@ -479,7 +515,7 @@ export const m9: Mission = {
     ],
   },
   seed: 109,
-  guidance: ['security', 'cost', 'notes'],
+  guidance: ['security', 'cost', 'metrics', 'database', 'notes'],
   needsPostmortem: false,
   needsADR: true,
   baselineCost: 1500,

@@ -156,7 +156,43 @@ export const m6: Mission = {
       body: 'SLO 99.9%. AZ-failure drills are quarterly; the last one passed. Do not trade resilience for savings: removing Multi-AZ or running a single replica will fail the drill.',
     },
   ],
-  rootCauses: [],
+  rootCauses: [
+    {
+      id: 'oversized',
+      label: 'Capacity is sized for a launch that never happened: instances and replicas far above what peak plus failure headroom needs',
+      correct: true,
+      evidencePanels: ['cost', 'metrics'],
+      why: 'Utilisation is low even at the evening peak while the compute and database lines dominate the bill.',
+    },
+    {
+      id: 'hidden-costs',
+      label: 'Waste outside compute: NAT and data transfer, verbose logs with long retention, and unlifecycled storage',
+      correct: true,
+      evidencePanels: ['cost'],
+      why: 'The cost breakdown shows large NAT, data-transfer, log and storage lines that scale with data, not with customers.',
+    },
+    {
+      id: 'no-owner',
+      label: 'Nobody owns the spend because resources are untagged',
+      correct: true,
+      evidencePanels: ['cost'],
+      why: 'Cost tag coverage is low, so the bill cannot be attributed to a team and nobody feels it.',
+    },
+    {
+      id: 'traffic',
+      label: 'Traffic tripled',
+      correct: false,
+      evidencePanels: ['metrics'],
+      why: 'Traffic grew only 20%. The bill grew far faster than the load.',
+    },
+    {
+      id: 'price-rise',
+      label: 'The provider raised its prices',
+      correct: false,
+      evidencePanels: ['cost'],
+      why: 'Unit prices did not change. The structure of what is deployed did.',
+    },
+  ],
   actions: [],
   requirements: [
     { id: 'cost', label: 'Cost ≤ $2,500/mo at peak', hard: true, metric: 'cost', op: '<=', value: 2500, why: 'The headline goal.' },
@@ -265,7 +301,11 @@ export const m6: Mission = {
         when: 'Strong daily curve and tolerant of scale-out lag.',
         tradeoffs: 'Scaling lags demand; the floor must still absorb AZ loss.',
       },
-      { name: 'Savings Plans / reserved capacity', when: 'Stable baseline load.', tradeoffs: 'Commitment risk; do it after right-sizing.' },
+      {
+        name: 'Savings Plans / reserved capacity',
+        when: 'A stable baseline load you are confident will last a year or more.',
+        tradeoffs: 'Commitment risk; do it after right-sizing.',
+      },
       {
         name: 'Serverless (Lambda)',
         when: 'Spiky, low-duty-cycle traffic.',

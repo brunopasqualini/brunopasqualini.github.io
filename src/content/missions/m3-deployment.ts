@@ -158,7 +158,13 @@ export const m3: Mission = {
       evidencePanels: ['dependencies'],
       why: 'All instances and zones are healthy; errors began with the deploy, not with an infrastructure event.',
     },
-    { id: 'traffic', label: 'Unexpected traffic growth', correct: false, evidencePanels: ['metrics'], why: 'Request rate is flat.' },
+    {
+      id: 'traffic',
+      label: 'Unexpected traffic growth',
+      correct: false,
+      evidencePanels: ['metrics'],
+      why: 'Request rate is flat across the release, so more load cannot explain the errors that started at the deploy.',
+    },
   ],
   actions: [
     {
@@ -423,12 +429,12 @@ export const m3: Mission = {
       },
       {
         name: 'Feature flags + dark launch',
-        when: 'Risky behaviour changes; want to ramp by cohort.',
+        when: 'Risky behaviour changes where you want to ramp exposure by customer cohort.',
         tradeoffs: 'Flag debt; more code paths to test.',
       },
       {
         name: 'Manual approval gates',
-        when: 'Regulated changes.',
+        when: 'Regulated changes that require a named approver before release.',
         tradeoffs: 'Adds latency; does not catch bugs — automate checks first.',
       },
     ],

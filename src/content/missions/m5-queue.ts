@@ -182,7 +182,7 @@ export const m5: Mission = {
       label: 'The producer is flooding the queue abnormally',
       correct: false,
       evidencePanels: ['metrics'],
-      why: 'Arrival rate matches the order rate.',
+      why: 'The arrival rate matches the order rate, so the producer is not flooding the queue; the consumers are the problem.',
     },
   ],
   actions: [],

@@ -290,7 +290,7 @@ export const m7: Mission = {
     ],
   },
   seed: 107,
-  guidance: ['dependencies', 'database'],
+  guidance: ['dependencies', 'database', 'logs'],
   needsPostmortem: false,
   needsADR: false,
   baselineCost: 260,
