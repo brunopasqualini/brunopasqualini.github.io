@@ -78,6 +78,8 @@ export function MissionPanel() {
         <BookOpen size={14} /> Re-read briefing
       </button>
 
+      {firstRun && <FirstRunGuide session={session} />}
+
       <section>
         <div className="row-between">
           <h4>Objectives</h4>
@@ -128,8 +130,6 @@ export function MissionPanel() {
           <p className="muted tiny">All hints revealed.</p>
         )}
       </section>
-
-      {firstRun && <FirstRunGuide session={session} />}
 
       {mode === 'beginner' && !firstRun && (
         <div className="callout callout-info">
