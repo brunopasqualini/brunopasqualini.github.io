@@ -15,7 +15,7 @@ import {
   type NodeChange,
   type OnConnectEnd,
 } from '@xyflow/react';
-import { Redo2, Undo2 } from 'lucide-react';
+import { Copy, Redo2, Undo2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePersistentFlag } from '@/shared/hooks/usePersistentFlag';
 import { layoutArch } from '@/features/workspace/autoLayout';
@@ -23,6 +23,7 @@ import { tilesFor, type Tile } from '@/features/workspace/InstanceStrip';
 import { EDGE_COLOR, edgeLook } from '@/features/workspace/edgeStyle';
 import { CONFIG_REF_KEYS, attachedTo, defaultEdgeWeight, edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
 import { visualStatus } from '@/engine/analysis';
+import { copySelection, pasteClip, type Clip } from '@/engine/duplicate';
 import { canConnect, entryOf } from '@/engine/catalog';
 import type { Arch, ArchNode } from '@/engine/types';
 import { useGame } from '@/game/store';
@@ -31,6 +32,10 @@ import { canRedo, canUndo } from '@/game/undo';
 import { ArchNodeView, type ArchNodeData } from '@/features/workspace/ArchNodeView';
 
 const nodeTypes = { arch: ArchNodeView };
+
+/** What Ctrl/⌘+C last copied. Module-level so it survives opening another mission or the Lab. */
+let clipboard: Clip | null = null;
+let pasteCount = 0;
 /** Leave room for the overlay controls (toolbar top-right, zoom controls left, legend/minimap bottom). */
 const CARD_ROLES = ['db', 'kv', 'cache', 'search'];
 const nodeW = (n: ArchNode) => (CARD_ROLES.includes(entryOf(n.kind).role) ? 196 : 156);
@@ -78,6 +83,8 @@ function CanvasInner() {
   // semantic zoom: 2 = close (everything), 1 = overview (no metric text), 0 = far (tiles and names only)
   const detail = useStore((s) => (s.transform[2] >= 0.85 ? 2 : s.transform[2] >= 0.55 ? 1 : 0));
   const [showMap, toggleMap] = usePersistentFlag('eo-minimap', false);
+  // every component in the current multi-selection (Shift/Ctrl/⌘-click or Shift-drag a box); `selection` stays the one the inspector shows
+  const [multi, setMulti] = useState<string[]>([]);
   const [showRefs, setShowRefs] = useState(true);
   const rf = useReactFlow();
   const wrap = useRef<HTMLDivElement>(null);
@@ -129,7 +136,7 @@ function CanvasInner() {
         type: 'arch',
         position: n.position,
         data,
-        selected: selection.type === 'node' && selection.id === n.id,
+        selected: multi.includes(n.id) || (selection.type === 'node' && selection.id === n.id),
         zIndex: isNetwork ? 0 : 1,
       };
     });
@@ -230,8 +237,70 @@ function CanvasInner() {
     const g = useGame.getState();
     for (const c of changes) {
       if (c.type === 'position' && c.position) g.moveNode(c.id, c.position);
+      if (c.type === 'select') {
+        setMulti((cur) => (c.selected ? (cur.includes(c.id) ? cur : [...cur, c.id]) : cur.filter((x) => x !== c.id)));
+        // un-selecting the component the inspector is showing must clear it too, or it would stay highlighted
+        if (!c.selected && g.selection.type === 'node' && g.selection.id === c.id) g.select(null);
+      }
     }
   }, []);
+
+  /** Components to act on: the multi-selection, or the single selected component, limited to ones that still exist. */
+  const selectedIds = useCallback((): string[] => {
+    const g = useGame.getState();
+    const ids = new Set(g.session?.draft.nodes.map((n) => n.id));
+    const picked = multi.filter((id) => ids.has(id));
+    if (picked.length) return picked;
+    return g.selection.type === 'node' && g.selection.id && ids.has(g.selection.id) ? [g.selection.id] : [];
+  }, [multi]);
+
+  const copy = useCallback(() => {
+    const g = useGame.getState();
+    const clip = g.session ? copySelection(g.session.draft, selectedIds()) : null;
+    if (!clip) return false;
+    clipboard = clip;
+    pasteCount = 0;
+    g.toast(`Copied ${clip.nodes.length} component${clip.nodes.length === 1 ? '' : 's'}. Paste with Ctrl/⌘+V.`, 'info');
+    return true;
+  }, [selectedIds]);
+
+  const paste = useCallback(() => {
+    const g = useGame.getState();
+    if (!g.session || !clipboard) return;
+    pasteCount += 1;
+    const p = pasteClip(g.session.draft, clipboard, { x: 40 * pasteCount, y: 40 * pasteCount });
+    g.editDraft((a) => {
+      a.nodes.push(...p.nodes);
+      a.edges.push(...p.edges);
+    });
+    setMulti(p.ids);
+    g.select('node', p.ids[0]);
+  }, []);
+
+  const duplicate = useCallback(() => {
+    if (copy()) paste();
+  }, [copy, paste]);
+
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName) || t.isContentEditable) return;
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+      const k = e.key.toLowerCase();
+      if (k === 'c' && selectedIds().length) {
+        e.preventDefault();
+        copy();
+      } else if (k === 'v' && clipboard) {
+        e.preventDefault();
+        paste();
+      } else if (k === 'd' && selectedIds().length) {
+        e.preventDefault(); // also the browser's "bookmark this page"
+        duplicate();
+      }
+    };
+    window.addEventListener('keydown', on);
+    return () => window.removeEventListener('keydown', on);
+  }, [copy, paste, duplicate, selectedIds]);
 
   const addNode = useCallback(
     (kind: string, pos?: { x: number; y: number }) => {
@@ -395,6 +464,7 @@ function CanvasInner() {
         proOptions={{ hideAttribution: true }}
         colorMode="dark"
         selectionOnDrag={false}
+        multiSelectionKeyCode={['Shift', 'Meta', 'Control']}
         panOnScroll={false}
         zoomOnDoubleClick={false}
         aria-label="Architecture canvas"
@@ -460,6 +530,15 @@ function CanvasInner() {
           title="Redo (Ctrl/⌘+Shift+Z)"
         >
           <Redo2 size={14} />
+        </button>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={duplicate}
+          disabled={!selectedIds().length}
+          aria-label="Duplicate selection"
+          title="Duplicate the selected components (Ctrl/⌘+D). Shift- or Ctrl/⌘-click, or Shift-drag a box, to select several."
+        >
+          <Copy size={14} />
         </button>
         <button className="btn btn-ghost btn-sm" onClick={() => window.dispatchEvent(new Event('eo-fit'))}>
           Fit view
