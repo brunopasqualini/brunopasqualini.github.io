@@ -84,14 +84,14 @@ src/
   features/       home, missions, incidents, lab/workspace, academy, journal, achievements (no cross-imports)
   shared/         ui (design-system components on Base UI), lib, hooks
   styles/         tokens, base, layout, components, features, responsive: CSS cascade layers
-docs/             ARCHITECTURE.md (stack decisions and research), SIMULATION.md (model), MISSIONS.md (authoring)
+docs/             ARCHITECTURE.md (stack decisions and research), SIMULATION.md (model), MISSIONS.md (authoring), CANVAS_EFFECTS.md (animation)
 ```
 
 - **Persistence by replay.** A session is an ordered log of ops (advance / deploy / action / chaos / revert); resuming
   replays them deterministically, so saves stay tiny and exact.
 - **Clear boundaries for a future backend:** the store is the only persistence consumer (`zustand/persist`); the
   simulation and scoring are pure functions.
-- See [`docs/SIMULATION.md`](docs/SIMULATION.md) for every rule and [`docs/MISSIONS.md`](docs/MISSIONS.md) to add a scenario.
+- See [`docs/SIMULATION.md`](docs/SIMULATION.md) for every rule and [`docs/MISSIONS.md`](docs/MISSIONS.md) to add a scenario. The canvas animation (Effects: Subtle / Full / Off) is described in [`docs/CANVAS_EFFECTS.md`](docs/CANVAS_EFFECTS.md).
 
 ## Design notes
 

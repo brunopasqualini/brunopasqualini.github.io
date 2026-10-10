@@ -27,6 +27,9 @@ import type { Arch, ArchNode } from '@/engine/types';
 import { useGame } from '@/game/store';
 import { useLive } from '@/game/hooks';
 import { ArchNodeView, type ArchNodeData } from '@/features/workspace/ArchNodeView';
+import { PacketLayer } from '@/features/workspace/effects/PacketLayer';
+import { useFx } from '@/features/workspace/effects/useFx';
+import { FX_LABEL, detectMoments, type FxEdge, type Moment, type Observed } from '@/features/workspace/effects/fx';
 
 const nodeTypes = { arch: ArchNodeView };
 /** Leave room for the overlay controls (toolbar top-right, zoom controls left, legend/minimap bottom). */
@@ -71,6 +74,8 @@ function CanvasInner() {
   const { session, snap, report } = useLive();
   const tick = useGame((s) => s.tick);
   const running = useGame((s) => s.running);
+  const speed = useGame((s) => s.speed);
+  const { chosen: fxChosen, level: fx, reduced: fxReduced, cycle: cycleFx } = useFx();
   const selection = useGame((s) => s.selection);
   // semantic zoom: 2 = close (everything), 1 = overview (no metric text), 0 = far (tiles and names only)
   const detail = useStore((s) => (s.transform[2] >= 0.85 ? 2 : s.transform[2] >= 0.55 ? 1 : 0));
@@ -81,6 +86,15 @@ function CanvasInner() {
 
   const draft = session?.draft;
   const live = session?.live;
+
+  // one-shot effects for what just happened to a component (hit, recovered, scaled, deployed)
+  const [moments, setMoments] = useState<Record<string, Moment>>({});
+  const seen = useRef<{ key: string; obs: Record<string, Observed>; n: number; last: Record<string, number> }>({
+    key: '',
+    obs: {},
+    n: 0,
+    last: {},
+  });
 
   const nodes: Node[] = useMemo(() => {
     if (!draft) return [];
@@ -101,6 +115,7 @@ function CanvasInner() {
         changed: liveIds.has(n.id) && liveCfg.get(n.id) !== JSON.stringify(n.config),
         isNetwork,
         minute: snap?.minute ?? 0,
+        moment: moments[n.id],
       };
       if (entryOf(n.kind).role === 'lb' && snap) {
         const tiles: Tile[] = [];
@@ -131,7 +146,7 @@ function CanvasInner() {
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, draft, selection.type, selection.id, snap, report]);
+  }, [tick, draft, selection.type, selection.id, snap, report, moments]);
 
   const edges: BuiltInEdge[] = useMemo(() => {
     if (!draft) return [];
@@ -182,7 +197,9 @@ function CanvasInner() {
         sourceHandle: vertical ? (vertical === 'down' ? 'sb' : 'st') : undefined,
         targetHandle: vertical ? (vertical === 'down' ? 'tt' : 'tb') : undefined,
         selected: sel,
-        animated: running && (cls === 'traffic' || cls === 'async') && (em?.rps ?? 0) > 0.5 && !em?.blocked,
+        // the marching dashes are the original flow cue; with effects on, packets carry the motion instead
+        animated:
+          running && fxChosen === 'off' && !fxReduced && (cls === 'traffic' || cls === 'async') && (em?.rps ?? 0) > 0.5 && !em?.blocked,
         label,
         labelStyle: { fill: color, fontSize: 10, fontFamily: 'ui-monospace, monospace' },
         labelBgStyle: { fill: '#0a1224', fillOpacity: 0.9 },
@@ -221,7 +238,66 @@ function CanvasInner() {
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, draft, snap, selection.type, selection.id, running, showRefs, detail]);
+  }, [tick, draft, snap, selection.type, selection.id, running, showRefs, detail, fxChosen, fxReduced]);
+
+  /** Traffic connectors as the packet layer needs them. */
+  const fxEdges: FxEdge[] = useMemo(() => {
+    if (!draft || !snap) return [];
+    const out: FxEdge[] = [];
+    for (const e of draft.edges) {
+      const em = snap.edges[e.id];
+      const s = nodeById(draft, e.source);
+      const t = nodeById(draft, e.target);
+      if (!em || !s || !t) continue;
+      const cls = edgeClass(draft, e);
+      if (cls !== 'traffic' && cls !== 'async') continue;
+      const look = edgeLook(cls, entryOf(s.kind).role, entryOf(t.kind).role);
+      if (look.kind !== 'request' && look.kind !== 'async' && look.kind !== 'storage') continue;
+      const ts = snap.nodes[e.target]?.status;
+      out.push({
+        id: e.id,
+        target: e.target,
+        tone: look.kind,
+        rps: em.rps,
+        errorRate: em.errorRate,
+        blocked: !!em.blocked,
+        slow: ts === 'degraded' || ts === 'overloaded',
+      });
+    }
+    return out;
+  }, [draft, snap]);
+
+  useEffect(() => {
+    const key = `${session?.missionId}:${session?.attempt}:${fx === 'off' ? 'off' : 'on'}`;
+    const obs: Record<string, Observed> = {};
+    for (const n of nodes) {
+      const d = n.data as ArchNodeData;
+      obs[n.id] = { status: d.metrics?.status ?? 'idle', replicas: d.metrics?.replicas, pending: d.pending, changed: !!d.changed };
+    }
+    const prev = seen.current;
+    seen.current = { key, obs, n: prev.n, last: prev.key === key ? prev.last : {} };
+    if (fx === 'off' || prev.key !== key) return;
+    const stamp = ++seen.current.n;
+    const found = detectMoments(prev.obs, obs, stamp);
+    // a component that keeps flapping between ok and not-ok gets one effect per few seconds, not a strobe
+    const nowMs = Date.now();
+    for (const [id, m] of Object.entries(found)) {
+      if (m.kind !== 'hit' && m.kind !== 'recover') continue;
+      if (nowMs - (seen.current.last[id] ?? 0) < 5000) delete found[id];
+      else seen.current.last[id] = nowMs;
+    }
+    if (!Object.keys(found).length) return;
+    setMoments((cur) => ({ ...cur, ...found }));
+    const t = window.setTimeout(
+      () =>
+        setMoments((cur) => {
+          const rest = Object.fromEntries(Object.entries(cur).filter(([, m]) => m.at !== stamp));
+          return Object.keys(rest).length === Object.keys(cur).length ? cur : rest;
+        }),
+      2600,
+    );
+    return () => window.clearTimeout(t);
+  }, [nodes, fx, session?.missionId, session?.attempt]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     const g = useGame.getState();
@@ -361,6 +437,8 @@ function CanvasInner() {
     <div
       className="canvas"
       data-detail={detail}
+      data-fx={fx}
+      data-running={running}
       ref={wrap}
       onDragOver={(e) => {
         e.preventDefault();
@@ -395,6 +473,7 @@ function CanvasInner() {
         zoomOnDoubleClick={false}
         aria-label="Architecture canvas"
       >
+        <PacketLayer edges={fxEdges} level={fx} running={running} speed={speed} detail={detail as 0 | 1 | 2} />
         <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="#1c2b4a" />
         <Controls position="top-left" showInteractive={false} aria-label="Canvas zoom controls" />
         {showMap && (
@@ -447,6 +526,18 @@ function CanvasInner() {
         </button>
         <button className={`btn btn-ghost btn-sm ${showMap ? 'is-on' : ''}`} aria-pressed={showMap} onClick={() => toggleMap()}>
           Minimap
+        </button>
+        <button
+          className={`btn btn-ghost btn-sm ${fx !== 'off' ? 'is-on' : ''}`}
+          onClick={cycleFx}
+          disabled={fxReduced}
+          title={
+            fxReduced
+              ? 'Effects are off because your system asks for reduced motion.'
+              : 'Animated traffic and component effects while the simulation runs. Click to cycle Subtle, Full, Off.'
+          }
+        >
+          Effects: {FX_LABEL[fx]}
         </button>
         {hasNetwork && (
           <button
