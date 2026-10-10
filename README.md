@@ -29,6 +29,8 @@ All three share one visual identity (dark navy surfaces, cyan primary, Inter / s
   npm run check        # typecheck, lint, tests
   npx vite build       # rewrites engineering-ops/dist
   ```
-  Commit the regenerated `dist/` together with the source change.
+  You don't need to do this by hand: `.github/workflows/build-engineering-ops.yml` runs the checks and rebuilds `dist/` on every merge to `master` that touches `engineering-ops/`, then commits it back as `github-actions[bot]`. Pull requests run the checks and build without committing.
+
+  One-time setup: Settings → Actions → General → Workflow permissions → **Read and write permissions**. If `master` has branch protection, allow `github-actions[bot]` to push to it (or it will be rejected).
 
 Each project keeps its own README (`exam-simulator/README.md`, `engineering-ops/README.md`).
