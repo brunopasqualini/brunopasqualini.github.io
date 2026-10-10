@@ -1,11 +1,11 @@
-import { archSignature, clone, diffArch, type ArchDiffItem, validateArch } from '../sim/arch';
-import { buildReport, explainChanges, type Report } from '../sim/analysis';
-import { emptyState, solve, type Chaos } from '../sim/engine';
-import { DEFAULT_WORKLOAD } from '../sim/params';
-import type { Arch, MetricChange, SimState, Snapshot, Workload } from '../sim/types';
-import { MISSION_BY_ID } from '../missions';
-import type { ADR, Mission, Postmortem } from '../missions/types';
-import { scoreMission, type Outcome } from './scoring';
+import { archSignature, clone, diffArch, type ArchDiffItem, validateArch } from '@/engine/arch';
+import { buildReport, explainChanges, type Report } from '@/engine/analysis';
+import { emptyState, solve, type Chaos } from '@/engine/engine';
+import { DEFAULT_WORKLOAD } from '@/engine/params';
+import type { Arch, MetricChange, SimState, Snapshot, Workload } from '@/engine/types';
+import { MISSION_BY_ID } from '@/content/missions';
+import type { ADR, Mission, Postmortem } from '@/content/missions/types';
+import { scoreMission, type Outcome } from '@/game/scoring';
 
 export type Mode = 'beginner' | 'intermediate' | 'advanced';
 

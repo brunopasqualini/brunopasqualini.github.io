@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { makeEdge, makeNode } from '../sim/arch';
-import type { Arch } from '../sim/types';
-import { advance, applyAction, createSession, deployDraft, verify, type Session } from './session';
-import type { ADR, Postmortem } from '../missions/types';
+import { makeEdge, makeNode } from '@/engine/arch';
+import type { Arch } from '@/engine/types';
+import { advance, applyAction, createSession, deployDraft, verify, type Session } from '@/game/session';
+import type { ADR, Postmortem } from '@/content/missions/types';
 
 const ADR_OK: ADR = {
   id: 'a1', title: 'Decision', minute: 0,
@@ -282,7 +282,7 @@ describe('Mission 6 — The Cloud Bill Shock', () => {
 
 describe('persistence by replay', () => {
   it('replaying logged ops reproduces the same state', async () => {
-    const { replay } = await import('./session');
+    const { replay } = await import('@/game/session');
     const s = createSession('m2-db-meltdown', 'intermediate');
     advance(s, 2);
     applyAction(s, 'add-index');

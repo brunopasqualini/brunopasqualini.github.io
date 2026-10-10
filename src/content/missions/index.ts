@@ -1,0 +1,11 @@
+import { m1 } from '@/content/missions/m1-monolith';
+import { m2 } from '@/content/missions/m2-db-meltdown';
+import { m3 } from '@/content/missions/m3-deployment';
+import { m4 } from '@/content/missions/m4-network';
+import { m5 } from '@/content/missions/m5-queue';
+import { m6 } from '@/content/missions/m6-bill-shock';
+import type { Mission } from '@/content/missions/types';
+
+export const MISSIONS: Mission[] = [m1, m2, m3, m4, m5, m6];
+export const MISSION_BY_ID: Record<string, Mission> = Object.fromEntries(MISSIONS.map((m) => [m.id, m]));
+export type { Mission } from '@/content/missions/types';
