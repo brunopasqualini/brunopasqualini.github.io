@@ -4,11 +4,89 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#070c18" />
+    <meta
+      name="description"
+      content="Two learning tools: a certification mock exam simulator and Engineering Ops, a cloud and system design simulator."
+    />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <title>Engineering Ops — Build. Break. Learn.</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <title>Bruno Pasqualini — Learning tools</title>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <a class="skip" href="#projects">Skip to projects</a>
+
+    <header class="topnav">
+      <a class="brand" href="./" aria-label="Home">
+        <img class="brandmark" src="./favicon.svg" alt="" width="28" height="28" />
+        <span class="brand-text">
+          <b>Bruno Pasqualini</b>
+          <small>Learning tools</small>
+        </span>
+      </a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>Practice the way the work is actually done.</h1>
+        <p>
+          Two small, free tools that run entirely in your browser. One drills you
+          for certification exams. The other lets you build, break and fix cloud
+          architectures. Pick where to start.
+        </p>
+      </section>
+
+      <section id="projects" class="projects" aria-label="Projects">
+        <a class="project card" href="./exam-simulator/">
+          <span class="project-icon exam" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l2 2 4-4" />
+              <rect x="4" y="3" width="16" height="18" rx="2.5" />
+              <path d="M8 17h8" />
+            </svg>
+          </span>
+          <span class="eyebrow">Certification prep</span>
+          <h2>Mock Exam Simulator</h2>
+          <p>
+            Timed or untimed practice exams for AWS certifications, with answer
+            explanations, a score breakdown by domain and a retest of your weak
+            areas.
+          </p>
+          <ul class="chips">
+            <li class="chip">AWS SAA-C03</li>
+            <li class="chip">AWS DVA-C02</li>
+            <li class="chip">Works offline</li>
+          </ul>
+          <span class="cta">Open the simulator <span aria-hidden="true">&rarr;</span></span>
+        </a>
+
+        <a class="project card" href="./engineering-ops/dist/">
+          <span class="project-icon ops" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" />
+              <circle cx="12" cy="12" r="2.6" />
+            </svg>
+          </span>
+          <span class="eyebrow">System design and SRE</span>
+          <h2>Engineering Ops</h2>
+          <p>
+            Build. Break. Learn. Run fourteen incident missions on a live
+            architecture canvas, from a melting database to a regional outage,
+            and see what each decision costs.
+          </p>
+          <ul class="chips">
+            <li class="chip">14 missions</li>
+            <li class="chip">5 levels</li>
+            <li class="chip">Simulated AWS</li>
+          </ul>
+          <span class="cta">Start the first incident <span aria-hidden="true">&rarr;</span></span>
+        </a>
+      </section>
+    </main>
+
+    <footer class="foot">
+      Independent study tools, not affiliated with AWS or any certification
+      provider. Everything runs locally in your browser; nothing is sent to a
+      server.
+    </footer>
   </body>
 </html>

@@ -1,0 +1,67 @@
+{
+  "certifications": [
+    {
+      "id": "aws-dva-c02",
+      "title": "AWS Certified Developer - Associated (DVA-C02)",
+      "banks": [
+        {
+          "file": "questions/aws/dva-c02/DVA-C02_01.json"
+        },
+        {
+          "file": "questions/aws/dva-c02/DVA-C02_02.json"
+        },
+        {
+          "file": "questions/aws/dva-c02/DVA-C02_03.json"
+        },
+        {
+          "file": "questions/aws/dva-c02/DVA-C02_04.json"
+        },
+        {
+          "file": "questions/aws/dva-c02/DVA-C02_05.json"
+        },
+        {
+          "file": "questions/aws/dva-c02/DVA-C02_06.json"
+        }
+      ]
+    },
+    {
+      "id": "aws-saa-c03",
+      "title": "AWS Certified Solutions Architect - Associated (SAA-C03)",
+      "banks": [
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_01.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_02.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_03.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_04.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_05.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_06.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_07.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_08.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_09.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_10.json"
+        },
+        {
+          "file": "questions/aws/saa-c03/SAA-C03_11.json"
+        }
+      ]
+    }
+  ]
+}
