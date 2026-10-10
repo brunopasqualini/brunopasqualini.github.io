@@ -73,7 +73,7 @@ export function Play({ missionId, template }: { missionId: string; template?: st
           <EventsCard />
         </aside>
         <div className="ws-center">
-          <CanvasHeader leftOpen={leftOpen} rightOpen={rightOpen} onToggleLeft={toggleLeft} onToggleRight={toggleRight} />
+          <CanvasHeader leftOpen={leftOpen} rightOpen={rightOpen} onToggleLeft={() => toggleLeft()} onToggleRight={() => toggleRight()} />
           <Canvas />
           <Dock />
         </div>

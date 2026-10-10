@@ -37,6 +37,15 @@ function norm(values: number[]) {
   return values.map((v) => (v / max) * 100);
 }
 
+function Waiting({ title }: { title: string }) {
+  return (
+    <section className="card-panel ov-card" aria-label={title}>
+      <h3 className="cp-title">{title}</h3>
+      <p className="muted tiny pad">Run the simulation to see live data here.</p>
+    </section>
+  );
+}
+
 function SystemMetricsCard() {
   const { session, snap } = useLive();
   const rows = useMemo(() => {
@@ -47,7 +56,8 @@ function SystemMetricsCard() {
     const err = norm(h.map((x) => x.system.errorRate * 100));
     return h.map((x, i) => ({ t: x.minute, rps: rps[i], lat: lat[i], err: err[i] }));
   }, [session, session?.minute]);
-  if (!session || !snap) return null;
+  if (!session) return null;
+  if (!snap) return <Waiting title="System Metrics" />;
   const past = session.history[Math.max(0, session.history.length - 6)]?.system;
   const s = snap.system;
   return (
@@ -141,7 +151,8 @@ const DOT: Record<NodeStatus, 'ok' | 'warn' | 'crit' | 'idle'> = {
 /** Where the running components live: availability zones inside the simulated region, with health per component. */
 function RegionCard() {
   const { session, snap } = useLive();
-  if (!session || !snap) return null;
+  if (!session) return null;
+  if (!snap) return <Waiting title="Region View" />;
   const arch = session.live;
   const outage = new Set(session.chaos.filter((c) => c.type === 'az-outage').map((c) => (c as { az: string }).az));
   const comps = arch.nodes.filter(

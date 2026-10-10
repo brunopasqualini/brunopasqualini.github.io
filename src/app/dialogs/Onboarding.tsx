@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Modal } from '@/shared/ui/common';
+import { TAGLINE, VISION } from '@/content/positioning';
 import { go } from '@/shared/lib/nav';
 
 export function Onboarding({ onClose }: { onClose: () => void }) {
@@ -7,19 +8,19 @@ export function Onboarding({ onClose }: { onClose: () => void }) {
   const steps = [
     {
       t: 'Welcome to Engineering Ops',
-      b: 'Build. Break. Learn. This is a simulator for engineering judgment: you design systems, deploy them, watch what happens, and learn from the consequences. Everything is simulated — no cloud account, no real charges.',
+      b: `${VISION} ${TAGLINE}`,
     },
     {
       t: 'The loop',
-      b: 'Read the scenario → investigate the evidence (logs, metrics, traces, changes, cost) → form a hypothesis → change the design → deploy → observe → handle side effects → verify → read the debrief. Every change has causal, explainable effects.',
+      b: 'Read the scenario, investigate the evidence (metrics, logs, traces, changes, cost), form a hypothesis, change the design, deploy, observe, handle side effects, verify, then read the debrief. Every change has a causal, explainable effect, and a fix for one problem can create another.',
     },
     {
-      t: 'The workspace',
-      b: 'Drag components from the library onto the canvas and connect them. Select anything to inspect and configure it. Edits are a draft: open the Plan tab and press Deploy. Use Run / +1m to move simulated time; Space toggles the clock.',
+      t: 'Your workspace',
+      b: 'Left: the mission, its objectives and recent events. Centre: the architecture canvas, with evidence panels underneath. Right: the component library and the inspector. Drag components onto the canvas and connect them; edits are a draft until you open Plan and press Deploy. Use the panel icons in the canvas header to hide either side column, Run or Space to move simulated time.',
     },
     {
       t: 'Choose your mode',
-      b: 'Beginner explains concepts and points you to the right evidence. Intermediate gives less guidance. Advanced adds noisy logs, missing telemetry and competing requirements. You can switch any time in the Command Center.',
+      b: 'Beginner explains concepts and points you to the right evidence. Intermediate gives less guidance. Advanced adds noisy logs, missing telemetry and competing requirements. You can switch at any time from the Home page.',
     },
   ];
   const s = steps[i];

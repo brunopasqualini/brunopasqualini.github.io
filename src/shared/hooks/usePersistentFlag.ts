@@ -13,7 +13,7 @@ export function usePersistentFlag(key: string, initial: boolean): [boolean, (nex
   const set = useCallback(
     (next?: boolean) => {
       setValue((cur) => {
-        const v = next ?? !cur;
+        const v = typeof next === 'boolean' ? next : !cur;
         try {
           window.localStorage.setItem(key, v ? '1' : '0');
         } catch {
