@@ -1,3 +1,4 @@
+import { assessHypothesis } from '@/game/diagnosis';
 import { Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { MISSIONS } from '@/content/missions';
@@ -487,6 +488,21 @@ export function Debrief() {
                 )}
                 . You consulted {o.diagnosis?.panelsSeen}/{o.diagnosis?.panelsNeeded} of the key evidence panels.
               </p>
+              <h4>Was your reasoning supported by the evidence?</h4>
+              <ul className="causes reasoning">
+                {assessHypothesis(m.rootCauses, session.chosenCauses, session.panelsSeen).map((r) => (
+                  <li key={r.id} className={r.verdict === 'supported' ? 'right' : 'wrong'}>
+                    <div className="row-between">
+                      <b>{r.label}</b>
+                      <Chip kind={r.verdict === 'supported' ? 'ok' : r.verdict === 'unverified' ? 'warn' : 'crit'}>
+                        {{ supported: 'supported', unverified: 'unverified', refuted: 'refuted', missed: 'missed' }[r.verdict]}
+                      </Chip>
+                    </div>
+                    <p>{r.message}</p>
+                  </li>
+                ))}
+              </ul>
+              <h4>All candidate causes</h4>
               <ul className="causes">
                 {m.rootCauses.map((c) => {
                   const picked = session.chosenCauses.includes(c.id);
