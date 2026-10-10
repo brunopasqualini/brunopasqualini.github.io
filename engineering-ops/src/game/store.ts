@@ -112,6 +112,8 @@ interface Store {
   rightTab: 'inspect' | 'plan';
   mobilePane: 'mission' | 'canvas' | 'build' | 'evidence';
   labTemplate: string;
+  /** Components to mark on the canvas (the blast radius of an attack run in the Lab). Runtime only. */
+  highlight: string[];
   drill?: { title: string; goal: string };
 
   toast: (text: string, kind?: Toast['kind']) => void;
@@ -132,6 +134,7 @@ interface Store {
   resetDraft: () => void;
   moveNode: (id: string, pos: { x: number; y: number }) => void;
   select: (type: 'node' | 'edge' | null, id?: string) => void;
+  setHighlight: (ids: string[]) => void;
   deploy: () => void;
   revert: () => void;
   act: (id: string) => void;
@@ -247,6 +250,7 @@ export const useGame = create<Store>()(
         rightTab: 'inspect',
         mobilePane: 'canvas',
         labTemplate: 'three-tier',
+        highlight: [],
 
         toast: (text, kind = 'info') => {
           const id = toastId++;
@@ -427,6 +431,7 @@ export const useGame = create<Store>()(
           set((s) => ({ tick: s.tick + 1, selection: { type: null } }));
           persistSoon();
         },
+        setHighlight: (ids) => set({ highlight: ids }),
         select: (type, id) => set({ selection: { type, id }, rightTab: type ? 'inspect' : get().rightTab }),
         deploy: () => {
           const { session, progress } = get();

@@ -24,6 +24,8 @@ export interface ArchNodeData extends Record<string, unknown> {
   /** Downstream fleet of a load balancer: its targets' instances. */
   fanout?: Tile[];
   fanoutLabel?: string;
+  /** Part of the blast radius of an attack being shown. */
+  attacked?: boolean;
 }
 
 export function summaryOf(n: ArchNode): string {
@@ -139,7 +141,7 @@ export function ArchNodeView({ data, selected }: NodeProps) {
   );
   return (
     <div
-      className={`anode anode-${d.status} tone-${toneOfKind(n.kind, e.role)} ${card ? 'anode-card' : ''} ${asg ? 'anode-asg' : ''} ${selected ? 'anode-selected' : ''} ${d.pending ? 'anode-pending' : ''} ${d.isNetwork ? 'anode-net' : ''}`}
+      className={`anode anode-${d.status} tone-${toneOfKind(n.kind, e.role)} ${card ? 'anode-card' : ''} ${asg ? 'anode-asg' : ''} ${selected ? 'anode-selected' : ''} ${d.pending ? 'anode-pending' : ''} ${d.isNetwork ? 'anode-net' : ''} ${d.attacked ? 'anode-attacked' : ''}`}
       aria-label={`${n.label}, ${d.status}`}
     >
       {asg && (
