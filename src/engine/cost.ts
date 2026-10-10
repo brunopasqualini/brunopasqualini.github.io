@@ -88,6 +88,19 @@ export function costLines(n: ArchNode, m: Pick<NodeMetrics, 'replicas' | 'offere
     const eff = c.lifecycle ? base * (1 - P.S3_LIFECYCLE_COLD_SHARE) + P.S3_PRICE.glacier * P.S3_LIFECYCLE_COLD_SHARE : base;
     add(`Storage ${gb} GB${c.lifecycle ? ' (lifecycle)' : ''}`, gb * eff * versioned, 'storage');
     add('Requests', (reqPerMonth / 1e6) * 0.4, 'storage');
+  } else if (n.kind === 'dr-config') {
+    // The standby stack in the second Region costs a share of the primary stack, by strategy.
+    const share = { 'backup-restore': 0, 'pilot-light': 0.1, 'warm-standby': 0.5, 'active-active': 1 }[c.strategy as string] ?? 0;
+    const stack = arch.nodes.reduce((sum, x) => {
+      const xc = x.config;
+      const xs = P.SIZE_MULT[xc.instanceSize ?? xc.size ?? 'small'] ?? 1;
+      if (roleOf(x) === 'compute' && x.kind !== 'lambda')
+        return sum + (xc.replicas ?? 1) * (P.COMPUTE[x.kind] ?? P.COMPUTE['backend-service']).hourly * xs * P.HOURS_PER_MONTH;
+      if (roleOf(x) === 'db') return sum + (P.DB[xc.size] ?? P.DB.small).hourly * P.HOURS_PER_MONTH * (xc.multiAZ ? 2 : 1);
+      return sum;
+    }, 0);
+    add('DR tooling and runbooks', P.FIXED_MONTHLY['dr-config'] ?? 0, 'observability');
+    add(`Standby stack in the second Region (${c.strategy})`, stack * share, 'compute');
   } else if (n.kind === 'nat') {
     let gbThrough = 0;
     for (const e of flowEdges(arch)) {

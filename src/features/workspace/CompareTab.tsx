@@ -50,7 +50,18 @@ function rows(b: DesignProfile, a: DesignProfile): Row[] {
     after: `${a.resilience.toFixed(0)}%`,
     delta: a.resilience - b.resilience,
   });
-  out.push({ label: 'Recovery time (RTO)', before: dur(b.rtoMinutes), after: dur(a.rtoMinutes), delta: b.rtoMinutes - a.rtoMinutes });
+  out.push({
+    label: 'Region loss: time to restore (RTO)',
+    before: dur(b.rtoMinutes),
+    after: dur(a.rtoMinutes),
+    delta: b.rtoMinutes - a.rtoMinutes,
+  });
+  out.push({
+    label: 'Region loss: data lost (RPO)',
+    before: dur(b.rpoMinutes),
+    after: dur(a.rpoMinutes),
+    delta: b.rpoMinutes - a.rpoMinutes,
+  });
   return out;
 }
 

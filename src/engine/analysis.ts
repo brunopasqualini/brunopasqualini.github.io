@@ -282,6 +282,9 @@ export interface RecoveryReport {
   restoreTested: boolean;
   multiAZ: boolean;
   crossRegion: boolean;
+  /** If the whole Region were lost: how much data could be lost, and how long restoring service would take. */
+  regionRpoMinutes: number;
+  regionRtoMinutes: number;
   singlePoints: string[];
   score: number;
 }
@@ -310,6 +313,14 @@ export function analyzeRecovery(arch: Arch): RecoveryReport {
   const rtoByStrategy: Record<string, number> = { 'backup-restore': 240, 'pilot-light': 60, 'warm-standby': 15, 'active-active': 2 };
   let rto = dr ? (rtoByStrategy[dr.config.strategy] ?? 240) : 480;
   if (!dr || dr.config.strategy === 'backup-restore') rto += restoreTested ? -60 : 120;
+  // Losing a Region takes the primary, its Multi-AZ standby and its same-Region backups with it. Only a copy of the data
+  // in another Region survives: a cross-Region replica (seconds to minutes of lag) or a cross-Region backup.
+  const hasRegionCopy = dbs.some((d) => d.config.crossRegionReplica) || backupNodes.some((b) => b.config.crossRegion);
+  const copyRpo = dbs.some((d) => d.config.crossRegionReplica)
+    ? 1
+    : Math.min(...backupNodes.filter((b) => b.config.crossRegion).map((b) => b.config.frequencyHours * 60), 10080);
+  const regionRpoMinutes = !dbs.length ? 0 : hasRegionCopy ? copyRpo : 10080;
+  const regionRtoMinutes = hasRegionCopy ? rto : 2880; // with no copy elsewhere, the answer is "when the Region comes back"
   const multiAZ = dbs.every((d) => d.config.multiAZ || roleOf(d) === 'kv');
   const singlePoints: string[] = [];
   for (const d of dbs.filter((x) => roleOf(x) === 'db' && !x.config.multiAZ)) singlePoints.push(`${d.label} runs in a single AZ`);
@@ -324,7 +335,18 @@ export function analyzeRecovery(arch: Arch): RecoveryReport {
     0,
     100,
   );
-  return { rpoMinutes: rpo, rtoMinutes: rto, backups: backupNodes.length, restoreTested, multiAZ, crossRegion, singlePoints, score };
+  return {
+    rpoMinutes: rpo,
+    rtoMinutes: rto,
+    backups: backupNodes.length,
+    restoreTested,
+    multiAZ,
+    crossRegion,
+    regionRpoMinutes,
+    regionRtoMinutes,
+    singlePoints,
+    score,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -442,6 +464,8 @@ export function buildReport(arch: Arch, window: Snapshot[], workload: Workload, 
     mttd: obs.mttdMinutes,
     rpo: recovery.rpoMinutes,
     rto: recovery.rtoMinutes,
+    regionRpo: recovery.regionRpoMinutes,
+    regionRto: recovery.regionRtoMinutes,
     recoverability: recovery.score,
     costTagCoverage: tagCov,
     azSurvival: az,
