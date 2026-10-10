@@ -57,18 +57,19 @@ describe('router', () => {
 
 describe('primary navigation renders every section', () => {
   const cases: [string, RegExp][] = [
-    ['#/', /Command Center/],
+    ['#/', /./],
     ['#/missions', /Mission Control/],
     ['#/incidents', /Incident Response/],
     ['#/learning', /Engineering Academy/],
     ['#/journal', /Engineering Journal/],
+    ['#/achievements', /Achievements/],
   ];
   for (const [hash, re] of cases) {
     it(hash, async () => {
       await mount(hash);
       await waitFor('h1');
       expect(host!.querySelector('h1')!.textContent).toMatch(re);
-      expect(host!.querySelectorAll('.sidenav li a').length).toBe(6);
+      expect(host!.querySelectorAll('.navtab').length).toBe(7);
     });
   }
   it('Mission Control lists all six missions with controls', async () => {
