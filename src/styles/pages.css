@@ -258,3 +258,11 @@
     margin-top: 6px;
   }
 }
+
+@layer features {
+  .reco-why {
+    margin: 8px 0;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+}
