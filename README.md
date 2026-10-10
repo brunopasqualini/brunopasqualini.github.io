@@ -7,12 +7,13 @@ incidents from logs/metrics/traces/changes, and learn from the *consequences*, n
 It is built for aspiring engineers and career changers who need to connect concepts into a working system, working
 software/cloud/DevOps/platform engineers who want practice beyond tutorials and certification questions, and developers
 growing into system-design responsibility who need to make and defend decisions. Progress runs through five stages of
-problem complexity (Software Engineer → System Designer → Cloud Engineer → Platform/SRE → Principal/Architect); the
-last stage has no scenarios yet and is marked as such in the app.
+problem complexity (Software Engineer → System Designer → Cloud Engineer → Platform/SRE → Principal/Architect). Every
+stage has scenarios, and the capstone starts from the platform *you* built: earlier decisions come back as named debts
+or benefits.
 
 * Real, runnable **React + TypeScript + Vite** app. No backend, no account, no cloud calls.
 * A deterministic, rule-based **simulation engine** (pure TypeScript, unit-tested) with explainable causal effects.
-* **Six playable missions** on one data-driven engine, an **Architecture Lab** sandbox with chaos drills,
+* **Nine playable missions** on one data-driven engine, an **Architecture Lab** sandbox with chaos drills,
   scoring across ten dimensions, skill tree, journal, ADRs and postmortems.
 * Everything is **simulated**. Costs are *estimates*, not AWS prices; nothing touches a real cloud account.
 
@@ -58,6 +59,11 @@ Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected 
 | 4 | The AWS Networking Puzzle | project | VPC, subnets, routes, IGW/NAT, security groups vs NACLs, IAM least privilege — with a layer-by-layer network inspector |
 | 5 | The Queue That Never Drains | incident | SQS semantics, visibility timeout, DLQs, idempotency, backpressure, eventual consistency |
 | 6 | The Cloud Bill Shock | project | right-sizing, lifecycle, NAT/data-transfer, log costs, tags, cost vs reliability |
+| 7 | The N+1 Endpoint | project | N+1 queries, fixing the cause vs a bigger database or a cache, queries per request as a budget |
+| 8 | The Impatient Client | project | timeouts as contracts, retry budgets, circuit breakers, why replicas do not fix a slow dependency |
+| 9 | The Merger (capstone) | project | competing requirements, what to converge, data ownership, audit and peak readiness, ADRs; **inherits debts from missions 1, 2, 7 and 8** |
+
+Journey order: Level 1 = missions 1, 7, 8 · Level 2 = 2, 5 · Level 3 = 4, 6 · Level 4 = 3 · Level 5 = 9.
 
 Each has multiple valid solutions and tempting wrong ones; `src/game/missions.test.ts` encodes both.
 
