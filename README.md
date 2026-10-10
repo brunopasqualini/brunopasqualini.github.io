@@ -63,7 +63,7 @@ Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected 
 | 8 | The Impatient Client | project | timeouts as contracts, retry budgets, circuit breakers, why replicas do not fix a slow dependency |
 | 9 | The Merger (capstone) | project | competing requirements, what to converge, data ownership, audit and peak readiness, ADRs; **inherits debts from missions 1, 2, 7 and 8** |
 
-Journey order: Level 1 = missions 1, 7, 8 · Level 2 = 2, 5 · Level 3 = 4, 6 · Level 4 = 3 · Level 5 = 9.
+Journey order: Level 1 = missions 2, 7, 8 · Level 2 = 1, 5 · Level 3 = 4, 6 · Level 4 = 3 · Level 5 = 9. New players start with Mission 2: something is visibly failing, which teaches the investigate-and-fix loop faster than an open design brief.
 
 Each has multiple valid solutions and tempting wrong ones; `src/game/missions.test.ts` encodes both.
 
