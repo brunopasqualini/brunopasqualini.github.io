@@ -17,6 +17,7 @@ import { useGame } from '@/game/store';
 import { Sparkline } from '@/shared/ui/common';
 import { clock, ms, pct0, usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
+import { TimelineScrubber } from '@/features/workspace/TimelineScrubber';
 
 export function CanvasHeader({
   leftOpen,
@@ -102,7 +103,7 @@ export function CanvasHeader({
           </div>
           <div className={`clock ${running ? 'live' : ''}`} aria-live="off">
             <span className="dot" />
-            {clock(session.minute)}
+            {clock(snap?.minute ?? session.minute)}
             <small title="virtual time">sim</small>
           </div>
         </div>
@@ -180,6 +181,7 @@ export function CanvasHeader({
           </>
         )}
       </div>
+      <TimelineScrubber />
     </header>
   );
 }
