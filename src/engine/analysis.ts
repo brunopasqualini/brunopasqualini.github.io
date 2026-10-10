@@ -373,6 +373,21 @@ export function azSurvival(arch: Arch, workload: Workload, minute: number): numb
   return rate * 100;
 }
 
+/** Points each finding costs, by severity. Single source of truth for the score and for explaining it. */
+export const SECURITY_PENALTY: Record<Finding['severity'], number> = { critical: 40, high: 20, medium: 8, low: 2 };
+
+export interface SecurityBreakdown {
+  score: number;
+  /** Findings that lowered the score, biggest penalty first, each with the points it cost and the change that resolves it. */
+  items: { finding: Finding; points: number }[];
+}
+
+export function securityBreakdown(findings: Finding[]): SecurityBreakdown {
+  const items = findings.map((finding) => ({ finding, points: SECURITY_PENALTY[finding.severity] })).sort((a, b) => b.points - a.points);
+  const lost = items.reduce((t, i) => t + i.points, 0);
+  return { score: clamp(100 - lost, 0, 100), items };
+}
+
 export function buildReport(arch: Arch, window: Snapshot[], workload: Workload, opts: { squads?: number; skipAz?: boolean } = {}): Report {
   const snap = window[window.length - 1];
   const avg = (get: (s: Snapshot) => number) => window.reduce((s, x) => s + get(x), 0) / Math.max(1, window.length);
@@ -385,7 +400,7 @@ export function buildReport(arch: Arch, window: Snapshot[], workload: Workload, 
   findings.forEach((f) => {
     counts[f.severity] += 1;
   });
-  const securityScore = clamp(100 - counts.critical * 40 - counts.high * 20 - counts.medium * 8 - counts.low * 2, 0, 100);
+  const securityScore = securityBreakdown(findings).score;
   const validation = validateArch(arch);
   const flags: Report['flags'] = {};
   for (const f of findings)
