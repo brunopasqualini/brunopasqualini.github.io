@@ -1,0 +1,81 @@
+/* Design tokens: the single source of truth for the Engineering Ops identity.
+   Dark "command centre": deep navy surfaces, cyan primary, violet for async/learning,
+   amber for warning, red for critical. Components never hard-code these values.
+
+   Legacy names (--bg, --panel, --cyan …) are kept as the public vocabulary; the
+   semantic aliases below them are what new code should reach for. */
+@layer tokens {
+  :root {
+    /* surfaces */
+    --bg: #050a16;
+    --bg2: #070f20;
+    --panel: #0a1325;
+    --panel2: #0e1a33;
+    --panel3: #14233f;
+    --line: #162645;
+    --line2: #223a64;
+
+    /* text */
+    --text: #e2ecff;
+    --muted: #9fb3d6;
+    --faint: #8196bb;
+
+    /* brand + status */
+    --cyan: #22d3ee;
+    --sky: #38bdf8;
+    --blue: #3b82f6;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --red-strong: #dc2626; /* solid fills that carry white text */
+    --red-text: #f87171; /* red used as text on dark surfaces */
+    --green: #34d399;
+    --purple: #a78bfa;
+    --orange: #f97316;
+    --pink: #f472b6;
+
+    /* service categories: each pair is [light, dark] for the icon-tile gradient */
+    --cat-compute: #fb923c;
+    --cat-compute-d: #c2410c;
+    --cat-data: #60a5fa;
+    --cat-data-d: #1d4ed8;
+    --cat-storage: #4ade80;
+    --cat-storage-d: #15803d;
+    --cat-network: #c084fc;
+    --cat-network-d: #7e22ce;
+    --cat-messaging: #f472b6;
+    --cat-messaging-d: #be185d;
+    --cat-observe: #fb7185;
+    --cat-observe-d: #9f1239;
+    --cat-security: #f87171;
+    --cat-security-d: #b91c1c;
+    --cat-edge: #a78bfa;
+    --cat-edge-d: #6d28d9;
+    --cat-delivery: #2dd4bf;
+    --cat-delivery-d: #0f766e;
+    --cat-external: #94a3b8;
+    --cat-external-d: #475569;
+    --cat-source: #e2e8f0;
+    --cat-source-d: #64748b;
+
+    /* shape, depth, motion */
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px rgba(0, 0, 0, 0.35);
+    --glow-cyan: 0 0 0 1px rgba(34, 211, 238, 0.35), 0 0 22px rgba(34, 211, 238, 0.25);
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+    /* layout */
+    --nav-h: 58px;
+    --col-left: 300px;
+    --col-right: 308px;
+    --gap: 12px;
+
+    /* type */
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    color-scheme: dark;
+  }
+}

@@ -1,0 +1,532 @@
+import { analyzePipeline } from '@/engine/analysis';
+import { E, N, wl } from '@/content/missions/helpers';
+import type { Arch } from '@/engine/types';
+import type { Consequence, Mission } from '@/content/missions/types';
+
+const patchNode = (arch: Arch, id: string, config: Record<string, unknown>): Arch => ({
+  ...arch,
+  nodes: arch.nodes.map((n) => (n.id === id ? { ...n, config: { ...n.config, ...config } } : n)),
+});
+const patchEdge = (arch: Arch, id: string, config: Record<string, unknown>): Arch => ({
+  ...arch,
+  edges: arch.edges.map((e) => (e.id === id ? { ...e, config: { ...e.config, ...config } } : e)),
+});
+
+/**
+ * The capstone starts from the platform the player has built so far. Each consequence is a debt (or a benefit)
+ * created by an earlier decision. Every debt is repairable with the same tools the earlier missions taught.
+ */
+const consequences: Consequence[] = [
+  {
+    id: 'inherited-modular',
+    tag: 'm1-monolith:modular-monolith',
+    title: 'Clean module boundaries',
+    text: 'You enforced module boundaries in Mission 1, so the storefront monolith starts with enforced boundaries and is cheap to reason about.',
+    apply: (a) => patchNode(a, 'shop', { moduleBoundaries: 'enforced' }),
+  },
+  {
+    id: 'inherited-services',
+    tag: 'm1-monolith:extracted-services',
+    title: 'Services that still share a database',
+    text: 'You extracted services in Mission 1 and the data never fully followed. Two services now read the storefront database directly, which couples every squad to one schema and adds things to operate.',
+    apply: (a) => ({
+      nodes: [
+        ...a.nodes,
+        {
+          ...N(
+            'microservice',
+            'billing',
+            930,
+            40,
+            { domain: 'billing', ownsData: false, replicas: 2, costTag: 'team=shop' },
+            'billing-service',
+          ),
+        },
+        {
+          ...N(
+            'microservice',
+            'accounts',
+            930,
+            220,
+            { domain: 'accounts', ownsData: false, replicas: 2, costTag: 'team=shop' },
+            'accounts-service',
+          ),
+        },
+      ],
+      edges: [
+        ...a.edges,
+        E('shop', 'billing'),
+        E('shop', 'accounts'),
+        E('billing', 'shop-db', { weight: 2 }),
+        E('accounts', 'shop-db', { weight: 2 }),
+      ],
+    }),
+  },
+  {
+    id: 'inherited-index',
+    tag: 'm2-db-meltdown:fixed-the-query',
+    title: 'Hot queries are indexed',
+    text: 'You indexed the hot query in Mission 2, so the storefront database starts with its hot paths indexed.',
+    apply: (a) => patchNode(a, 'shop-db', { indexed: true }),
+  },
+  {
+    id: 'inherited-slow-query',
+    tag: 'm2-db-meltdown:scaled-the-database',
+    title: 'The slow query is still there',
+    text: 'In Mission 2 you scaled the database instead of fixing the query. The unindexed query is back on the storefront database, and it gets expensive at peak.',
+    apply: (a) => patchNode(a, 'shop-db', { indexed: false }),
+    workload: { slowQueryShare: 0.12 },
+    documented: {
+      text: 'In Mission 2 you scaled the database knowingly and wrote the reason down. The slow query is still there, but the team already watches it and has a fix queued, so it hurts less at peak.',
+      workload: { slowQueryShare: 0.04 },
+    },
+  },
+  {
+    id: 'inherited-bigger-db',
+    tag: 'm7-n-plus-one:bought-a-bigger-database',
+    title: 'An oversized database on the bill',
+    text: 'You bought a bigger database in Mission 7. The storefront database starts one size too large and keeps costing money.',
+    apply: (a) => patchNode(a, 'shop-db', { size: 'large' }),
+    documented: {
+      text: 'You bought a bigger database in Mission 7 knowingly and recorded the reason. It is still one size too large, but the cost is a planned line item rather than a surprise.',
+    },
+  },
+  {
+    id: 'inherited-n-plus-one',
+    tag: 'm7-n-plus-one:hid-it-behind-a-cache',
+    title: 'The N+1 pattern is still in the code',
+    text: 'You hid the N+1 pattern behind a cache in Mission 7. At three times the traffic the cache will not save you: the storefront makes many calls per request again.',
+    apply: (a) => patchEdge(a, 'e-shop-shop-db', { weight: 7 }),
+    documented: {
+      text: 'You hid the N+1 pattern behind a cache in Mission 7, knowingly, with the reason recorded. The hot product pages were batched as a follow-up, so the pattern is less severe.',
+      apply: (a) => patchEdge(a, 'e-shop-shop-db', { weight: 4 }),
+    },
+  },
+  {
+    id: 'inherited-retries',
+    tag: 'm8-impatient-client:left-retries-loose',
+    title: 'Loose call contracts',
+    text: 'You left aggressive retries on a service call in Mission 8. The storefront still calls Parcelly with a tight timeout and three retries.',
+    apply: (a) => patchEdge(a, 'e-shop-tracking', { timeoutMs: 250, retries: 3 }),
+    documented: {
+      text: 'You left retries loose in Mission 8 knowingly and recorded why. The storefront still retries, but the budget was capped as a stop-gap: a longer timeout and two retries.',
+      apply: (a) => patchEdge(a, 'e-shop-tracking', { timeoutMs: 600, retries: 2 }),
+    },
+  },
+  {
+    id: 'inherited-retry-budget',
+    tag: 'm8-impatient-client:retry-budget',
+    title: 'Sane call contracts',
+    text: 'You gave service calls measured timeouts and a retry budget in Mission 8. The storefront calls Parcelly with a sensible timeout and one retry.',
+    apply: (a) => patchEdge(a, 'e-shop-tracking', { timeoutMs: 1500, retries: 1 }),
+  },
+];
+
+export const m9: Mission = {
+  id: 'm9-merger',
+  number: 9,
+  title: 'The Merger',
+  tagline: 'Two platforms, six squads, one audit, and a peak that is three times bigger than last year.',
+  difficulty: 'Advanced',
+  kind: 'project',
+  estMinutes: 45,
+  prerequisites: ['m1-monolith', 'm2-db-meltdown'],
+  skills: { sa: 40, sd: 30, aws: 25, net: 20, finops: 25, plat: 20, sre: 20 },
+  learning: [
+    'Designing for competing requirements: availability, security, cost and operational load',
+    'Deciding what to merge, what to leave alone and what to retire',
+    'Data ownership across business domains after an acquisition',
+    'Defending decisions in writing: the ADR as a tool of leadership',
+    'Paying down inherited design debt in the right order',
+  ],
+  story:
+    'Brightcart has acquired Parcelly, a small logistics company whose tracking API now sits inside the checkout journey. In six weeks both businesses face the same Black Friday: three times normal traffic. A SOC 2 audit lands the same month and finance wants the combined cloud bill down. Six squads (four from Brightcart, two from Parcelly) want to keep working their own way. Parcelly’s database is reachable from the internet, nothing watches either stack end to end, and half of the spend cannot be attributed to a team. You are the principal engineer: choose what to converge, what to leave, and write down why. What you built in earlier missions is what you inherited.',
+  business: {
+    context:
+      'Combined platform: about 100 requests/second normally, 300 at the Black Friday peak. SLO 99.9%. Six squads. Audit in four weeks.',
+    impact: 'An outage at peak costs the quarter; a data exposure fails the audit and puts the acquisition at risk.',
+  },
+  constraints: {
+    budget: 1900,
+    availability: 99.9,
+    p95: 500,
+    notes: [
+      'At three times normal traffic: availability ≥ 99.9% and p95 ≤ 500 ms.',
+      'The platform must survive the loss of one availability zone (≥ 95%).',
+      'Nothing critical or high-severity in the security findings (the audit).',
+      'Budget: $1,900 / month at peak (simulated estimate).',
+      'Operational complexity ≤ 70/100: six squads cannot operate everything.',
+      'Record at least two Architecture Decision Records: leadership is written down.',
+    ],
+  },
+  workload: wl({
+    baseRps: 100,
+    profile: [
+      { t: 0, mult: 1 },
+      { t: 12, mult: 1 },
+      { t: 18, mult: 3 },
+    ],
+    readRatio: 0.85,
+    cacheableShare: 0.5,
+    slowQueryShare: 0,
+    payloadKB: 3,
+    logGBPerMillionReq: 0.15,
+    freshnessSeconds: 60,
+  }),
+  initial: {
+    nodes: [
+      N('users', 'users', 20, 200),
+      N('alb', 'shop-alb', 220, 80, { costTag: 'team=shop' }, 'shop-alb'),
+      N(
+        'monolith',
+        'shop',
+        440,
+        80,
+        { replicas: 3, instanceSize: 'medium', moduleBoundaries: 'none', modules: 5, costTag: 'team=shop' },
+        'Brightcart Monolith',
+      ),
+      N('rds', 'shop-db', 700, 80, { size: 'medium', storageGB: 300, indexed: true, multiAZ: false, costTag: 'team=shop' }, 'shop-db'),
+      N('users', 'track-users', 20, 400, { share: 0.3 }, 'Parcel tracking users'),
+      N('alb', 'parcel-alb', 220, 320, { costTag: '' }, 'parcel-alb'),
+      N('ec2', 'tracking', 440, 320, { replicas: 2, instanceSize: 'medium', costTag: '' }, 'tracking-api'),
+      N(
+        'rds',
+        'parcel-db',
+        700,
+        320,
+        { size: 'small', storageGB: 150, indexed: true, multiAZ: false, publicAccess: true, costTag: '' },
+        'parcel-db',
+      ),
+      N('external-api', 'carrier', 700, 470, { rpsLimit: 400, latencyMs: 120 }, 'Carrier API'),
+      N('cloudwatch', 'cw', 440, 480, {}),
+    ],
+    edges: [
+      E('users', 'shop-alb'),
+      E('track-users', 'parcel-alb'),
+      E('shop-alb', 'shop'),
+      E('shop', 'shop-db', { weight: 2 }),
+      E('shop', 'tracking', { weight: 0.3, timeoutMs: 1500, retries: 1 }),
+      E('parcel-alb', 'tracking'),
+      E('tracking', 'parcel-db', { weight: 2 }),
+      E('tracking', 'carrier', { weight: 0.5, timeoutMs: 1500 }),
+      E('cw', 'shop'),
+    ],
+  },
+  components: [
+    'users',
+    'alb',
+    'ecs',
+    'ec2',
+    'monolith',
+    'microservice',
+    'backend-service',
+    'worker',
+    'rds',
+    'relational-db',
+    'cache',
+    'elasticache',
+    'external-api',
+    'message-queue',
+    'sqs',
+    'cloudwatch',
+    'tracing',
+    'central-logging',
+    'alert-rule',
+    'autoscaling',
+    'cloudfront',
+    'waf',
+    'vpc',
+    'subnet',
+    'sg',
+    'igw',
+    'nat',
+    'source-repo',
+    'ci-pipeline',
+    'test-suite',
+    'cd-pipeline',
+    'service-template',
+    'dev-portal',
+    'iac',
+    'circuit-breaker',
+    'retry-policy',
+    'backup',
+    'iam',
+    'kms',
+  ],
+  startMinute: 14,
+  verifyMinutes: 6,
+  verifyAt: 20,
+  squads: 6,
+  consequences,
+  deployments: [
+    {
+      minute: -43200,
+      kind: 'infra',
+      title: 'Acquisition closes',
+      detail: 'Parcelly keeps its own AWS account; a temporary link puts tracking into the checkout journey.',
+      by: 'integration-pm',
+    },
+    {
+      minute: -2880,
+      kind: 'config',
+      title: 'Parcelly: database made public “for the contractor”',
+      detail: 'Public access enabled on parcel-db so a contractor could debug from home. Never reverted.',
+      by: 'parcelly-ops',
+    },
+    {
+      minute: -1440,
+      kind: 'incident',
+      title: 'Audit kick-off',
+      detail: 'SOC 2 auditors asked for a data-flow diagram and a list of internet-reachable data stores.',
+      by: 'compliance',
+    },
+  ],
+  notes: [
+    {
+      panel: 'security',
+      title: 'The audit checklist',
+      body: 'Internet-reachable data stores are an automatic finding. So are anonymous administrative paths.',
+    },
+    {
+      panel: 'cost',
+      title: 'Who pays for what',
+      body: 'Finance cannot tell which squad owns about half the spend because Parcelly resources carry no cost tags.',
+    },
+    {
+      panel: 'notes',
+      title: 'Where the risk really is',
+      body: 'Peak is three times normal. Which components have no headroom? Which would be lost with one availability zone? Which squads depend on the same schema?',
+    },
+  ],
+  rootCauses: [
+    {
+      id: 'public-db',
+      label: 'Parcelly’s database is reachable from the internet, which fails the audit',
+      correct: true,
+      evidencePanels: ['security'],
+      why: 'The security findings include a critical public database endpoint on the acquired platform.',
+    },
+    {
+      id: 'peak-db',
+      label: 'At three times traffic the storefront database becomes the bottleneck',
+      correct: true,
+      evidencePanels: ['metrics', 'database'],
+      why: 'Database utilisation and the peak projection show it saturating first; the app tier has headroom.',
+    },
+    {
+      id: 'unattributed',
+      label: 'Half the spend cannot be attributed to a team',
+      correct: true,
+      evidencePanels: ['cost'],
+      why: 'Cost allocation tags are missing on much of the acquired stack.',
+    },
+    {
+      id: 'rewrite',
+      label: 'The storefront must be rewritten as services before peak',
+      correct: false,
+      evidencePanels: ['dependencies'],
+      why: 'Nothing requires it. Convergence is a cost, so only converge what the audit and the peak force.',
+    },
+    {
+      id: 'second-region',
+      label: 'The platform needs a second region',
+      correct: false,
+      evidencePanels: ['alerts'],
+      why: 'The requirement is surviving the loss of one availability zone, which a single region with Multi-AZ meets.',
+    },
+  ],
+  actions: [],
+  requirements: [
+    {
+      id: 'avail',
+      label: 'Availability ≥ 99.9% at peak',
+      hard: true,
+      metric: 'availability',
+      op: '>=',
+      value: 99.9,
+      why: 'Black Friday is the business.',
+    },
+    {
+      id: 'p95',
+      label: 'p95 latency ≤ 500 ms at peak',
+      hard: true,
+      metric: 'p95',
+      op: '<=',
+      value: 500,
+      why: 'Slow checkout is lost revenue.',
+    },
+    {
+      id: 'az',
+      label: 'Survives the loss of one AZ (≥ 95%)',
+      hard: true,
+      metric: 'azSurvival',
+      op: '>=',
+      value: 95,
+      why: 'A zone failure during the sale must not become an outage.',
+    },
+    {
+      id: 'sec',
+      label: 'No critical or high security findings',
+      hard: true,
+      check: (c) => ({
+        pass: c.report.counts.critical + c.report.counts.high === 0,
+        detail: `${c.report.counts.critical} critical, ${c.report.counts.high} high`,
+      }),
+      why: 'The audit.',
+    },
+    {
+      id: 'budget',
+      label: 'Cost ≤ $1,900/mo at peak',
+      hard: true,
+      metric: 'cost',
+      op: '<=',
+      value: 1900,
+      why: 'The merger is supposed to save money, not spend it.',
+    },
+    {
+      id: 'ops',
+      label: 'Operational complexity ≤ 70',
+      hard: true,
+      metric: 'opComplexity',
+      op: '<=',
+      value: 70,
+      why: 'Six squads, finite attention.',
+    },
+    {
+      id: 'adr2',
+      label: 'At least two ADRs recorded',
+      hard: true,
+      check: (c) => ({ pass: c.adrs.length >= 2, detail: `${c.adrs.length} ADR(s)` }),
+      why: 'A decision nobody wrote down will be relitigated by the next team.',
+    },
+    {
+      id: 'tags',
+      label: 'At least 90% of spend is attributable to a team',
+      hard: false,
+      metric: 'costTagCoverage',
+      op: '>=',
+      value: 90,
+      why: 'Ownership starts with knowing who owns the bill.',
+    },
+    {
+      id: 'obs',
+      label: 'Observability coverage ≥ 70',
+      hard: false,
+      metric: 'observability',
+      op: '>=',
+      value: 70,
+      why: 'You cannot defend what you cannot see; an incident at peak must be detected in minutes.',
+    },
+    {
+      id: 'maint',
+      label: 'Maintainability ≥ 65',
+      hard: false,
+      metric: 'maintainability',
+      op: '>=',
+      value: 65,
+      why: 'Clear domain boundaries and owned data keep six squads out of each other’s way.',
+    },
+    {
+      id: 'ci',
+      label: 'A CI pipeline with automated tests gates changes',
+      hard: false,
+      check: (c) => {
+        const p = analyzePipeline(c.arch);
+        return { pass: p.ci && p.tests, detail: p.ci && p.tests ? 'CI and tests present' : 'Add a CI pipeline and a test suite' };
+      },
+      why: 'Convergence only holds if automation enforces it.',
+    },
+  ],
+  weights: {
+    reliability: 3,
+    security: 3,
+    cost: 2,
+    opSimplicity: 2,
+    maintainability: 2,
+    correctness: 3,
+    rationale: 4,
+    devProductivity: 1,
+    performance: 1,
+  },
+  hints: [
+    {
+      tier: 1,
+      text: 'Start with what would fail the audit, then with what would fail at peak. Order matters: security and zone failure are hard requirements, tidiness is not.',
+    },
+    {
+      tier: 2,
+      text: 'You do not have to merge everything. Ask what each change buys (security, resilience, cost, ownership) and what it costs in operational complexity.',
+    },
+    {
+      tier: 3,
+      text: 'A workable plan: make Parcelly’s database private; make both databases Multi-AZ; resize Parcelly’s database for the peak; add a cache in front of the storefront database and run enough monolith replicas to lose a zone; add tracing and alerting; tag everything; add CI. Keep each domain’s data in its own database. Record the two biggest trade-offs as ADRs.',
+    },
+  ],
+  debrief: {
+    concepts: [
+      {
+        title: 'Convergence is a cost, not a goal',
+        body: 'Merging systems removes duplication and adds coupling. Converge what shares a purpose (observability, ownership, delivery); leave what carries a different domain’s data.',
+      },
+      {
+        title: 'Order the work by risk',
+        body: 'What fails the audit or the peak comes first. Consolidation and elegance come after safety, and only if the budget and the team can carry them.',
+      },
+      {
+        title: 'Decisions are artefacts',
+        body: 'The ADR is how a principal engineer scales their judgement across six squads: it states options, trade-offs and what would make you change your mind.',
+      },
+    ],
+    rootCause:
+      'There is no single root cause. The risks were an internet-reachable database, no headroom or zone redundancy at peak, no end-to-end visibility and unowned spend, plus whatever debt your earlier decisions left.',
+    alternatives: [
+      {
+        name: 'Converge on one platform',
+        when: 'Both businesses will be operated by one organisation for years.',
+        tradeoffs: 'Largest cleanup; migration risk close to peak; the biggest long-term saving.',
+      },
+      {
+        name: 'Federate: shared observability and delivery, separate stacks',
+        when: 'Peak is close and the domains differ.',
+        tradeoffs: 'Lower risk and cost to start; duplication stays; two ways of working.',
+      },
+      {
+        name: 'Freeze changes until after peak',
+        when: 'Risk tolerance is very low and the audit date can be moved.',
+        tradeoffs: 'Does not fix the audit findings; leaves the zone and capacity risks in place.',
+      },
+    ],
+    mistakes: [
+      'Merging both databases into one: it makes every squad depend on one schema.',
+      'Fixing cost first by removing redundancy: the zone-loss requirement fails.',
+      'Adding more services than six squads can run.',
+      'Skipping the ADRs: the reasoning disappears with the people.',
+    ],
+    aws: [
+      'AWS Organizations and consolidated billing with cost allocation tags',
+      'RDS Multi-AZ and private subnets with security groups',
+      'ElastiCache in front of a hot relational database',
+      'Security Hub / Config rules for audit evidence',
+    ],
+    experiments: [
+      'Retire a load balancer by routing both flows through one, and watch how the load is split.',
+      'Merge the databases and watch maintainability.',
+      'Remove Multi-AZ to save money and run the zone-loss drill.',
+    ],
+  },
+  seed: 109,
+  guidance: ['security', 'cost', 'metrics', 'database', 'notes'],
+  needsPostmortem: false,
+  needsADR: true,
+  baselineCost: 1500,
+  decisions: (arch) => {
+    const db = arch.nodes.filter((n) => n.kind === 'rds').length;
+    return [
+      {
+        tag: 'm9-merger:' + (db <= 1 ? 'merged-databases' : 'owned-data'),
+        label: db <= 1 ? 'You merged the two databases.' : 'You kept each domain’s data in its own database.',
+        carries: db <= 1 ? 'Every squad now depends on one schema.' : 'Domains can change their schema independently.',
+      },
+    ];
+  },
+};

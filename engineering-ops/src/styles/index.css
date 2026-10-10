@@ -1,0 +1,35 @@
+/* Cascade order is the architecture: later layers win regardless of selector specificity.
+   vendor (third-party CSS) < tokens < base < layout < components < features < responsive */
+@layer vendor, tokens, base, layout, components, features, responsive;
+
+@import '@xyflow/react/dist/style.css' layer(vendor);
+@import './tokens.css';
+@import './base.css';
+@import './shell.css';
+@import './components.css';
+@import './pages.css';
+@import './home.css';
+@import './workspace-layout.css';
+@import './workspace.css';
+@import './canvas.css';
+@import './responsive.css';
+
+/* Deliberately UNLAYERED. Any page that embeds this app (a hosting shell, a preview frame) may inject plain,
+   unlayered element rules such as `body { background: #fff; color: #000 }` or `:root { color-scheme: light }`.
+   Unlayered rules always beat layered ones, so the few global rules the whole theme depends on live here,
+   after the host's styles, instead of in a layer. */
+:root {
+  color-scheme: dark;
+}
+html {
+  background: var(--bg);
+}
+body {
+  margin: 0;
+  padding: 0;
+  font: 14px/1.5 var(--sans);
+  color: var(--text);
+  background:
+    radial-gradient(1100px 520px at 75% -12%, #0b1c3d 0%, transparent 70%),
+    radial-gradient(900px 500px at 5% 105%, #0a1730 0%, transparent 65%), var(--bg);
+}
