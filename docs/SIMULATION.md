@@ -53,6 +53,18 @@ in the Cost panel and in the Inspector.
 * **Causal explanations** — `explainChanges(before, after)` names the component and mechanism behind each
   significant metric change after a deploy.
 
+## Trust
+
+The model is only useful if it never contradicts itself. `engine/invariants.test.ts` runs every mission start and
+every lab template through properties that must hold for any architecture: finite and bounded numbers, determinism,
+cost equal to the sum of its parts, more traffic never raising the success rate, faults never improving what a
+working system serves, a slower dependency never lowering latency, more replicas never lowering capacity, and bigger
+instances never costing less. Two exceptions are deliberate and documented in the test: queues may serve more than
+arrives while draining a backlog, and a design that has already collapsed can nudge up by fractions of a percent when
+a fault removes capacity, because that lowers retry amplification. `game/missions.test.ts` holds the golden
+scenarios: for each mission, the intended fix passes, tempting wrong fixes fail for the stated reason, and valid
+alternatives differ in cost or score.
+
 ## Extending
 
 * New component → add an entry in `src/sim/catalog.ts` (role decides behaviour), parameters in `params.ts`.
