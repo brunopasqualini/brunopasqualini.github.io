@@ -27,6 +27,8 @@ import {
   type Session,
 } from '@/game/session';
 import { TEMPLATES, templateWorkload } from '@/content/templates';
+import { SAVE_SCHEMA_VERSION, migrateSave } from '@/game/migrate';
+import { isReplayCompatible, SIM_VERSION } from '@/game/simVersion';
 
 export interface SavedSession {
   mode: Mode;
@@ -39,6 +41,8 @@ export interface SavedSession {
   hintsUsed: number;
   adrs: ADR[];
   postmortem?: Postmortem;
+  /** Simulation behaviour this log was recorded under (see game/simVersion). */
+  simVersion?: number;
   updatedAt: number;
 }
 
@@ -212,6 +216,7 @@ export const useGame = create<Store>()(
           hintsUsed: session.hintsUsed,
           adrs: session.adrs,
           postmortem: session.postmortem,
+          simVersion: SIM_VERSION,
           updatedAt: Date.now(),
         };
         set({ saved: { ...saved, [session.missionId]: entry } });
@@ -256,15 +261,21 @@ export const useGame = create<Store>()(
         openMission: (id, opts = {}) => {
           const { saved, progress, settings } = get();
           const existing = saved[id];
+          const stale = !!existing && !isReplayCompatible(existing.simVersion);
           let session: Session;
           let drill: Store['drill'];
+          let staleNote = false;
           if (id === LAB_ID) {
             const tpl = TEMPLATES.find((t) => t.id === (opts.template ?? get().labTemplate)) ?? TEMPLATES[1];
-            if (opts.template || !existing || opts.fresh) {
-              session = createSession(LAB_ID, settings.mode, 1, tpl.arch);
+            if (opts.template || !existing || opts.fresh || stale) {
+              session = createSession(LAB_ID, settings.mode, 1, stale && !opts.template ? (existing.initialArch ?? tpl.arch) : tpl.arch);
               session.workload = templateWorkload(tpl);
               session.ops.push({ op: 'workload', patch: { ...session.workload } });
               if (tpl.chaos) setChaos(session, tpl.chaos, true);
+              if (stale && !opts.template && !opts.fresh) {
+                session.draft = clone(existing.draft);
+                staleNote = true;
+              }
               drill = tpl.drill;
               set({
                 saved: {
@@ -279,6 +290,7 @@ export const useGame = create<Store>()(
                     chosenCauses: [],
                     hintsUsed: 0,
                     adrs: [],
+                    simVersion: SIM_VERSION,
                     updatedAt: Date.now(),
                   },
                 },
@@ -289,6 +301,23 @@ export const useGame = create<Store>()(
               session.draft = clone(existing.draft);
               drill = TEMPLATES.find((t) => t.id === get().labTemplate)?.drill;
             }
+          } else if (existing && !opts.fresh && stale) {
+            // The simulation changed since this run was recorded, so replaying it would give different results.
+            // Keep the player's design, notes and hints; restart the clock.
+            session = createSession(id, settings.mode, existing.attempt);
+            session.draft = clone(existing.draft);
+            session.panelsSeen = [...existing.panelsSeen];
+            session.chosenCauses = [...existing.chosenCauses];
+            session.hintsUsed = existing.hintsUsed;
+            session.adrs = [...existing.adrs];
+            session.postmortem = existing.postmortem;
+            staleNote = true;
+            set({
+              saved: {
+                ...get().saved,
+                [id]: { ...existing, ops: [], draft: session.draft, simVersion: SIM_VERSION, updatedAt: Date.now() },
+              },
+            });
           } else if (existing && !opts.fresh) {
             session = replay(id, existing.mode, existing.attempt, existing.ops);
             session.draft = clone(existing.draft);
@@ -313,6 +342,7 @@ export const useGame = create<Store>()(
                   chosenCauses: [],
                   hintsUsed: 0,
                   adrs: [],
+                  simVersion: SIM_VERSION,
                   updatedAt: Date.now(),
                 },
               },
@@ -331,6 +361,12 @@ export const useGame = create<Store>()(
             rightTab: 'inspect',
             mobilePane: 'canvas',
           });
+          if (staleNote) {
+            get().toast(
+              'The simulation was updated since you last played, so the run restarted. Your design, notes and hints were kept.',
+              'info',
+            );
+          }
         },
         closeSession: () => {
           persistSession();
@@ -587,7 +623,8 @@ export const useGame = create<Store>()(
         resetAll: () => {
           set({ progress: emptyProgress(), saved: {}, session: null, running: false, debrief: null });
         },
-        exportSave: () => JSON.stringify({ v: 1, progress: get().progress, saved: get().saved, settings: get().settings }),
+        exportSave: () =>
+          JSON.stringify({ v: 1, sim: SIM_VERSION, progress: get().progress, saved: get().saved, settings: get().settings }),
         importSave: (json) => {
           try {
             const d = JSON.parse(json);
@@ -607,7 +644,8 @@ export const useGame = create<Store>()(
     },
     {
       name: 'engineering-ops-save-v1',
-      version: 1,
+      version: SAVE_SCHEMA_VERSION,
+      migrate: (persisted, from) => migrateSave(persisted, from) as never,
       storage: createJSONStorage(() => debouncedStorage),
       partialize: (s) => ({ progress: s.progress, settings: s.settings, saved: s.saved }),
       merge: (persisted, current) => {
