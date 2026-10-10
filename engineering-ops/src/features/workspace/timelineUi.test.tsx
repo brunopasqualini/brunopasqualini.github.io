@@ -2,6 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App from '@/app/App';
+import { makeEdge, makeNode } from '@/engine/arch';
 import { useGame } from '@/game/store';
 
 let root: Root | undefined;
@@ -121,5 +122,25 @@ describe('timeline scrubber', () => {
     await act(async () => g().step(1));
     await tick();
     expect(canvas().dataset.viewing).toBe('false');
+  });
+
+  it('can look back to before a component existed (the architecture changed since)', async () => {
+    await act(async () => g().step(6));
+    await act(async () => {
+      g().editDraft((a) => {
+        a.nodes.push(makeNode('s3', { x: 900, y: 200 }, { id: 'later', label: 'Added later' }));
+        a.edges.push(makeEdge('api', 'later'));
+      });
+    });
+    await act(async () => g().deploy());
+    await act(async () => g().step(6));
+    await tick();
+    expect(g().session!.live.nodes.some((n) => n.id === 'later')).toBe(true);
+    // the oldest snapshots know nothing about 'later': the canvas and health strip must still render
+    await drag(Number(slider().min));
+    expect(canvas().dataset.viewing).toBe('true');
+    expect(host!.querySelectorAll('.react-flow__node').length).toBeGreaterThan(0);
+    expect(host!.querySelector('.ch-kpis')).toBeTruthy();
+    expect(note()).toBeTruthy();
   });
 });
