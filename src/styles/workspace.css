@@ -686,6 +686,28 @@
     padding-top: 6px;
     border-top: 1px solid var(--line2);
   }
+  .story-block {
+    margin-top: 12px;
+  }
+  .story-block h5 {
+    margin: 0 0 4px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .story-block > p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text);
+  }
+  .story-next {
+    padding: 9px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--line2);
+    border-left: 3px solid var(--cyan);
+    background: var(--panel2);
+  }
   .changes li {
     padding: 9px 11px;
     border-radius: 8px;
