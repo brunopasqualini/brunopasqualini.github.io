@@ -9,8 +9,22 @@ import type { ADR, PanelId, Postmortem, SkillId } from '@/content/missions/types
 import { ACHIEVEMENTS, levelFromXp, type Evidence, type Stats } from '@/game/progression';
 import type { Outcome } from '@/game/scoring';
 import {
-  advance, applyAction, createSession, deployDraft, LAB_ID, LAB_WORKLOAD, missionOf, replay, revertLast, setChaos, patchWorkload, verify, describeChaos,
-  type Mode, type Op, type Session,
+  advance,
+  applyAction,
+  createSession,
+  deployDraft,
+  LAB_ID,
+  LAB_WORKLOAD,
+  missionOf,
+  replay,
+  revertLast,
+  setChaos,
+  patchWorkload,
+  verify,
+  describeChaos,
+  type Mode,
+  type Op,
+  type Session,
 } from '@/game/session';
 import { TEMPLATES, templateWorkload } from '@/content/templates';
 
@@ -57,10 +71,18 @@ export interface Toast {
 }
 
 const emptyProgress = (): Progress => ({
-  xp: 0, completed: {}, attempts: {}, outcomes: [],
+  xp: 0,
+  completed: {},
+  attempts: {},
+  outcomes: [],
   skillXp: { se: 0, sa: 0, sd: 0, aws: 0, net: 0, devops: 0, plat: 0, sre: 0, data: 0, finops: 0 },
   evidence: { se: [], sa: [], sd: [], aws: [], net: [], devops: [], plat: [], sre: [], data: [], finops: [] },
-  achievements: {}, adrs: [], postmortems: [], lessons: [], experiments: [], designs: [],
+  achievements: {},
+  adrs: [],
+  postmortems: [],
+  lessons: [],
+  experiments: [],
+  designs: [],
   stats: { deploys: 0, reverts: 0, simMinutes: 0, failedAttempts: 0, retryAmplification: 0 },
 });
 
@@ -138,14 +160,34 @@ const debouncedStorage = (() => {
   let pending: { name: string; value: string } | undefined;
   const flush = () => {
     if (!pending) return;
-    try { window.localStorage.setItem(pending.name, pending.value); } catch { /* storage may be full or blocked */ }
+    try {
+      window.localStorage.setItem(pending.name, pending.value);
+    } catch {
+      /* storage may be full or blocked */
+    }
     pending = undefined;
   };
   if (typeof window !== 'undefined') window.addEventListener('beforeunload', flush);
   return {
-    getItem: (name: string) => { try { return window.localStorage.getItem(name); } catch { return null; } },
-    setItem: (name: string, value: string) => { pending = { name, value }; if (timer) clearTimeout(timer); timer = setTimeout(flush, 350); },
-    removeItem: (name: string) => { try { window.localStorage.removeItem(name); } catch { /* ignore */ } },
+    getItem: (name: string) => {
+      try {
+        return window.localStorage.getItem(name);
+      } catch {
+        return null;
+      }
+    },
+    setItem: (name: string, value: string) => {
+      pending = { name, value };
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(flush, 350);
+    },
+    removeItem: (name: string) => {
+      try {
+        window.localStorage.removeItem(name);
+      } catch {
+        /* ignore */
+      }
+    },
   };
 })();
 
@@ -155,15 +197,22 @@ let persistTimer: ReturnType<typeof setTimeout> | undefined;
 export const useGame = create<Store>()(
   persist(
     (set, get) => {
-      const bump = () => set((s) => ({ tick: s.tick + 1, session: s.session ? s.session : s.session }));
-
       const persistSession = () => {
         const { session, saved } = get();
         if (!session) return;
         const prev = saved[session.missionId];
         const entry: SavedSession = {
-          mode: session.mode, attempt: session.attempt, ops: session.ops, draft: session.draft, initialArch: prev?.initialArch,
-          panelsSeen: session.panelsSeen, chosenCauses: session.chosenCauses, hintsUsed: session.hintsUsed, adrs: session.adrs, postmortem: session.postmortem, updatedAt: Date.now(),
+          mode: session.mode,
+          attempt: session.attempt,
+          ops: session.ops,
+          draft: session.draft,
+          initialArch: prev?.initialArch,
+          panelsSeen: session.panelsSeen,
+          chosenCauses: session.chosenCauses,
+          hintsUsed: session.hintsUsed,
+          adrs: session.adrs,
+          postmortem: session.postmortem,
+          updatedAt: Date.now(),
         };
         set({ saved: { ...saved, [session.missionId]: entry } });
       };
@@ -217,7 +266,24 @@ export const useGame = create<Store>()(
               session.ops.push({ op: 'workload', patch: { ...session.workload } });
               if (tpl.chaos) setChaos(session, tpl.chaos, true);
               drill = tpl.drill;
-              set({ saved: { ...saved, [LAB_ID]: { mode: settings.mode, attempt: 1, ops: session.ops, draft: session.draft, initialArch: clone(tpl.arch), panelsSeen: [], chosenCauses: [], hintsUsed: 0, adrs: [], updatedAt: Date.now() } }, labTemplate: tpl.id });
+              set({
+                saved: {
+                  ...saved,
+                  [LAB_ID]: {
+                    mode: settings.mode,
+                    attempt: 1,
+                    ops: session.ops,
+                    draft: session.draft,
+                    initialArch: clone(tpl.arch),
+                    panelsSeen: [],
+                    chosenCauses: [],
+                    hintsUsed: 0,
+                    adrs: [],
+                    updatedAt: Date.now(),
+                  },
+                },
+                labTemplate: tpl.id,
+              });
             } else {
               session = replay(LAB_ID, existing.mode, existing.attempt, existing.ops, existing.initialArch);
               session.draft = clone(existing.draft);
@@ -235,22 +301,50 @@ export const useGame = create<Store>()(
           } else {
             const attempt = (progress.attempts[id] ?? 0) + 1;
             session = createSession(id, settings.mode, attempt);
-            set({ saved: { ...get().saved, [id]: { mode: settings.mode, attempt, ops: [], draft: session.draft, panelsSeen: [], chosenCauses: [], hintsUsed: 0, adrs: [], updatedAt: Date.now() } } });
+            set({
+              saved: {
+                ...get().saved,
+                [id]: {
+                  mode: settings.mode,
+                  attempt,
+                  ops: [],
+                  draft: session.draft,
+                  panelsSeen: [],
+                  chosenCauses: [],
+                  hintsUsed: 0,
+                  adrs: [],
+                  updatedAt: Date.now(),
+                },
+              },
+            });
           }
           set({
-            session, running: false, selection: { type: null }, debrief: null, tick: get().tick + 1, drill,
+            session,
+            running: false,
+            selection: { type: null },
+            debrief: null,
+            tick: get().tick + 1,
+            drill,
             introOpen: id !== LAB_ID && (!existing || !!opts.fresh) && !(existing && existing.ops.length > 0),
-            dock: missionOf(id).guidance[0] as PanelId ?? 'metrics', dockOpen: true, rightTab: id === LAB_ID ? 'inspect' : 'mission', mobilePane: 'canvas',
+            dock: (missionOf(id).guidance[0] as PanelId) ?? 'metrics',
+            dockOpen: true,
+            rightTab: id === LAB_ID ? 'inspect' : 'mission',
+            mobilePane: 'canvas',
           });
         },
-        closeSession: () => { persistSession(); set({ session: null, running: false, debrief: null }); },
+        closeSession: () => {
+          persistSession();
+          set({ session: null, running: false, debrief: null });
+        },
         retryMission: (id) => {
           const saved = { ...get().saved };
           delete saved[id];
           set({ saved, debrief: null });
           get().openMission(id, { fresh: true });
         },
-        startIncident: () => { set({ introOpen: false, running: missionOf(get().session?.missionId ?? '').kind === 'incident' }); },
+        startIncident: () => {
+          set({ introOpen: false, running: missionOf(get().session?.missionId ?? '').kind === 'incident' });
+        },
 
         setRunning: (v) => set({ running: v }),
         setSpeed: (s) => set({ speed: s }),
@@ -263,7 +357,8 @@ export const useGame = create<Store>()(
             get().toast(missionOf(session.missionId).failure?.text ?? 'Customer impact budget exceeded.', 'bad');
             set({ running: false });
           }
-          if (session.minute % 10 < n) set({ progress: { ...progress, stats: { ...progress.stats, simMinutes: progress.stats.simMinutes + 10 } } });
+          if (session.minute % 10 < n)
+            set({ progress: { ...progress, stats: { ...progress.stats, simMinutes: progress.stats.simMinutes + 10 } } });
           set((s) => ({ tick: s.tick + 1 }));
           if (session.minute % 6 < n) persistSession();
         },
@@ -337,7 +432,10 @@ export const useGame = create<Store>()(
             set((s) => ({ tick: s.tick + 1 }));
           }
         },
-        setDock: (p) => { set({ dock: p, dockOpen: true }); get().visitPanel(p); },
+        setDock: (p) => {
+          set({ dock: p, dockOpen: true });
+          get().visitPanel(p);
+        },
         setDockOpen: (v) => set({ dockOpen: v }),
         setRightTab: (t) => set({ rightTab: t }),
         setMobilePane: (p) => set({ mobilePane: p }),
@@ -381,7 +479,14 @@ export const useGame = create<Store>()(
           const firstTime = !progress.completed[m.id]?.passed;
           const { outcome, report } = verify(session, firstTime);
           const prevLevel = levelFromXp(progress.xp);
-          const next: Progress = { ...progress, outcomes: [...progress.outcomes, outcome], attempts: { ...progress.attempts, [m.id]: session.attempt }, skillXp: { ...progress.skillXp }, evidence: { ...progress.evidence }, achievements: { ...progress.achievements } };
+          const next: Progress = {
+            ...progress,
+            outcomes: [...progress.outcomes, outcome],
+            attempts: { ...progress.attempts, [m.id]: session.attempt },
+            skillXp: { ...progress.skillXp },
+            evidence: { ...progress.evidence },
+            achievements: { ...progress.achievements },
+          };
           if (outcome.passed) {
             const best = progress.completed[m.id];
             if (!best || outcome.overall > best.overall) next.completed = { ...progress.completed, [m.id]: outcome };
@@ -390,16 +495,36 @@ export const useGame = create<Store>()(
             for (const [k, v] of Object.entries(outcome.skillXp)) {
               const sk = k as SkillId;
               next.skillXp[sk] = (progress.skillXp[sk] ?? 0) + (v ?? 0);
-              next.evidence[sk] = [...(progress.evidence[sk] ?? []), { missionId: m.id, title: m.title, overall: outcome.overall, at: Date.now(), note: `${outcome.grade} (${outcome.overall}/100) — ${outcome.reqs.filter((r) => r.pass).length}/${outcome.reqs.length} requirements met` }];
+              next.evidence[sk] = [
+                ...(progress.evidence[sk] ?? []),
+                {
+                  missionId: m.id,
+                  title: m.title,
+                  overall: outcome.overall,
+                  at: Date.now(),
+                  note: `${outcome.grade} (${outcome.overall}/100) — ${outcome.reqs.filter((r) => r.pass).length}/${outcome.reqs.length} requirements met`,
+                },
+              ];
             }
           } else {
             next.stats = { ...progress.stats, failedAttempts: progress.stats.failedAttempts + 1 };
             next.xp = progress.xp + outcome.xp;
           }
-          for (const a of session.adrs) if (!next.adrs.some((x) => x.id === a.id)) next.adrs = [...next.adrs, { ...a, missionId: m.id, at: Date.now() }];
-          if (session.postmortem) next.postmortems = [...next.postmortems.filter((p) => !(p.missionId === m.id && p.at === (progress.postmortems.find((q) => q.missionId === m.id)?.at ?? -1))), { missionId: m.id, at: Date.now(), pm: session.postmortem }];
+          for (const a of session.adrs)
+            if (!next.adrs.some((x) => x.id === a.id)) next.adrs = [...next.adrs, { ...a, missionId: m.id, at: Date.now() }];
+          if (session.postmortem)
+            next.postmortems = [
+              ...next.postmortems.filter(
+                (p) => !(p.missionId === m.id && p.at === (progress.postmortems.find((q) => q.missionId === m.id)?.at ?? -1)),
+              ),
+              { missionId: m.id, at: Date.now(), pm: session.postmortem },
+            ];
           next.lessons = [...next.lessons, { missionId: m.id, at: Date.now(), text: m.debrief.rootCause }];
-          if (session.postmortem?.worsened.trim()) next.lessons = [...next.lessons, { missionId: m.id, at: Date.now(), text: `Made it worse: ${session.postmortem.worsened.trim()}` }];
+          if (session.postmortem?.worsened.trim())
+            next.lessons = [
+              ...next.lessons,
+              { missionId: m.id, at: Date.now(), text: `Made it worse: ${session.postmortem.worsened.trim()}` },
+            ];
           const adrCount = next.adrs.length;
           for (const a of ACHIEVEMENTS) {
             if (!next.achievements[a.id] && a.test(outcome, { completed: next.completed, adrCount, stats: next.stats })) {
@@ -433,7 +558,12 @@ export const useGame = create<Store>()(
         saveDesign: (name) => {
           const { session, progress } = get();
           if (!session) return;
-          const d = { id: `design-${Date.now().toString(36)}`, name: name || `Design ${progress.designs.length + 1}`, arch: clone({ ...session.draft, nodes: session.draft.nodes.map((n) => ({ ...n, faults: undefined })) }), savedAt: Date.now() };
+          const d = {
+            id: `design-${Date.now().toString(36)}`,
+            name: name || `Design ${progress.designs.length + 1}`,
+            arch: clone({ ...session.draft, nodes: session.draft.nodes.map((n) => ({ ...n, faults: undefined })) }),
+            savedAt: Date.now(),
+          };
           set({ progress: { ...progress, designs: [...progress.designs, d] } });
           get().toast(`Saved “${d.name}” to your designs.`, 'good');
         },
@@ -446,17 +576,32 @@ export const useGame = create<Store>()(
           set((s) => ({ tick: s.tick + 1, selection: { type: null }, rightTab: 'plan' }));
           get().toast(`Loaded “${d.name}” into the draft. Press Deploy to run it.`, 'info');
         },
-        recordExperiment: (name, note, metrics) => set((s) => ({ progress: { ...s.progress, experiments: [...s.progress.experiments, { id: `exp-${Date.now().toString(36)}`, at: Date.now(), name, note, metrics }] } })),
+        recordExperiment: (name, note, metrics) =>
+          set((s) => ({
+            progress: {
+              ...s.progress,
+              experiments: [...s.progress.experiments, { id: `exp-${Date.now().toString(36)}`, at: Date.now(), name, note, metrics }],
+            },
+          })),
 
-        resetAll: () => { set({ progress: emptyProgress(), saved: {}, session: null, running: false, debrief: null }); },
+        resetAll: () => {
+          set({ progress: emptyProgress(), saved: {}, session: null, running: false, debrief: null });
+        },
         exportSave: () => JSON.stringify({ v: 1, progress: get().progress, saved: get().saved, settings: get().settings }),
         importSave: (json) => {
           try {
             const d = JSON.parse(json);
             if (!d || d.v !== 1 || !d.progress) return false;
-            set({ progress: { ...emptyProgress(), ...d.progress }, saved: d.saved ?? {}, settings: { ...get().settings, ...(d.settings ?? {}) }, session: null });
+            set({
+              progress: { ...emptyProgress(), ...d.progress },
+              saved: d.saved ?? {},
+              settings: { ...get().settings, ...(d.settings ?? {}) },
+              session: null,
+            });
             return true;
-          } catch { return false; }
+          } catch {
+            return false;
+          }
         },
       };
     },

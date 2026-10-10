@@ -7,12 +7,30 @@ export type MissionKind = 'project' | 'incident';
 export type SkillId = 'se' | 'sa' | 'sd' | 'aws' | 'net' | 'devops' | 'plat' | 'sre' | 'data' | 'finops';
 
 export type DimensionId =
-  | 'reliability' | 'performance' | 'cost' | 'security' | 'maintainability' | 'opSimplicity'
-  | 'devProductivity' | 'diagnosis' | 'correctness' | 'rationale';
+  | 'reliability'
+  | 'performance'
+  | 'cost'
+  | 'security'
+  | 'maintainability'
+  | 'opSimplicity'
+  | 'devProductivity'
+  | 'diagnosis'
+  | 'correctness'
+  | 'rationale';
 
 export type PanelId =
-  | 'logs' | 'metrics' | 'traces' | 'dependencies' | 'deployments' | 'cost' | 'security'
-  | 'alerts' | 'database' | 'queues' | 'network' | 'notes';
+  | 'logs'
+  | 'metrics'
+  | 'traces'
+  | 'dependencies'
+  | 'deployments'
+  | 'cost'
+  | 'security'
+  | 'alerts'
+  | 'database'
+  | 'queues'
+  | 'network'
+  | 'notes';
 
 export interface ADR {
   id: string;

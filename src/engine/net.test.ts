@@ -8,7 +8,8 @@ const N = (kind: string, id: string, config: Record<string, any> = {}) => makeNo
 function vpc(over: { natSubnet?: string; privRoute?: string; egress?: string; nacl?: boolean } = {}): Arch {
   return {
     nodes: [
-      N('vpc', 'v'), N('igw', 'igw', { vpc: 'v' }),
+      N('vpc', 'v'),
+      N('igw', 'igw', { vpc: 'v' }),
       N('subnet', 'pub', { vpc: 'v', routeInternet: 'igw' }),
       N('subnet', 'priv', { vpc: 'v', routeInternet: over.privRoute ?? 'nat', nat: 'nat', nacl: over.nacl === false ? 'nacl' : '' }),
       N('nat', 'nat', { subnet: over.natSubnet ?? 'pub' }),
@@ -54,9 +55,19 @@ describe('network reachability explains why traffic flows or not', () => {
   });
   it('ingress needs a public subnet and an inbound rule', () => {
     const a = vpc();
-    expect(ingressFromInternet(a, a.nodes.find((n) => n.id === 'alb')!).ok).toBe(true);
+    expect(
+      ingressFromInternet(
+        a,
+        a.nodes.find((n) => n.id === 'alb')!,
+      ).ok,
+    ).toBe(true);
     a.nodes.find((n) => n.id === 'sg-alb')!.config.inbound = [{ port: 80, source: 'world' }];
-    expect(ingressFromInternet(a, a.nodes.find((n) => n.id === 'alb')!).ok).toBe(false);
+    expect(
+      ingressFromInternet(
+        a,
+        a.nodes.find((n) => n.id === 'alb')!,
+      ).ok,
+    ).toBe(false);
     expect(explainFlow(a, 'u', 'alb', 443).blockedAt).toBe('Security group (inbound)');
   });
 });
@@ -65,10 +76,16 @@ describe('security findings', () => {
   it('flags exposed ports, public data stores and over-broad IAM with remediation', () => {
     const a: Arch = {
       nodes: [
-        N('sg', 'sg', { inbound: [{ port: 22, source: 'world' }, { port: 5432, source: 'world' }] }),
+        N('sg', 'sg', {
+          inbound: [
+            { port: 22, source: 'world' },
+            { port: 5432, source: 'world' },
+          ],
+        }),
         N('s3', 'bucket', { publicAccess: true, encrypted: false }),
         N('rds', 'db', { publicAccess: true, backupRetentionDays: 0 }),
-        N('iam', 'role', { policy: 'admin' }), N('ecs', 'a', { iamRole: 'role' }),
+        N('iam', 'role', { policy: 'admin' }),
+        N('ecs', 'a', { iamRole: 'role' }),
       ],
       edges: [],
     };
@@ -79,7 +96,15 @@ describe('security findings', () => {
     expect(f.every((x) => x.fix.length > 10)).toBe(true);
   });
   it('reports nothing for a least-privilege configuration', () => {
-    const a: Arch = { nodes: [N('sg', 'sg', { inbound: [{ port: 443, source: 'world' }] }), N('s3', 'b', {}), N('iam', 'r', { policy: 'scoped' }), N('cloudtrail', 'ct')], edges: [] };
+    const a: Arch = {
+      nodes: [
+        N('sg', 'sg', { inbound: [{ port: 443, source: 'world' }] }),
+        N('s3', 'b', {}),
+        N('iam', 'r', { policy: 'scoped' }),
+        N('cloudtrail', 'ct'),
+      ],
+      edges: [],
+    };
     expect(securityFindings(a)).toEqual([]);
   });
 });

@@ -26,7 +26,16 @@ export function StatusBar() {
   return (
     <header className="statusbar">
       <div className="sb-left">
-        <button className="icon-btn" aria-label="Back to mission list" onClick={() => { closeSession(); go(isLab ? '/' : mission.kind === 'incident' ? '/incidents' : '/missions'); }}><ArrowLeft size={18} /></button>
+        <button
+          className="icon-btn"
+          aria-label="Back to mission list"
+          onClick={() => {
+            closeSession();
+            go(isLab ? '/' : mission.kind === 'incident' ? '/incidents' : '/missions');
+          }}
+        >
+          <ArrowLeft size={18} />
+        </button>
         <div className="sb-title">
           <b>{isLab ? 'Architecture Lab' : `Mission ${mission.number}: ${mission.title}`}</b>
           <div className="chips">
@@ -38,22 +47,84 @@ export function StatusBar() {
         </div>
       </div>
       <div className="sb-sim" role="group" aria-label="Simulation controls">
-        <button className="btn btn-primary btn-icon" onClick={() => setRunning(!running)} aria-label={running ? 'Pause simulation' : 'Run simulation'}>{running ? <Pause size={16} /> : <Play size={16} />}<span>{running ? 'Pause' : 'Run'}</span></button>
-        <button className="btn btn-ghost btn-icon" onClick={() => step(1)} aria-label="Advance one minute" title="Advance one simulated minute (.)"><StepForward size={16} /><span>+1m</span></button>
-        <button className="btn btn-ghost btn-icon" onClick={() => step(10)} aria-label="Advance ten minutes" title="Advance ten simulated minutes"><FastForward size={16} /><span>+10m</span></button>
+        <button
+          className="btn btn-primary btn-icon"
+          onClick={() => setRunning(!running)}
+          aria-label={running ? 'Pause simulation' : 'Run simulation'}
+        >
+          {running ? <Pause size={16} /> : <Play size={16} />}
+          <span>{running ? 'Pause' : 'Run'}</span>
+        </button>
+        <button
+          className="btn btn-ghost btn-icon"
+          onClick={() => step(1)}
+          aria-label="Advance one minute"
+          title="Advance one simulated minute (.)"
+        >
+          <StepForward size={16} />
+          <span>+1m</span>
+        </button>
+        <button
+          className="btn btn-ghost btn-icon"
+          onClick={() => step(10)}
+          aria-label="Advance ten minutes"
+          title="Advance ten simulated minutes"
+        >
+          <FastForward size={16} />
+          <span>+10m</span>
+        </button>
         <div className="speed" role="radiogroup" aria-label="Simulation speed">
-          {([1, 4, 16] as const).map((s) => <button key={s} role="radio" aria-checked={speed === s} className={speed === s ? 'on' : ''} onClick={() => setSpeed(s)}>{s}×</button>)}
+          {([1, 4, 16] as const).map((s) => (
+            <button key={s} role="radio" aria-checked={speed === s} className={speed === s ? 'on' : ''} onClick={() => setSpeed(s)}>
+              {s}×
+            </button>
+          ))}
         </div>
-        <div className={`clock ${running ? 'live' : ''}`} aria-live="off"><span className="dot" />{clock(session.minute)}<small title="virtual time">sim</small></div>
+        <div className={`clock ${running ? 'live' : ''}`} aria-live="off">
+          <span className="dot" />
+          {clock(session.minute)}
+          <small title="virtual time">sim</small>
+        </div>
       </div>
       <div className="sb-health" aria-label="System health">
-        <div className={`hk hk-${health}`}><span>Availability</span><b>{sys ? pct0(sys.successRate * 100) : '—'}</b><Sparkline values={spark} color={health === 'ok' ? '#34d399' : health === 'warn' ? '#f59e0b' : '#ef4444'} min={0} max={100} width={64} height={20} /></div>
-        <div className="hk"><span>p95</span><b>{sys ? ms(sys.p95) : '—'}</b></div>
-        <div className="hk"><span>Traffic</span><b>{sys ? `${sys.rps.toFixed(0)}/s` : '—'}</b></div>
-        <div className={`hk ${budget && sys && sys.costMonthly > budget ? 'hk-crit' : ''}`}><span>Cost/mo</span><b>{sys ? usd2(sys.costMonthly) : '—'}</b></div>
-        <div className={`hk ${report && report.counts.critical > 0 ? 'hk-crit' : report && report.counts.high > 0 ? 'hk-warn' : ''}`}><span>Security</span><b>{report ? report.securityScore : '—'}</b></div>
+        <div className={`hk hk-${health}`}>
+          <span>Availability</span>
+          <b>{sys ? pct0(sys.successRate * 100) : '—'}</b>
+          <Sparkline
+            values={spark}
+            color={health === 'ok' ? '#34d399' : health === 'warn' ? '#f59e0b' : '#ef4444'}
+            min={0}
+            max={100}
+            width={64}
+            height={20}
+          />
+        </div>
+        <div className="hk">
+          <span>p95</span>
+          <b>{sys ? ms(sys.p95) : '—'}</b>
+        </div>
+        <div className="hk">
+          <span>Traffic</span>
+          <b>{sys ? `${sys.rps.toFixed(0)}/s` : '—'}</b>
+        </div>
+        <div className={`hk ${budget && sys && sys.costMonthly > budget ? 'hk-crit' : ''}`}>
+          <span>Cost/mo</span>
+          <b>{sys ? usd2(sys.costMonthly) : '—'}</b>
+        </div>
+        <div className={`hk ${report && report.counts.critical > 0 ? 'hk-crit' : report && report.counts.high > 0 ? 'hk-warn' : ''}`}>
+          <span>Security</span>
+          <b>{report ? report.securityScore : '—'}</b>
+        </div>
       </div>
-      {!isLab && <button className="btn btn-accent" onClick={submit} title="Run a verification load test and score your solution against the requirements">Verify &amp; submit</button>}
+      {!isLab && (
+        <button
+          className="btn btn-accent"
+          onClick={submit}
+          title="Run a verification load test and score your solution against the requirements"
+        >
+          Verify &amp; submit
+        </button>
+      )}
     </header>
   );
 }

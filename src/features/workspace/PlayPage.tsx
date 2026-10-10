@@ -30,7 +30,10 @@ export function Play({ missionId, template }: { missionId: string; template?: st
   useEffect(() => {
     const cur = useGame.getState().session;
     if (!cur || cur.missionId !== missionId || (template && isLab)) openMission(missionId, { template });
-    return () => { useGame.getState().setRunning(false); closeSession(); };
+    return () => {
+      useGame.getState().setRunning(false);
+      closeSession();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missionId]);
 
@@ -38,7 +41,11 @@ export function Play({ missionId, template }: { missionId: string; template?: st
     const on = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (t && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(t.tagName)) return;
-      if (e.code === 'Space') { e.preventDefault(); const g = useGame.getState(); g.setRunning(!g.running); }
+      if (e.code === 'Space') {
+        e.preventDefault();
+        const g = useGame.getState();
+        g.setRunning(!g.running);
+      }
       if (e.key === '.') useGame.getState().step(1);
     };
     window.addEventListener('keydown', on);
@@ -46,20 +53,29 @@ export function Play({ missionId, template }: { missionId: string; template?: st
   }, [setRunning]);
 
   const pending = live ? diffArch(live.live, live.draft).length : 0;
-  if (!session || session.missionId !== missionId) return <div className="page"><p className="muted">Loading simulation…</p></div>;
+  if (!session || session.missionId !== missionId)
+    return (
+      <div className="page">
+        <p className="muted">Loading simulation…</p>
+      </div>
+    );
 
   return (
     <div className="workspace" data-pane={pane}>
       <StatusBar />
       <div className="ws-main">
-        <div className="ws-left"><Library /></div>
+        <div className="ws-left">
+          <Library />
+        </div>
         <div className="ws-center">
           <Canvas />
           <Dock />
         </div>
         <div className="ws-right">
           <Tabs
-            label="Side panel" value={rightTab} onChange={setRightTab}
+            label="Side panel"
+            value={rightTab}
+            onChange={setRightTab}
             tabs={[
               { id: 'inspect', label: 'Inspector' },
               { id: 'mission', label: isLab ? 'Lab' : 'Mission' },
@@ -74,8 +90,18 @@ export function Play({ missionId, template }: { missionId: string; template?: st
         </div>
       </div>
       <nav className="mobile-nav" aria-label="Workspace sections">
-        {([['library', 'Components'], ['canvas', 'Canvas'], ['inspect', 'Inspect'], ['evidence', 'Evidence']] as const).map(([id, label]) => (
-          <button key={id} className={pane === id ? 'on' : ''} aria-pressed={pane === id} onClick={() => setPane(id)}>{label}{id === 'inspect' && pending > 0 ? <span className="badge badge-warn">{pending}</span> : null}</button>
+        {(
+          [
+            ['library', 'Components'],
+            ['canvas', 'Canvas'],
+            ['inspect', 'Inspect'],
+            ['evidence', 'Evidence'],
+          ] as const
+        ).map(([id, label]) => (
+          <button key={id} className={pane === id ? 'on' : ''} aria-pressed={pane === id} onClick={() => setPane(id)}>
+            {label}
+            {id === 'inspect' && pending > 0 ? <span className="badge badge-warn">{pending}</span> : null}
+          </button>
         ))}
       </nav>
       <MissionIntro />

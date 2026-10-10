@@ -11,7 +11,17 @@ const W = { ...DEFAULT_WORKLOAD, baseRps: 100 };
 describe('pipeline analysis', () => {
   it('rates canary + integration tests + auto abort far safer than all-at-once without tests', () => {
     const weak = analyzePipeline({ nodes: [N('ci-pipeline', 'ci'), N('cd-pipeline', 'cd')], edges: [] });
-    const strong = analyzePipeline({ nodes: [N('ci-pipeline', 'ci'), N('test-suite', 't', { unitCoverage: 70, integrationCoverage: 60, e2e: true }), N('cd-pipeline', 'cd', { strategy: 'canary' }), N('canary', 'c', { autoAbort: true }), N('rollback', 'r', { automated: true }), N('feature-flag', 'f')], edges: [] });
+    const strong = analyzePipeline({
+      nodes: [
+        N('ci-pipeline', 'ci'),
+        N('test-suite', 't', { unitCoverage: 70, integrationCoverage: 60, e2e: true }),
+        N('cd-pipeline', 'cd', { strategy: 'canary' }),
+        N('canary', 'c', { autoAbort: true }),
+        N('rollback', 'r', { automated: true }),
+        N('feature-flag', 'f'),
+      ],
+      edges: [],
+    });
     expect(weak.safeRollout).toBe(false);
     expect(strong.safeRollout).toBe(true);
     expect(strong.releaseSafety).toBeGreaterThan(weak.releaseSafety + 40);
@@ -34,13 +44,18 @@ describe('design analysis', () => {
     const svc = (n: number, own: boolean): Arch => {
       const nodes = [N('relational-db', 'db')];
       const edges = [];
-      for (let i = 0; i < n; i++) { nodes.push(N('microservice', `s${i}`, { domain: `d${i}`, ownsData: own })); edges.push(makeEdge(`s${i}`, 'db')); }
+      for (let i = 0; i < n; i++) {
+        nodes.push(N('microservice', `s${i}`, { domain: `d${i}`, ownsData: own }));
+        edges.push(makeEdge(`s${i}`, 'db'));
+      }
       return { nodes, edges };
     };
     const shared = analyzeDesign(svc(4, false), noPipe, noObs, 3);
     expect(shared.sharedDbs).toHaveLength(1);
     expect(shared.notes.join(' ')).toMatch(/coupled/);
-    expect(analyzeDesign(svc(8, true), noPipe, noObs, 3).opComplexity).toBeGreaterThan(analyzeDesign(svc(2, true), noPipe, noObs, 3).opComplexity + 30);
+    expect(analyzeDesign(svc(8, true), noPipe, noObs, 3).opComplexity).toBeGreaterThan(
+      analyzeDesign(svc(2, true), noPipe, noObs, 3).opComplexity + 30,
+    );
   });
 });
 
@@ -48,13 +63,23 @@ describe('observability and recovery', () => {
   it('actionable alerts and synthetic monitoring shorten time-to-detect', () => {
     expect(analyzeObservability({ nodes: [], edges: [] }).mttdMinutes).toBe(15);
     expect(analyzeObservability({ nodes: [N('synthetic-monitoring', 's')], edges: [] }).mttdMinutes).toBeLessThan(15);
-    const withAlert = analyzeObservability({ nodes: [N('alert-rule', 'a', { forMinutes: 2, actionable: true }), N('cloudwatch', 'cw'), N('tracing', 't')], edges: [] });
+    const withAlert = analyzeObservability({
+      nodes: [N('alert-rule', 'a', { forMinutes: 2, actionable: true }), N('cloudwatch', 'cw'), N('tracing', 't')],
+      edges: [],
+    });
     expect(withAlert.mttdMinutes).toBeLessThanOrEqual(3);
     expect(withAlert.coverage).toBeGreaterThanOrEqual(60);
   });
   it('multi-region DR with tested restores recovers faster than none', () => {
     const none = analyzeRecovery({ nodes: [N('rds', 'db', { backupRetentionDays: 0 })], edges: [] });
-    const good = analyzeRecovery({ nodes: [N('rds', 'db', { multiAZ: true, backupRetentionDays: 7 }), N('backup', 'b', { restoreTested: true, crossRegion: true }), N('dr-config', 'dr', { strategy: 'warm-standby' })], edges: [makeEdge('b', 'db')] });
+    const good = analyzeRecovery({
+      nodes: [
+        N('rds', 'db', { multiAZ: true, backupRetentionDays: 7 }),
+        N('backup', 'b', { restoreTested: true, crossRegion: true }),
+        N('dr-config', 'dr', { strategy: 'warm-standby' }),
+      ],
+      edges: [makeEdge('b', 'db')],
+    });
     expect(good.rtoMinutes).toBeLessThan(none.rtoMinutes);
     expect(good.rpoMinutes).toBeLessThan(none.rpoMinutes);
     expect(good.score).toBeGreaterThan(none.score);
@@ -78,7 +103,10 @@ describe('causal explanations', () => {
     expect(conn.because).toMatch(/clients × pool size/);
   });
   it('builds a full report with metrics and node overlay flags', () => {
-    const a: Arch = { nodes: [N('users', 'u'), N('backend-service', 'app'), N('s3', 'b', { publicAccess: true })], edges: [makeEdge('u', 'app'), makeEdge('app', 'b')] };
+    const a: Arch = {
+      nodes: [N('users', 'u'), N('backend-service', 'app'), N('s3', 'b', { publicAccess: true })],
+      edges: [makeEdge('u', 'app'), makeEdge('app', 'b')],
+    };
     const snap = solve(a, W, 0, emptyState()).snapshot;
     const r = buildReport(a, [snap], W);
     expect(r.metrics.criticalFindings).toBe(1);

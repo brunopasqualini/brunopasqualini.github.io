@@ -4,8 +4,15 @@ import type { Arch, ArchEdge, ArchNode, Fault, Workload } from '@/engine/types';
 
 export const wl = (o: Partial<Workload>): Workload => ({ ...DEFAULT_WORKLOAD, ...o });
 
-export const N = (kind: string, id: string, x: number, y: number, config: Record<string, any> = {}, label?: string, faults?: Fault[]): ArchNode =>
-  makeNode(kind, { x, y }, { id, label, config, faults });
+export const N = (
+  kind: string,
+  id: string,
+  x: number,
+  y: number,
+  config: Record<string, any> = {},
+  label?: string,
+  faults?: Fault[],
+): ArchNode => makeNode(kind, { x, y }, { id, label, config, faults });
 
 export const E = (s: string, t: string, config: Partial<ArchEdge['config']> = {}): ArchEdge => makeEdge(s, t, config);
 
@@ -16,7 +23,10 @@ export function setFaults(arch: Arch, id: string, faults: Fault[] | undefined): 
   return { ...arch, nodes: arch.nodes.map((n) => (n.id === id ? { ...n, faults } : n)) };
 }
 export function addFault(arch: Arch, id: string, fault: Fault): Arch {
-  return { ...arch, nodes: arch.nodes.map((n) => (n.id === id ? { ...n, faults: [...(n.faults ?? []).filter((f) => f.id !== fault.id), fault] } : n)) };
+  return {
+    ...arch,
+    nodes: arch.nodes.map((n) => (n.id === id ? { ...n, faults: [...(n.faults ?? []).filter((f) => f.id !== fault.id), fault] } : n)),
+  };
 }
 export function clearFaults(arch: Arch, ids: string[]): Arch {
   return { ...arch, nodes: arch.nodes.map((n) => (n.faults ? { ...n, faults: n.faults.filter((f) => !ids.includes(f.id)) } : n)) };

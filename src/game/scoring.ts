@@ -11,7 +11,11 @@ export const DIMENSIONS: { id: DimensionId; label: string; blurb: string }[] = [
   { id: 'opSimplicity', label: 'Operational simplicity', blurb: 'Fewer moving parts to deploy, monitor and page on.' },
   { id: 'devProductivity', label: 'Developer productivity', blurb: 'Independent deployability and delivery automation.' },
   { id: 'diagnosis', label: 'Quality of diagnosis', blurb: 'Evidence gathered and root-cause hypothesis accuracy.' },
-  { id: 'correctness', label: 'Correctness of implementation', blurb: 'Share of mission requirements satisfied (hard requirements count double).' },
+  {
+    id: 'correctness',
+    label: 'Correctness of implementation',
+    blurb: 'Share of mission requirements satisfied (hard requirements count double).',
+  },
   { id: 'rationale', label: 'Engineering rationale', blurb: 'Depth of the ADR / postmortem: trade-offs, evidence, prevention.' },
 ];
 
@@ -52,7 +56,24 @@ export interface Outcome {
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
-const KEYWORDS = ['trade', 'because', 'alternativ', 'risk', 'cost', 'complex', 'secur', 'reliab', 'rollback', 'monitor', 'test', 'operat', 'latency', 'scale', 'evidence', 'prevent'];
+const KEYWORDS = [
+  'trade',
+  'because',
+  'alternativ',
+  'risk',
+  'cost',
+  'complex',
+  'secur',
+  'reliab',
+  'rollback',
+  'monitor',
+  'test',
+  'operat',
+  'latency',
+  'scale',
+  'evidence',
+  'prevent',
+];
 
 export function textDepth(text: string): number {
   const t = text.trim().toLowerCase();
@@ -83,7 +104,16 @@ export function evalRequirement(r: Requirement, c: EvalCtx): RequirementResult {
   }
   const v = c.report.metrics[r.metric!] ?? 0;
   const value = r.value ?? 0;
-  const pass = r.op === '>=' ? v >= value : r.op === '<=' ? v <= value : r.op === '>' ? v > value : r.op === '<' ? v < value : Math.abs(v - value) < 1e-9;
+  const pass =
+    r.op === '>='
+      ? v >= value
+      : r.op === '<='
+        ? v <= value
+        : r.op === '>'
+          ? v > value
+          : r.op === '<'
+            ? v < value
+            : Math.abs(v - value) < 1e-9;
   const f = (x: number) => (Math.abs(x) >= 100 ? x.toFixed(0) : x.toFixed(2));
   return { id: r.id, label: r.label, hard: r.hard, pass, detail: `${r.metric} = ${f(v)} (needs ${r.op} ${f(value)})`, why: r.why };
 }
@@ -112,17 +142,34 @@ const BASE_XP = { Beginner: 100, Intermediate: 180, Advanced: 280 } as const;
 export function scoreMission(inp: ScoreInput): Outcome {
   const { mission: m, report, window } = inp;
   const snap = window[window.length - 1];
-  const ctx: EvalCtx = { arch: inp.arch, report, snap, workload: inp.workload, flags: inp.flags, actionsTaken: inp.actionsTaken, adrs: inp.adrs, postmortem: inp.postmortem };
+  const ctx: EvalCtx = {
+    arch: inp.arch,
+    report,
+    snap,
+    workload: inp.workload,
+    flags: inp.flags,
+    actionsTaken: inp.actionsTaken,
+    adrs: inp.adrs,
+    postmortem: inp.postmortem,
+  };
   const reqs = m.requirements.map((r) => evalRequirement(r, ctx));
   const x = report.metrics;
 
   const availTarget = m.constraints.availability ?? 99.5;
   const reliability = clamp(
-    clamp((x.availability - 90) / Math.max(0.1, availTarget - 90), 0, 1) * 68 + (x.azSurvival / 100) * 14 + (x.recoverability / 100) * 18, 0, 100);
+    clamp((x.availability - 90) / Math.max(0.1, availTarget - 90), 0, 1) * 68 + (x.azSurvival / 100) * 14 + (x.recoverability / 100) * 18,
+    0,
+    100,
+  );
   const p95T = m.constraints.p95 ?? 500;
   const performance = x.p95 <= p95T ? 100 : clamp(100 - (100 * (x.p95 - p95T)) / p95T, 0, 100);
   const budget = m.constraints.budget ?? (m.baselineCost ? m.baselineCost * 1.1 : undefined);
-  const cost = budget == null ? 70 : x.cost <= budget ? clamp(70 + 30 * (1 - x.cost / budget) * 1.6, 70, 100) : clamp(70 - (100 * (x.cost - budget)) / budget, 0, 70);
+  const cost =
+    budget == null
+      ? 70
+      : x.cost <= budget
+        ? clamp(70 + 30 * (1 - x.cost / budget) * 1.6, 70, 100)
+        : clamp(70 - (100 * (x.cost - budget)) / budget, 0, 70);
   const security = x.securityScore;
   const maintainability = x.maintainability;
   const opSimplicity = 100 - x.opComplexity;
@@ -157,20 +204,37 @@ export function scoreMission(inp: ScoreInput): Outcome {
   const rationale = rationaleParts.length ? rationaleParts.reduce((a, b) => a + b, 0) / rationaleParts.length : null;
 
   const scores: Record<DimensionId, [number | null, string]> = {
-    reliability: [reliability, `Availability ${x.availability.toFixed(2)}% vs target ${availTarget}%; survives AZ loss at ${x.azSurvival.toFixed(0)}%; recoverability ${x.recoverability.toFixed(0)}/100.`],
+    reliability: [
+      reliability,
+      `Availability ${x.availability.toFixed(2)}% vs target ${availTarget}%; survives AZ loss at ${x.azSurvival.toFixed(0)}%; recoverability ${x.recoverability.toFixed(0)}/100.`,
+    ],
     performance: [performance, `p95 ${x.p95.toFixed(0)} ms vs target ${p95T} ms.`],
-    cost: [cost, budget == null ? `Estimated $${x.cost.toFixed(0)}/mo (no hard budget set).` : `$${x.cost.toFixed(0)}/mo against a $${budget.toFixed(0)} budget (simulated estimate).`],
+    cost: [
+      cost,
+      budget == null
+        ? `Estimated $${x.cost.toFixed(0)}/mo (no hard budget set).`
+        : `$${x.cost.toFixed(0)}/mo against a $${budget.toFixed(0)} budget (simulated estimate).`,
+    ],
     security: [security, `${x.criticalFindings} critical and ${x.highFindings} high finding(s) open.`],
     maintainability: [maintainability, `Cohesion/coupling analysis of the deployable units.`],
     opSimplicity: [opSimplicity, `${x.units} deployable unit(s); complexity ${x.opComplexity.toFixed(0)}/100.`],
     devProductivity: [devProductivity, `Independent deployability and automation.`],
-    diagnosis: [diagnosis, diagnosisInfo ? `${diagnosisInfo.panelsSeen}/${diagnosisInfo.panelsNeeded} key evidence panels consulted; hypothesis ${diagnosisInfo.chosen.length ? 'recorded' : 'missing'}.` : 'n/a'],
+    diagnosis: [
+      diagnosis,
+      diagnosisInfo
+        ? `${diagnosisInfo.panelsSeen}/${diagnosisInfo.panelsNeeded} key evidence panels consulted; hypothesis ${diagnosisInfo.chosen.length ? 'recorded' : 'missing'}.`
+        : 'n/a',
+    ],
     correctness: [correctness, `${reqs.filter((r) => r.pass).length}/${reqs.length} requirements met.`],
     rationale: [rationale, rationale == null ? 'n/a' : `Quality of recorded reasoning (trade-offs, evidence, prevention).`],
   };
 
   const dims: DimensionScore[] = DIMENSIONS.map((d) => ({
-    id: d.id, label: d.label, score: scores[d.id][0] == null ? null : Math.round(scores[d.id][0]!), weight: m.weights[d.id] ?? 0, note: scores[d.id][1],
+    id: d.id,
+    label: d.label,
+    score: scores[d.id][0] == null ? null : Math.round(scores[d.id][0]!),
+    weight: m.weights[d.id] ?? 0,
+    note: scores[d.id][1],
   }));
   const used = dims.filter((d) => d.weight > 0 && d.score != null);
   const wsum = used.reduce((s, d) => s + d.weight, 0) || 1;
@@ -182,10 +246,24 @@ export function scoreMission(inp: ScoreInput): Outcome {
   const factor = (overall / 100) * (passed ? 1 : 0.3) * (inp.firstCompletion || !passed ? 1 : 0.4);
   const xp = Math.round(BASE_XP[m.difficulty] * factor);
   const skillXp: Outcome['skillXp'] = {};
-  for (const [k, v] of Object.entries(m.skills)) skillXp[k as SkillId] = Math.round((v ?? 0) * (overall / 100) * (passed ? 1 : 0.3) * (inp.firstCompletion || !passed ? 1 : 0.4));
+  for (const [k, v] of Object.entries(m.skills))
+    skillXp[k as SkillId] = Math.round((v ?? 0) * (overall / 100) * (passed ? 1 : 0.3) * (inp.firstCompletion || !passed ? 1 : 0.4));
 
   return {
-    missionId: m.id, passed, failedIncident: inp.failedIncident, overall, grade, dims, reqs, xp, skillXp, hintsUsed: inp.hintsUsed,
-    minutes: inp.minutes, attempt: inp.attempt, diagnosis: diagnosisInfo, metrics: x, finishedAt: Date.now(),
+    missionId: m.id,
+    passed,
+    failedIncident: inp.failedIncident,
+    overall,
+    grade,
+    dims,
+    reqs,
+    xp,
+    skillXp,
+    hintsUsed: inp.hintsUsed,
+    minutes: inp.minutes,
+    attempt: inp.attempt,
+    diagnosis: diagnosisInfo,
+    metrics: x,
+    finishedAt: Date.now(),
   };
 }

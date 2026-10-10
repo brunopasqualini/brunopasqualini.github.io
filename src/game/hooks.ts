@@ -36,7 +36,10 @@ export function useSimLoop() {
     const id = setInterval(() => {
       acc += speed * 0.25;
       const n = Math.floor(acc);
-      if (n >= 1) { acc -= n; useGame.getState().step(n); }
+      if (n >= 1) {
+        acc -= n;
+        useGame.getState().step(n);
+      }
     }, 250);
     return () => clearInterval(id);
   }, [running, speed, hasSession]);

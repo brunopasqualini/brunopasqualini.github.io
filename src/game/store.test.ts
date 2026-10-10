@@ -15,19 +15,36 @@ describe('gameplay flow through the store', () => {
     expect(g().introOpen).toBe(true);
     g().startIncident();
     // an invalid draft is blocked, a valid one deploys
-    g().editDraft((a) => { a.nodes.find((n) => n.id === 'api')!.config.replicas = 0; a.nodes.find((n) => n.id === 'api')!.config.autoscale = true; a.nodes.find((n) => n.id === 'api')!.config.maxReplicas = 0; });
+    g().editDraft((a) => {
+      a.nodes.find((n) => n.id === 'api')!.config.replicas = 0;
+      a.nodes.find((n) => n.id === 'api')!.config.autoscale = true;
+      a.nodes.find((n) => n.id === 'api')!.config.maxReplicas = 0;
+    });
     g().deploy();
     expect(g().toasts.some((t) => /replicas/i.test(t.text))).toBe(true);
     g().resetDraft();
-    g().editDraft((a) => { const db = a.nodes.find((n) => n.id === 'db')!; db.config.indexed = true; db.config.connectionPooler = true; });
+    g().editDraft((a) => {
+      const db = a.nodes.find((n) => n.id === 'db')!;
+      db.config.indexed = true;
+      db.config.connectionPooler = true;
+    });
     g().deploy();
     expect(g().session!.explain?.changes.length).toBeGreaterThan(0);
     g().step(6);
     expect(g().session!.explain?.settled).toBe(true);
     expect(g().session!.history[g().session!.history.length - 1].system.successRate).toBeGreaterThan(0.99);
     g().setHypothesis(['unindexed']);
-    g().visitPanel('database'); g().visitPanel('metrics'); g().visitPanel('deployments');
-    g().savePostmortem({ what: 'An unindexed query saturated the database because the release shipped without a plan review.', impact: 'Checkouts failed for about twenty minutes during the sale.', evidence: 'Query statistics showed a sequential scan; the deploy timeline named the release.', restored: 'Added the index and a connection pooler to reduce risk.', worsened: 'Scaling application replicas would have exhausted connections.', prevent: 'Alert on database CPU and test query plans before release to reduce risk.' });
+    g().visitPanel('database');
+    g().visitPanel('metrics');
+    g().visitPanel('deployments');
+    g().savePostmortem({
+      what: 'An unindexed query saturated the database because the release shipped without a plan review.',
+      impact: 'Checkouts failed for about twenty minutes during the sale.',
+      evidence: 'Query statistics showed a sequential scan; the deploy timeline named the release.',
+      restored: 'Added the index and a connection pooler to reduce risk.',
+      worsened: 'Scaling application replicas would have exhausted connections.',
+      prevent: 'Alert on database CPU and test query plans before release to reduce risk.',
+    });
     g().submit();
     const d = g().debrief!;
     expect(d.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => `${r.id}: ${r.detail}`)).toEqual([]);
@@ -54,7 +71,9 @@ describe('gameplay flow through the store', () => {
 
   it('revert restores the previous architecture, retry starts a fresh attempt', () => {
     g().openMission('m1-monolith', { fresh: true });
-    g().editDraft((a) => { a.nodes.find((n) => n.id === 'mono')!.config.moduleBoundaries = 'enforced'; });
+    g().editDraft((a) => {
+      a.nodes.find((n) => n.id === 'mono')!.config.moduleBoundaries = 'enforced';
+    });
     g().deploy();
     expect(g().session!.live.nodes.find((n) => n.id === 'mono')!.config.moduleBoundaries).toBe('enforced');
     g().revert();
@@ -68,7 +87,9 @@ describe('gameplay flow through the store', () => {
     g().openMission('m3-deployment', { fresh: true });
     g().startIncident();
     g().act('rollback');
-    g().editDraft((a) => { a.nodes.find((n) => n.id === 'tests')!.config.integrationCoverage = 60; });
+    g().editDraft((a) => {
+      a.nodes.find((n) => n.id === 'tests')!.config.integrationCoverage = 60;
+    });
     g().deploy();
     g().step(3);
     g().setHypothesis(['bad-release']);
