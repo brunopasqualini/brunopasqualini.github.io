@@ -334,11 +334,14 @@ E(
   'Access patterns, not schemas, drive the design.',
   {
     tier: 2,
-    defaults: { capacityMode: 'on-demand', rcu: 1000, wcu: 500, encrypted: true, costTag: '' },
+    defaults: { capacityMode: 'on-demand', rcu: 1000, wcu: 500, writeShards: 1, encrypted: true, costTag: '' },
     fields: [
       sel('capacityMode', 'Capacity mode', ['on-demand', 'provisioned']),
       num('rcu', 'Read capacity', 10, 100000),
       num('wcu', 'Write capacity', 10, 100000),
+      num('writeShards', 'Write shards for the hottest key', 1, 64, {
+        help: 'Spread one hot key across N items (key#1 … key#N). Reads must then combine the shards.',
+      }),
       bool('encrypted', 'Encryption at rest'),
       txt('costTag', 'Cost allocation tag'),
     ],
@@ -750,11 +753,14 @@ E(
     aws: true,
     scope: 'regional',
     tier: 2,
-    defaults: { capacityMode: 'on-demand', rcu: 1000, wcu: 500, encrypted: true, costTag: '' },
+    defaults: { capacityMode: 'on-demand', rcu: 1000, wcu: 500, writeShards: 1, encrypted: true, costTag: '' },
     fields: [
       sel('capacityMode', 'Capacity mode', ['on-demand', 'provisioned']),
       num('rcu', 'Read capacity', 10, 100000),
       num('wcu', 'Write capacity', 10, 100000),
+      num('writeShards', 'Write shards for the hottest key', 1, 64, {
+        help: 'Spread one hot key across N items (key#1 … key#N). Reads must then combine the shards.',
+      }),
       bool('encrypted', 'Encryption at rest'),
       txt('costTag', 'Cost allocation tag'),
     ],

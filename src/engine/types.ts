@@ -133,6 +133,8 @@ export interface Workload {
   freshnessSeconds: number;
   /** Share of reads issued right after the same user's own write (read-your-writes), e.g. an order confirmation page. */
   readAfterWriteShare?: number;
+  /** Share of writes aimed at one single item (a counter, a stock level, a celebrity's profile). */
+  hotKeyShare?: number;
   /** Customers' data volume growth (GB/day) used by storage cost. */
   logGBPerMillionReq: number;
 }
@@ -173,6 +175,8 @@ export interface NodeMetrics {
   replicaLagSec?: number;
   /** Percent of read-after-write reads that return data from before the write (replica lag). */
   staleReadPct?: number;
+  /** Writes per second landing on the single hottest item of a key-value table. */
+  hotItemWritesPerSec?: number;
   blocked?: string;
 }
 

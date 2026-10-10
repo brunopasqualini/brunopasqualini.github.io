@@ -58,6 +58,11 @@ export const DB_SLOW_SCAN_MULT = 12; // an unindexed hot query costs this many t
  */
 export const RAW_TOLERATED_LAG_SEC = 0.3;
 export const RAW_READ_WINDOW_SEC = 2;
+/**
+ * DynamoDB serves one partition, and so any single item, at up to about 1,000 write units per second (1 KB items).
+ * Provisioned capacity and on-demand mode share this ceiling: it is per item, not per table.
+ */
+export const KV_ITEM_WRITES_PER_SEC = 1000;
 export const DB_BASE_READ_MS = 4;
 export const DB_BASE_WRITE_MS = 8;
 
@@ -156,5 +161,6 @@ export const DEFAULT_WORKLOAD = {
   avgProcessMs: 120,
   freshnessSeconds: 60,
   readAfterWriteShare: 0,
+  hotKeyShare: 0,
   logGBPerMillionReq: 1.2,
 };
