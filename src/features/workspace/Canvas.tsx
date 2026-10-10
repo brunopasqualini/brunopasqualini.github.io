@@ -7,6 +7,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  type BuiltInEdge,
   type Connection,
   type Edge,
   type Node,
@@ -15,15 +16,51 @@ import {
 } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { tilesFor, type Tile } from '@/features/workspace/InstanceStrip';
-import { edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
+import { EDGE_COLOR, edgeLook } from '@/features/workspace/edgeStyle';
+import { attachedTo, edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
 import { visualStatus } from '@/engine/analysis';
 import { canConnect, entryOf } from '@/engine/catalog';
+import type { Arch, ArchNode } from '@/engine/types';
 import { useGame } from '@/game/store';
 import { useLive } from '@/game/hooks';
 import { ArchNodeView, type ArchNodeData } from '@/features/workspace/ArchNodeView';
 
 const nodeTypes = { arch: ArchNodeView };
 /** Leave room for the overlay controls (toolbar top-right, zoom controls left, legend/minimap bottom). */
+const CARD_ROLES = ['db', 'kv', 'cache', 'search'];
+const nodeW = (n: ArchNode) => (CARD_ROLES.includes(entryOf(n.kind).role) ? 196 : 156);
+
+/** When two nodes sit roughly above one another, connect bottom-to-top instead of looping around the sides. */
+function verticalPair(arch: Arch, sourceId: string, targetId: string): 'down' | 'up' | null {
+  const s = nodeById(arch, sourceId);
+  const t = nodeById(arch, targetId);
+  if (!s || !t) return null;
+  const dx = s.position.x + nodeW(s) / 2 - (t.position.x + nodeW(t) / 2);
+  const dy = t.position.y - s.position.y;
+  if (Math.abs(dx) > 70 || Math.abs(dy) < 90) return null;
+  return dy > 0 ? 'down' : 'up';
+}
+
+/** Nearest unoccupied grid slot to `from`, so click-added components never stack on top of each other. */
+function freeSpot(arch: Arch, from: { x: number; y: number }): { x: number; y: number } {
+  const free = (x: number, y: number) => !arch.nodes.some((n) => Math.abs(n.position.x - x) < 190 && Math.abs(n.position.y - y) < 150);
+  const sx = 210;
+  const sy = 170;
+  const cx = Math.round((from.x - 78) / sx) * sx;
+  const cy = Math.round((from.y - 40) / sy) * sy;
+  for (let ring = 0; ring < 8; ring++) {
+    for (let dy = -ring; dy <= ring; dy++) {
+      for (let dx = -ring; dx <= ring; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) continue;
+        const x = cx + dx * sx;
+        const y = cy + dy * sy;
+        if (free(x, y)) return { x, y };
+      }
+    }
+  }
+  return { x: cx, y: cy };
+}
+
 const FIT = { padding: { top: '40px', right: '24px', bottom: '36px', left: '56px' }, maxZoom: 1.2 } as const;
 const REF_KEYS = ['subnet', 'sg', 'iamRole', 'nat', 'vpc', 'nacl'];
 
@@ -53,6 +90,7 @@ function CanvasInner() {
         status: m ? visualStatus(m.status, flag) : 'idle',
         insecure: flag?.insecure,
         misconfigured: flag?.misconfigured,
+        attachedAutoscaling: attachedTo(draft, n.id).some((a) => a.kind === 'autoscaling'),
         pending: !liveIds.has(n.id),
         changed: liveIds.has(n.id) && liveCfg.get(n.id) !== JSON.stringify(n.config),
         isNetwork,
@@ -89,28 +127,31 @@ function CanvasInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick, draft, selection.type, selection.id, snap, report]);
 
-  const edges: Edge[] = useMemo(() => {
+  const edges: BuiltInEdge[] = useMemo(() => {
     if (!draft) return [];
-    const out: Edge[] = [];
+    const out: BuiltInEdge[] = [];
     for (const e of draft.edges) {
       const cls = edgeClass(draft, e);
       const em = snap?.edges[e.id];
       const sel = selection.type === 'edge' && selection.id === e.id;
-      let color: string;
-      let dash: string | undefined;
-      let width: number;
+      const look = edgeLook(
+        cls,
+        nodeById(draft, e.source) && entryOf(nodeById(draft, e.source)!.kind).role,
+        nodeById(draft, e.target) && entryOf(nodeById(draft, e.target)!.kind).role,
+      );
+      let color: string = look.color;
+      let dash = look.dash;
+      let width = look.width;
       let label: string | undefined;
       if (cls === 'traffic' || cls === 'async') {
         const rps = em?.rps ?? 0;
-        width = 1.4 + Math.min(3, Math.log10(1 + rps) * 0.9);
-        color = cls === 'async' ? '#a78bfa' : '#38bdf8';
-        if (em && em.errorRate > 0.3) color = '#ef4444';
-        else if (em && em.errorRate > 0.05) color = '#f59e0b';
+        width = look.width + Math.min(2.2, Math.log10(1 + rps) * 0.6);
+        if (em && em.errorRate > 0.3) color = EDGE_COLOR.bad;
+        else if (em && em.errorRate > 0.05) color = EDGE_COLOR.warn;
         if (em?.blocked) {
-          color = '#ef4444';
+          color = EDGE_COLOR.bad;
           dash = '6 4';
         }
-        if (cls === 'async') dash = '7 5';
         const tgt = snap?.nodes[e.target];
         const per =
           em && tgt && ['compute', 'worker'].includes(tgt.role) && tgt.replicas > 1 && !em.blocked && rps >= 0.5
@@ -123,19 +164,14 @@ function CanvasInner() {
               ? `${rps >= 100 ? rps.toFixed(0) : rps.toFixed(1)}/s${em.amplification > 1.25 ? ` ×${em.amplification.toFixed(1)}` : ''}${em.breakerOpen ? ' ⚡open' : ''}${per}`
               : undefined
           : undefined;
-      } else if (cls === 'attach') {
-        color = '#64748b';
-        dash = '2 5';
-        width = 1.2;
-      } else {
-        color = '#4f78c4';
-        dash = '3 5';
-        width = 1.2;
       }
+      const vertical = verticalPair(draft, e.source, e.target);
       out.push({
         id: e.id,
         source: e.source,
         target: e.target,
+        sourceHandle: vertical ? (vertical === 'down' ? 'sb' : 'st') : undefined,
+        targetHandle: vertical ? (vertical === 'down' ? 'tt' : 'tb') : undefined,
         selected: sel,
         animated: running && (cls === 'traffic' || cls === 'async') && (em?.rps ?? 0) > 0.5 && !em?.blocked,
         label,
@@ -147,10 +183,12 @@ function CanvasInner() {
           stroke: color,
           strokeWidth: sel ? width + 1.5 : width,
           strokeDasharray: dash,
-          opacity: cls === 'attach' || cls === 'deploy' ? 0.75 : 1,
+          opacity: cls === 'attach' || cls === 'deploy' ? 0.85 : 1,
         },
-        markerEnd: cls === 'traffic' || cls === 'async' ? { type: MarkerType.ArrowClosed, color, width: 14, height: 14 } : undefined,
-        type: 'default',
+        markerEnd: look.arrow ? { type: MarkerType.ArrowClosed, color, width: 14, height: 14 } : undefined,
+        markerStart: look.bidirectional ? { type: MarkerType.ArrowClosed, color, width: 14, height: 14 } : undefined,
+        type: 'smoothstep',
+        pathOptions: { borderRadius: 18 },
       });
     }
     if (showRefs) {
@@ -192,12 +230,14 @@ function CanvasInner() {
       const count = s.draft.nodes.filter((n) => n.kind === kind).length;
       const rect = wrap.current?.getBoundingClientRect();
       const center = rect ? rf.screenToFlowPosition({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }) : { x: 200, y: 200 };
-      const p = pos ?? { x: center.x + (count % 4) * 30 - 40, y: center.y + (count % 4) * 24 - 30 };
+      const p = pos ?? freeSpot(s.draft, center);
       const node = makeNode(kind, p, { label: count > 0 ? `${e.name} ${count + 1}` : undefined });
       g.editDraft((a) => {
         a.nodes.push(node);
       });
       g.select('node', node.id);
+      // keep every component in view as the diagram grows
+      window.setTimeout(() => rf.fitView({ ...FIT, duration: 250 }), 60);
     },
     [rf],
   );
@@ -359,16 +399,19 @@ function CanvasInner() {
       </ReactFlow>
       <div className="canvas-legend" aria-hidden="true">
         <span>
-          <i className="lg lg-crit" /> critical path
-        </span>
-        <span>
-          <i className="lg lg-dep" /> dependency
+          <i className="lg lg-req" /> request
         </span>
         <span>
           <i className="lg lg-async" /> async / events
         </span>
         <span>
-          <i className="lg lg-attach" /> attached policy
+          <i className="lg lg-mon" /> monitoring
+        </span>
+        <span>
+          <i className="lg lg-store" /> storage
+        </span>
+        <span>
+          <i className="lg lg-crit" /> failing
         </span>
       </div>
       <div className="canvas-tools">
