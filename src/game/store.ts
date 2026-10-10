@@ -102,8 +102,8 @@ interface Store {
   toasts: Toast[];
   dock: PanelId;
   dockOpen: boolean;
-  rightTab: 'inspect' | 'mission' | 'plan';
-  mobilePane: 'library' | 'canvas' | 'inspect' | 'evidence';
+  rightTab: 'inspect' | 'plan';
+  mobilePane: 'mission' | 'canvas' | 'build' | 'evidence';
   labTemplate: string;
   drill?: { title: string; goal: string };
 
@@ -233,7 +233,7 @@ export const useGame = create<Store>()(
         introOpen: false,
         debrief: null,
         toasts: [],
-        dock: 'metrics',
+        dock: 'overview',
         dockOpen: true,
         rightTab: 'inspect',
         mobilePane: 'canvas',
@@ -326,9 +326,9 @@ export const useGame = create<Store>()(
             tick: get().tick + 1,
             drill,
             introOpen: id !== LAB_ID && (!existing || !!opts.fresh) && !(existing && existing.ops.length > 0),
-            dock: (missionOf(id).guidance[0] as PanelId) ?? 'metrics',
+            dock: 'overview',
             dockOpen: true,
-            rightTab: id === LAB_ID ? 'inspect' : 'mission',
+            rightTab: 'inspect',
             mobilePane: 'canvas',
           });
         },
@@ -420,7 +420,7 @@ export const useGame = create<Store>()(
         },
         visitPanel: (p) => {
           const { session, settings } = get();
-          if (!session) return;
+          if (!session || p === 'overview') return; // the overview is a summary, not an investigation step
           if (!session.panelsSeen.includes(p)) {
             session.panelsSeen.push(p);
             const m = missionOf(session.missionId);

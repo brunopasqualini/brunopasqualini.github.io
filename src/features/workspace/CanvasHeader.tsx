@@ -1,12 +1,31 @@
-import { ArrowLeft, FastForward, Pause, Play, StepForward } from 'lucide-react';
+import {
+  FastForward,
+  Network,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
+  Pause,
+  Play,
+  StepForward,
+} from 'lucide-react';
 import { LAB_ID, missionOf } from '@/game/session';
 import { useGame } from '@/game/store';
-import { Chip, Sparkline } from '@/shared/ui/common';
+import { Sparkline } from '@/shared/ui/common';
 import { clock, ms, pct0, usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
-import { go } from '@/shared/lib/nav';
 
-export function StatusBar() {
+export function CanvasHeader({
+  leftOpen,
+  rightOpen,
+  onToggleLeft,
+  onToggleRight,
+}: {
+  leftOpen: boolean;
+  rightOpen: boolean;
+  onToggleLeft: () => void;
+  onToggleRight: () => void;
+}) {
   const { session, snap, report } = useLive();
   const running = useGame((s) => s.running);
   const speed = useGame((s) => s.speed);
@@ -14,7 +33,6 @@ export function StatusBar() {
   const setSpeed = useGame((s) => s.setSpeed);
   const step = useGame((s) => s.step);
   const submit = useGame((s) => s.submit);
-  const closeSession = useGame((s) => s.closeSession);
   if (!session) return null;
   const mission = missionOf(session.missionId);
   const isLab = session.missionId === LAB_ID;
@@ -23,71 +41,99 @@ export function StatusBar() {
   const health = !sys ? 'idle' : sys.successRate > 0.99 && sys.maxUtil < 0.9 ? 'ok' : sys.successRate > 0.9 ? 'warn' : 'crit';
   const budget = mission.constraints.budget;
 
+  const errPct = sys ? (1 - sys.successRate) * 100 : 0;
   return (
-    <header className="statusbar">
-      <div className="sb-left">
+    <header className="canvas-head">
+      <div className="ch-row">
         <button
           className="icon-btn"
-          aria-label="Back to mission list"
-          onClick={() => {
-            closeSession();
-            go(isLab ? '/' : mission.kind === 'incident' ? '/incidents' : '/missions');
-          }}
+          onClick={onToggleLeft}
+          aria-label={leftOpen ? 'Hide mission panel' : 'Show mission panel'}
+          aria-pressed={!leftOpen}
+          title={leftOpen ? 'Hide mission panel' : 'Show mission panel'}
         >
-          <ArrowLeft size={18} />
+          {leftOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
         </button>
-        <div className="sb-title">
-          <b>{isLab ? 'Architecture Lab' : `Mission ${mission.number}: ${mission.title}`}</b>
-          <div className="chips">
-            {!isLab && <Chip kind={mission.kind === 'incident' ? 'crit' : 'info'}>{mission.kind}</Chip>}
-            {!isLab && <Chip>{mission.difficulty}</Chip>}
-            <Chip>{session.mode}</Chip>
-            {session.failed && <Chip kind="crit">impact budget exceeded</Chip>}
+        <h2 className="ch-title">
+          <Network size={17} aria-hidden="true" /> Architecture Canvas
+        </h2>
+        <span className={`live-pill ${running ? 'live' : ''}`}>
+          <i /> {running ? 'Live' : 'Paused'}
+        </span>
+        {session.failed && <span className="chip chip-crit">impact budget exceeded</span>}
+        <div className="sb-sim" role="group" aria-label="Simulation controls">
+          <button
+            className="btn btn-primary btn-icon"
+            onClick={() => setRunning(!running)}
+            aria-label={running ? 'Pause simulation' : 'Run simulation'}
+          >
+            {running ? <Pause size={16} /> : <Play size={16} />}
+            <span>{running ? 'Pause' : 'Run'}</span>
+          </button>
+          <button
+            className="btn btn-ghost btn-icon"
+            onClick={() => step(1)}
+            aria-label="Advance one minute"
+            title="Advance one simulated minute (.)"
+          >
+            <StepForward size={16} />
+            <span>+1m</span>
+          </button>
+          <button
+            className="btn btn-ghost btn-icon"
+            onClick={() => step(10)}
+            aria-label="Advance ten minutes"
+            title="Advance ten simulated minutes"
+          >
+            <FastForward size={16} />
+            <span>+10m</span>
+          </button>
+          <div className="speed" role="radiogroup" aria-label="Simulation speed">
+            {([1, 4, 16] as const).map((s) => (
+              <button key={s} role="radio" aria-checked={speed === s} className={speed === s ? 'on' : ''} onClick={() => setSpeed(s)}>
+                {s}×
+              </button>
+            ))}
+          </div>
+          <div className={`clock ${running ? 'live' : ''}`} aria-live="off">
+            <span className="dot" />
+            {clock(session.minute)}
+            <small title="virtual time">sim</small>
           </div>
         </div>
+        {!isLab && (
+          <button
+            className="btn btn-accent"
+            onClick={submit}
+            title="Run a verification load test and score your solution against the requirements"
+          >
+            Verify &amp; submit
+          </button>
+        )}
+        <button
+          className="icon-btn"
+          onClick={onToggleRight}
+          aria-label={rightOpen ? 'Hide components panel' : 'Show components panel'}
+          aria-pressed={!rightOpen}
+          title={rightOpen ? 'Hide components panel' : 'Show components panel'}
+        >
+          {rightOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
+        </button>
       </div>
-      <div className="sb-sim" role="group" aria-label="Simulation controls">
-        <button
-          className="btn btn-primary btn-icon"
-          onClick={() => setRunning(!running)}
-          aria-label={running ? 'Pause simulation' : 'Run simulation'}
-        >
-          {running ? <Pause size={16} /> : <Play size={16} />}
-          <span>{running ? 'Pause' : 'Run'}</span>
-        </button>
-        <button
-          className="btn btn-ghost btn-icon"
-          onClick={() => step(1)}
-          aria-label="Advance one minute"
-          title="Advance one simulated minute (.)"
-        >
-          <StepForward size={16} />
-          <span>+1m</span>
-        </button>
-        <button
-          className="btn btn-ghost btn-icon"
-          onClick={() => step(10)}
-          aria-label="Advance ten minutes"
-          title="Advance ten simulated minutes"
-        >
-          <FastForward size={16} />
-          <span>+10m</span>
-        </button>
-        <div className="speed" role="radiogroup" aria-label="Simulation speed">
-          {([1, 4, 16] as const).map((s) => (
-            <button key={s} role="radio" aria-checked={speed === s} className={speed === s ? 'on' : ''} onClick={() => setSpeed(s)}>
-              {s}×
-            </button>
-          ))}
+      <div className="ch-kpis" aria-label="System health">
+        <div className="hk">
+          <span>Traffic</span>
+          <b>{sys ? `${sys.rps.toFixed(0)} rps` : '—'}</b>
         </div>
-        <div className={`clock ${running ? 'live' : ''}`} aria-live="off">
-          <span className="dot" />
-          {clock(session.minute)}
-          <small title="virtual time">sim</small>
+        <div className={`hk ${sys && sys.p95 > 1000 ? 'hk-warn' : ''}`}>
+          <span>Latency p95</span>
+          <b>{sys ? ms(sys.p95) : '—'}</b>
         </div>
-      </div>
-      <div className="sb-health" aria-label="System health">
         <div className={`hk hk-${health}`}>
+          <span>Error rate</span>
+          <b>{sys ? `${errPct < 10 ? errPct.toFixed(1) : errPct.toFixed(0)}%` : '—'}</b>
+        </div>
+        <div className={`hk hk-${health} hk-spark`}>
           <span>Availability</span>
           <b>{sys ? pct0(sys.successRate * 100) : '—'}</b>
           <Sparkline
@@ -96,35 +142,18 @@ export function StatusBar() {
             min={0}
             max={100}
             width={64}
-            height={20}
+            height={18}
           />
         </div>
-        <div className="hk">
-          <span>p95</span>
-          <b>{sys ? ms(sys.p95) : '—'}</b>
-        </div>
-        <div className="hk">
-          <span>Traffic</span>
-          <b>{sys ? `${sys.rps.toFixed(0)}/s` : '—'}</b>
-        </div>
         <div className={`hk ${budget && sys && sys.costMonthly > budget ? 'hk-crit' : ''}`}>
-          <span>Cost/mo</span>
-          <b>{sys ? usd2(sys.costMonthly) : '—'}</b>
+          <span>Cost{budget ? ` / ${usd2(budget)}` : ''}</span>
+          <b>{sys ? `${usd2(sys.costMonthly)} / mo` : '—'}</b>
         </div>
         <div className={`hk ${report && report.counts.critical > 0 ? 'hk-crit' : report && report.counts.high > 0 ? 'hk-warn' : ''}`}>
           <span>Security</span>
           <b>{report ? report.securityScore : '—'}</b>
         </div>
       </div>
-      {!isLab && (
-        <button
-          className="btn btn-accent"
-          onClick={submit}
-          title="Run a verification load test and score your solution against the requirements"
-        >
-          Verify &amp; submit
-        </button>
-      )}
     </header>
   );
 }

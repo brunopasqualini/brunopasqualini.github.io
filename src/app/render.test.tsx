@@ -83,8 +83,8 @@ describe('primary navigation renders every section', () => {
 describe('workspace', () => {
   it('renders a mission workspace with status bar, library, inspector tabs and dock', async () => {
     await mount('#/play/m2-db-meltdown');
-    await waitFor('.statusbar');
-    expect(host!.querySelector('.statusbar')).toBeTruthy();
+    await waitFor('.canvas-head');
+    expect(host!.querySelector('.canvas-head')).toBeTruthy();
     expect(host!.querySelector('.library')).toBeTruthy();
     expect(host!.querySelector('.dock')).toBeTruthy();
     expect(host!.textContent).toMatch(/The Database Meltdown/);
