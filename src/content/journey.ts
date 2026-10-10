@@ -33,8 +33,8 @@ export const JOURNEY: JourneyStage[] = [
     level: 3,
     title: 'Cloud Engineer',
     tagline: 'Build networks, configure AWS services, manage permissions, and design for availability, security and cost.',
-    focus: ['VPC, routing and security groups', 'Least privilege', 'Cost attribution and right-sizing'],
-    missionIds: ['m4-network', 'm6-bill-shock'],
+    focus: ['VPC, routing and security groups', 'Least privilege', 'Cost attribution and right-sizing', 'Service limits and hot keys'],
+    missionIds: ['m4-network', 'm6-bill-shock', 'm11-hot-key'],
   },
   {
     level: 4,

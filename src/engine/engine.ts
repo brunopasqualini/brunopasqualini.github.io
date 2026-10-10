@@ -255,6 +255,7 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
   const hit: Record<string, number> = {};
   let healthy: Record<string, number> = {};
   let dbInfo: Record<string, { connUsed: number; connMax: number; lag: number; stale: number }> = {};
+  let kvInfo: Record<string, { hotWrites: number; hotLoss: number; hotThrottle: number }> = {};
   let succ: Record<string, number> = {};
   let lat: Record<string, number> = {};
   let p95: Record<string, number> = {};
@@ -280,6 +281,7 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
     qOut = {};
     healthy = {};
     dbInfo = {};
+    kvInfo = {};
     arch.nodes.forEach((n) => {
       offered[n.id] = 0;
     });
@@ -417,7 +419,14 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
         const writes = inRate * (1 - workload.readRatio);
         util = prov ? Math.max(reads / Math.max(1, c.rcu), writes / Math.max(1, c.wcu)) : inRate / 40000;
         cap = prov ? Math.min(c.rcu / Math.max(0.01, workload.readRatio), c.wcu / Math.max(0.01, 1 - workload.readRatio)) : 40000;
-        served = inRate * (util > 1 ? 1 / util : 1);
+        // One item cannot take more writes than a single partition allows, however much table capacity is bought.
+        const shards = Math.max(1, c.writeShards ?? 1);
+        const hotShare = workload.hotKeyShare ?? 0;
+        const hotWrites = (writes * hotShare) / shards;
+        const hotThrottle = hotWrites > P.KV_ITEM_WRITES_PER_SEC ? 1 - P.KV_ITEM_WRITES_PER_SEC / hotWrites : 0;
+        const hotLoss = (1 - workload.readRatio) * hotShare * hotThrottle;
+        kvInfo[id] = { hotWrites, hotLoss, hotThrottle };
+        served = inRate * (util > 1 ? 1 / util : 1) * (1 - hotLoss);
         own = f.down ? 1 : inRate > 0 ? 1 - served / inRate : 0;
         ownLat = 6 * f.latMult * (prov ? sat(util) : 1);
       } else if (role === 'search') {
@@ -813,6 +822,18 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
         });
       if (n.config.readReplicas > 0 && di.lag > workload.freshnessSeconds * 0.5)
         reasons.push({ code: 'lag', severity: 'warn', text: `Replica lag ≈ ${di.lag.toFixed(1)}s may violate freshness requirements.` });
+    }
+    if (role === 'kv') {
+      const ki = kvInfo[n.id];
+      if (ki && ki.hotWrites > 0) {
+        m.hotItemWritesPerSec = ki.hotWrites;
+        if (ki.hotThrottle > 0)
+          reasons.push({
+            code: 'hot-key',
+            severity: ki.hotLoss > 0.01 ? 'crit' : 'warn',
+            text: `One item receives about ${ki.hotWrites.toFixed(0)} writes/s, above the ${P.KV_ITEM_WRITES_PER_SEC}/s a single partition can take: ${(ki.hotThrottle * 100).toFixed(0)}% of writes to it are throttled even though the table has spare capacity.`,
+          });
+      }
     }
     if (role === 'cache') {
       m.hitRate = hit[n.id] ?? 0;

@@ -712,6 +712,18 @@ export function DatabasePanel() {
                   <span>Avg latency</span>
                   <b>{ms(m.latencyMs)}</b>
                 </div>
+                {m.staleReadPct != null && m.staleReadPct > 0 && (
+                  <div className="mini">
+                    <span>Stale reads after a write</span>
+                    <b className={m.staleReadPct > 1 ? 'crit' : 'warn'}>{m.staleReadPct.toFixed(0)}%</b>
+                  </div>
+                )}
+                {m.hotItemWritesPerSec != null && m.hotItemWritesPerSec > 0 && (
+                  <div className="mini">
+                    <span>Hottest item writes/s</span>
+                    <b className={m.hotItemWritesPerSec > 1000 ? 'crit' : ''}>{num(m.hotItemWritesPerSec)} / 1,000</b>
+                  </div>
+                )}
                 {m.replicaLagSec != null && m.replicaLagSec > 0 && (
                   <div className="mini">
                     <span>Replica lag</span>

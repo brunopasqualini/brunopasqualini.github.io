@@ -657,6 +657,67 @@ describe('Mission 10 — The Stale Receipt', () => {
   });
 });
 
+describe('Mission 11 — The Hot Key', () => {
+  const ADR_SHARD: ADR = {
+    ...ADR_OK,
+    decision: 'Split the stock counter across eight shard items and allocate stock to each shard so we never oversell.',
+    cons: 'One shard can sell out while others still hold stock; we accept turning some customers away and will rebalance, to avoid overselling.',
+  };
+  const finish = (s: Session, adr = true) => {
+    if (adr) s.adrs = [ADR_SHARD];
+    s.chosenCauses = ['hot-item'];
+    s.panelsSeen = ['logs', 'metrics', 'database'];
+    return verify(s, true);
+  };
+  const failing = (v: ReturnType<typeof verify>) => v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id);
+
+  it('starts with spare table capacity and one in six writes throttled', () => {
+    const s = createSession('m11-hot-key', 'intermediate');
+    const snap = s.history[s.history.length - 1];
+    expect(snap.nodes.inventory.util).toBeLessThan(0.9);
+    const v = finish(s);
+    expect(v.report.metrics.availability).toBeLessThan(90);
+    expect(failing(v)).toEqual(expect.arrayContaining(['avail', 'hot']));
+  });
+
+  it('sharding the hot key passes within budget', () => {
+    const s = createSession('m11-hot-key', 'intermediate');
+    expect(applyAction(s, 'shard-counter').ok).toBe(true);
+    advance(s, 4);
+    const v = finish(s);
+    expect(failing(v)).toEqual([]);
+    expect(v.outcome.passed).toBe(true);
+  });
+
+  it('raising capacity, again and again, changes nothing and costs a fortune', () => {
+    const s = createSession('m11-hot-key', 'intermediate');
+    applyAction(s, 'raise-wcu');
+    applyAction(s, 'raise-wcu');
+    advance(s, 4);
+    const v = finish(s);
+    expect(v.report.metrics.availability).toBeLessThan(90);
+    expect(failing(v)).toEqual(expect.arrayContaining(['avail', 'hot', 'budget']));
+  });
+
+  it('on-demand mode does not lift the per-item ceiling and costs more', () => {
+    const s = createSession('m11-hot-key', 'intermediate');
+    applyAction(s, 'on-demand');
+    advance(s, 4);
+    const v = finish(s);
+    expect(v.report.metrics.availability).toBeLessThan(90);
+    expect(failing(v)).toContain('budget');
+  });
+
+  it('sharding without saying how you avoid overselling leaves a note on the record', () => {
+    const s = createSession('m11-hot-key', 'intermediate');
+    applyAction(s, 'shard-counter');
+    advance(s, 4);
+    const v = finish(s, false);
+    expect(v.outcome.passed).toBe(true);
+    expect(v.outcome.reqs.find((r) => r.id === 'oversell')!.pass).toBe(false);
+  });
+});
+
 describe('persistence by replay', () => {
   it('replaying logged ops reproduces the same state', async () => {
     const { replay } = await import('@/game/session');
