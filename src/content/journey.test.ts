@@ -7,7 +7,11 @@ describe('journey', () => {
     const mapped = JOURNEY.flatMap((s) => s.missionIds);
     expect(new Set(mapped).size).toBe(mapped.length);
     for (const m of MISSIONS) expect(mapped, m.id).toContain(m.id);
-    for (const id of mapped) expect(MISSIONS.some((m) => m.id === id), id).toBe(true);
+    for (const id of mapped)
+      expect(
+        MISSIONS.some((m) => m.id === id),
+        id,
+      ).toBe(true);
   });
 
   it('starts at level 1 and advances as stages complete', () => {
