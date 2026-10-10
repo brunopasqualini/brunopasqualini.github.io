@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { TEMPLATES, templateWorkload } from '@/content/templates';
-import { SHAPE_BY_ID, TRAFFIC_SHAPES, matchShape, peakMult, sampleShape, shapePatch } from '@/content/trafficShapes';
+import {
+  SHAPE_BY_ID,
+  TRAFFIC_SHAPES,
+  atPeak,
+  matchShape,
+  peakMult,
+  profilePeak,
+  sampleProfile,
+  sampleShape,
+  shapePatch,
+} from '@/content/trafficShapes';
 import { emptyState, rpsAt, solve } from '@/engine/engine';
 import type { Snapshot } from '@/engine/types';
 
@@ -115,5 +125,30 @@ describe('the library', () => {
     expect(Math.max(...s)).toBeCloseTo(3, 1);
     expect(Math.min(...s)).toBeCloseTo(1, 5);
     for (const v of sampleShape(SHAPE_BY_ID.steady)) expect(v).toBe(1);
+  });
+});
+
+describe('comparing designs at the peak', () => {
+  const base = { ...templateWorkload(TEMPLATES[1]), baseRps: 100 };
+
+  it('holds a shaped workload at its busiest level', () => {
+    const w = { ...base, ...shapePatch(SHAPE_BY_ID['flash-sale']) };
+    const p = atPeak(w);
+    expect(rpsAt(p, 0)).toBe(600);
+    expect(rpsAt(p, 12345)).toBe(600);
+    expect(p.profileCycle).toBe(0);
+    expect(w.profile.length).toBeGreaterThan(1); // the original is untouched
+  });
+
+  it('is the workload itself when it is flat', () => {
+    const w = { ...base, ...shapePatch(SHAPE_BY_ID.steady) };
+    expect(rpsAt(atPeak(w), 50)).toBe(rpsAt(w, 50));
+  });
+
+  it('copes with an empty profile', () => {
+    const w = { ...base, profile: [] };
+    expect(atPeak(w)).toBe(w);
+    expect(profilePeak(w)).toBe(1);
+    expect(sampleProfile([], undefined, 4)).toEqual([1, 1, 1, 1]);
   });
 });
