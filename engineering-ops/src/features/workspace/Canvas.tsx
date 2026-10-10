@@ -72,6 +72,7 @@ function CanvasInner() {
   const tick = useGame((s) => s.tick);
   const running = useGame((s) => s.running);
   const selection = useGame((s) => s.selection);
+  const highlight = useGame((s) => s.highlight);
   // semantic zoom: 2 = close (everything), 1 = overview (no metric text), 0 = far (tiles and names only)
   const detail = useStore((s) => (s.transform[2] >= 0.85 ? 2 : s.transform[2] >= 0.55 ? 1 : 0));
   const [showMap, toggleMap] = usePersistentFlag('eo-minimap', false);
@@ -101,6 +102,7 @@ function CanvasInner() {
         changed: liveIds.has(n.id) && liveCfg.get(n.id) !== JSON.stringify(n.config),
         isNetwork,
         minute: snap?.minute ?? 0,
+        attacked: highlight.includes(n.id),
       };
       if (entryOf(n.kind).role === 'lb' && snap) {
         const tiles: Tile[] = [];
@@ -131,7 +133,7 @@ function CanvasInner() {
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, draft, selection.type, selection.id, snap, report]);
+  }, [tick, draft, selection.type, selection.id, snap, report, highlight]);
 
   const edges: BuiltInEdge[] = useMemo(() => {
     if (!draft) return [];
