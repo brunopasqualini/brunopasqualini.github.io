@@ -97,7 +97,7 @@
     color: var(--amber);
   }
   .crit {
-    color: var(--red);
+    color: var(--red-text);
   }
   .row-between {
     display: flex;

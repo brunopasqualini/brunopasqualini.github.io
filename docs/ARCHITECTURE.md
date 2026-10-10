@@ -76,6 +76,12 @@ tokens as custom properties. Rationale:
 - Migrating ~350 existing rules to Tailwind is a large rewrite with visual regression risk and no user benefit.
 - Layers give the predictable cascade that utilities were solving, with no build dependency.
 
+**Embedding caveat.** Unlayered CSS always beats layered CSS. A hosting page (for example an artifact viewer) that injects
+`body { background: #fff; color: #000 }` or `:root { color-scheme: light }` would override every token-driven rule
+and turn headings black on dark panels. The few global rules the theme depends on (`color-scheme`, `html`/`body`
+background, text colour, font) therefore live *unlayered* at the end of `styles/index.css`, and `tokens.test.ts`
+guards both that and the WCAG AA contrast of the text tokens.
+
 Tailwind can still be adopted later: tokens are plain custom properties and map one-to-one to `@theme`.
 
 ## ADR-5: ESLint 10 flat config + Prettier; React Compiler not enabled yet
