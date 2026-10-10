@@ -783,6 +783,61 @@ describe('Mission 12 — The Noisy Neighbour', () => {
   });
 });
 
+describe('Mission 13 — The Regional Outage', () => {
+  const ADR_DR: ADR = {
+    ...ADR_OK,
+    context: 'The board asked for an RTO of 60 minutes and an RPO of 5 minutes if the whole Region were lost.',
+    decision: 'Pilot light with a cross-Region replica meets the RTO and RPO at the lowest cost.',
+    implications: 'We accept the standby cost, rehearse restores every quarter, and review the RTO and RPO yearly.',
+  };
+  const run = (...actions: string[]) => {
+    const s = createSession('m13-regional-outage', 'intermediate');
+    for (const a of actions) expect(applyAction(s, a).ok, a).toBe(true);
+    advance(s, 3);
+    s.adrs = [ADR_DR];
+    s.chosenCauses = ['single-region', 'no-plan'];
+    s.panelsSeen = ['database', 'dependencies', 'notes'];
+    return verify(s, true);
+  };
+  const failing = (v: ReturnType<typeof verify>) => v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id);
+
+  it('starts with Multi-AZ and same-Region backups, which a Region loss does not survive', () => {
+    const v = run();
+    expect(v.report.metrics.availability).toBeGreaterThan(99.9);
+    expect(failing(v)).toEqual(expect.arrayContaining(['rto', 'rpo']));
+  });
+
+  it('a cross-Region replica plus a pilot-light plan passes at the lowest cost', () => {
+    const v = run('cross-region-replica', 'pilot-light', 'test-restore');
+    expect(failing(v)).toEqual([]);
+    expect(v.outcome.passed).toBe(true);
+  });
+
+  it('warm standby also passes but costs more, and active/active blows the budget', () => {
+    const pilot = run('cross-region-replica', 'pilot-light');
+    const warm = run('cross-region-replica', 'warm-standby');
+    const aa = run('cross-region-replica', 'active-active');
+    expect(warm.report.metrics.cost).toBeGreaterThan(pilot.report.metrics.cost);
+    expect(warm.report.metrics.regionRto).toBeLessThan(pilot.report.metrics.regionRto);
+    expect(failing(warm)).toEqual([]);
+    expect(failing(aa)).toEqual(['budget']);
+  });
+
+  it('data in another Region without a plan does not meet the recovery time', () => {
+    expect(failing(run('cross-region-replica'))).toEqual(['rto']);
+  });
+
+  it('a plan without data in another Region leaves nothing to recover', () => {
+    expect(failing(run('pilot-light'))).toEqual(expect.arrayContaining(['rto', 'rpo']));
+  });
+
+  it('hourly cross-Region backups are only as fresh as the schedule, so the data-loss target fails', () => {
+    const v = run('cross-region-backup', 'pilot-light');
+    expect(v.report.metrics.regionRpo).toBe(60);
+    expect(failing(v)).toEqual(['rpo']);
+  });
+});
+
 describe('persistence by replay', () => {
   it('replaying logged ops reproduces the same state', async () => {
     const { replay } = await import('@/game/session');

@@ -20,6 +20,7 @@ export interface DesignProfile {
   resilience: number;
   recoveryScore: number;
   rtoMinutes: number;
+  rpoMinutes: number;
 }
 
 export interface Comparison {
@@ -74,7 +75,8 @@ function profile(arch: Arch, workload: Workload, o: CompareOptions): DesignProfi
     seriousFindings: report.counts.critical + report.counts.high,
     resilience: report.azSurvival,
     recoveryScore: report.recovery.score,
-    rtoMinutes: report.recovery.rtoMinutes,
+    rtoMinutes: report.recovery.regionRtoMinutes,
+    rpoMinutes: report.recovery.regionRpoMinutes,
   };
 }
 

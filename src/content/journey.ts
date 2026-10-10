@@ -40,8 +40,8 @@ export const JOURNEY: JourneyStage[] = [
     level: 4,
     title: 'Platform Engineer / SRE',
     tagline: 'Automate delivery, build reusable platforms, improve observability, and engineer resilience.',
-    focus: ['Safe deployment strategies', 'Rate limiting and load shedding', 'Rollback and recovery'],
-    missionIds: ['m3-deployment', 'm12-noisy-neighbour'],
+    focus: ['Safe deployment strategies', 'Rate limiting and load shedding', 'Region-level disaster recovery'],
+    missionIds: ['m3-deployment', 'm12-noisy-neighbour', 'm13-regional-outage'],
   },
   {
     level: 5,

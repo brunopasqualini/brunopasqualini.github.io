@@ -166,12 +166,9 @@ export function CanvasHeader({
               <span>Resilience</span>
               <b>{report ? `${report.azSurvival.toFixed(0)}%` : '—'}</b>
             </div>
-            <div
-              className={`hk ${report && report.recovery.rtoMinutes > 120 ? 'hk-warn' : ''}`}
-              title="Recovery time (RTO): how long restoring service would take and how much data could be lost (RPO), from your backup and disaster-recovery setup."
-            >
+            <div className={`hk ${report && report.recovery.regionRtoMinutes > 120 ? 'hk-warn' : ''}`} title={recoveryTitle(report)}>
               <span>Recovery</span>
-              <b>{report ? duration(report.recovery.rtoMinutes) : '—'}</b>
+              <b>{report ? duration(report.recovery.regionRtoMinutes) : '—'}</b>
             </div>
             <div
               className={`hk ${report && report.counts.critical > 0 ? 'hk-crit' : report && report.counts.high > 0 ? 'hk-warn' : ''}`}
@@ -202,4 +199,12 @@ function securityTitle(report?: { findings: Finding[] }): string {
     top.map((i) => `${i.finding.title} (−${i.points})`).join('; ') +
     '. Open the Security panel for the fix.'
   );
+}
+
+function recoveryTitle(report?: { recovery: { regionRtoMinutes: number; regionRpoMinutes: number; crossRegion: boolean } }): string {
+  if (!report) return 'Recovery';
+  const r = report.recovery;
+  return r.crossRegion
+    ? `If the whole Region were lost: service restored in about ${duration(r.regionRtoMinutes)} (RTO), with up to ${duration(r.regionRpoMinutes)} of data lost (RPO).`
+    : 'Nothing is stored outside this Region, so if the Region were lost you would wait for it to come back and could lose data since the last cross-Region copy. Add a cross-Region replica or backup and a DR strategy.';
 }
