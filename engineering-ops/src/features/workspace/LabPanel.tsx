@@ -5,7 +5,7 @@ import { emptyState, solve } from '@/engine/engine';
 import type { Arch, Workload } from '@/engine/types';
 import { TEMPLATES } from '@/content/templates';
 import { useGame } from '@/game/store';
-import { Chip } from '@/shared/ui/common';
+import { Chip, useConfirm } from '@/shared/ui/common';
 import { ms, usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
 
@@ -32,6 +32,7 @@ export function LabPanel() {
   const openMission = useGame((s) => s.openMission);
   const recordExperiment = useGame((s) => s.recordExperiment);
   const drill = useGame((s) => s.drill);
+  const { ask, dialog } = useConfirm();
   const [name, setName] = useState('');
   const [picked, setPicked] = useState<string[]>([]);
   const [note, setNote] = useState('');
@@ -56,6 +57,7 @@ export function LabPanel() {
 
   return (
     <div className="lab-panel">
+      {dialog}
       {drill && (
         <div className="callout callout-warn">
           <strong>Drill: {drill.title}</strong>
@@ -67,12 +69,18 @@ export function LabPanel() {
         <select
           aria-label="Template"
           onChange={(e) => {
-            if (
-              e.target.value &&
-              confirm('Replace the sandbox with this template? Your current sandbox is kept only if you saved a design.')
-            )
-              openMission('lab', { template: e.target.value, fresh: true });
+            const id = e.target.value;
+            const tpl = TEMPLATES.find((x) => x.id === id);
             e.target.value = '';
+            if (!tpl) return;
+            ask(
+              {
+                title: `Load “${tpl.name}”?`,
+                message: 'This replaces the sandbox. Your current sandbox is kept only if you saved it as a design.',
+                confirmLabel: 'Replace sandbox',
+              },
+              () => openMission('lab', { template: tpl.id, fresh: true }),
+            );
           }}
           defaultValue=""
         >
