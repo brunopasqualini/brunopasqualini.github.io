@@ -51,6 +51,13 @@ export const DB_STORAGE_PER_GB = 0.115;
 export const DB_READ_UNITS = 1;
 export const DB_WRITE_UNITS = 3;
 export const DB_SLOW_SCAN_MULT = 12; // an unindexed hot query costs this many times a normal read
+/**
+ * A user typically re-reads within about this long after their own write. A replica further behind than the tolerated
+ * lag misses the write for that read; the share that misses grows linearly until lag reaches tolerated + window.
+ * An approximation of read-after-write staleness, not a measurement.
+ */
+export const RAW_TOLERATED_LAG_SEC = 0.3;
+export const RAW_READ_WINDOW_SEC = 2;
 export const DB_BASE_READ_MS = 4;
 export const DB_BASE_WRITE_MS = 8;
 
@@ -148,5 +155,6 @@ export const DEFAULT_WORKLOAD = {
   poisonShare: 0,
   avgProcessMs: 120,
   freshnessSeconds: 60,
+  readAfterWriteShare: 0,
   logGBPerMillionReq: 1.2,
 };

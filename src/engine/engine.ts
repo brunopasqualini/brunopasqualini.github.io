@@ -254,7 +254,7 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
   > = {};
   const hit: Record<string, number> = {};
   let healthy: Record<string, number> = {};
-  let dbInfo: Record<string, { connUsed: number; connMax: number; lag: number }> = {};
+  let dbInfo: Record<string, { connUsed: number; connMax: number; lag: number; stale: number }> = {};
   let succ: Record<string, number> = {};
   let lat: Record<string, number> = {};
   let p95: Record<string, number> = {};
@@ -388,8 +388,14 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
         const rr = workload.readRatio;
         const slow = c.indexed ? 0 : workload.slowQueryShare;
         const readUnit = P.DB_READ_UNITS * (1 + slow * (P.DB_SLOW_SCAN_MULT - 1));
-        const primaryUnits = inRate * ((rr / (1 + R)) * readUnit + (1 - rr) * P.DB_WRITE_UNITS);
-        const replicaUnits = inRate * (rr / (1 + R)) * readUnit;
+        // Replica lag is driven by the write and replay load, so it is computed before any reads are rerouted.
+        const lagUnits = inRate * ((rr / (1 + R)) * readUnit + (1 - rr) * P.DB_WRITE_UNITS);
+        // Reads that must see the user's own write can be pinned to the primary: they leave the replicas and load it.
+        const raw = R > 0 ? (workload.readAfterWriteShare ?? 0) : 0;
+        const pinned = c.readYourWrites === 'primary';
+        const movedReads = pinned ? inRate * rr * raw * (R / (1 + R)) : 0;
+        const primaryUnits = lagUnits + movedReads * readUnit;
+        const replicaUnits = inRate * (rr / (1 + R)) * readUnit - movedReads * readUnit;
         const dbCap = (P.DB[c.size]?.qps ?? 300) / f.cpuMult;
         util = Math.max(primaryUnits / dbCap, R > 0 ? replicaUnits / dbCap : 0);
         const azFail = azDown.size > 0 && !c.multiAZ && azDown.has('a');
@@ -399,8 +405,9 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
         own = azFail || f.down ? 1 : 1 - (1 - (inRate > 0 ? 1 - served / inRate : 0)) * (1 - refuse);
         const readMs = P.DB_BASE_READ_MS * (1 + slow * (P.DB_SLOW_SCAN_MULT - 1));
         ownLat = (rr * readMs + (1 - rr) * P.DB_BASE_WRITE_MS) * f.latMult * sat(util) + (pooled ? 1.5 : 0);
-        const lag = R > 0 ? 0.2 + clamp(primaryUnits / dbCap, 0, 1.5) * 3 : 0;
-        dbInfo[id] = { connUsed: used, connMax: maxConn, lag };
+        const lag = R > 0 ? 0.2 + clamp(lagUnits / dbCap, 0, 1.5) * 3 : 0;
+        const stale = R > 0 && !pinned && raw > 0 ? clamp((lag - P.RAW_TOLERATED_LAG_SEC) / P.RAW_READ_WINDOW_SEC, 0, 1) * 100 : 0;
+        dbInfo[id] = { connUsed: used, connMax: maxConn, lag, stale };
         out.connUsed = used;
         out.connMax = maxConn;
         cap = dbCap;
@@ -777,6 +784,7 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
       m.connUsed = di.connUsed;
       m.connMax = di.connMax;
       m.replicaLagSec = di.lag;
+      m.staleReadPct = di.stale;
       const demand = connDemand[n.id] ?? 0;
       if (!n.config.connectionPooler && demand > di.connMax)
         reasons.push({
@@ -797,6 +805,12 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
           text: `Database CPU saturated (${(util * 100).toFixed(0)}%): queries queue and time out.`,
         });
       else if (util > 0.75) reasons.push({ code: 'db-hot', severity: 'warn', text: `Database at ${(util * 100).toFixed(0)}% CPU.` });
+      if (di.stale > 1)
+        reasons.push({
+          code: 'stale-read',
+          severity: di.stale > 5 ? 'crit' : 'warn',
+          text: `Replicas are about ${di.lag.toFixed(1)}s behind the primary, so ${di.stale.toFixed(0)}% of reads that follow a user's own write return data from before it.`,
+        });
       if (n.config.readReplicas > 0 && di.lag > workload.freshnessSeconds * 0.5)
         reasons.push({ code: 'lag', severity: 'warn', text: `Replica lag ≈ ${di.lag.toFixed(1)}s may violate freshness requirements.` });
     }
