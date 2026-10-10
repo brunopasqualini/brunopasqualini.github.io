@@ -818,7 +818,7 @@
   }
   .ov-log {
     display: grid;
-    grid-template-columns: 44px 38px 1fr;
+    grid-template-columns: 44px 38px minmax(0, 1fr);
     gap: 6px;
     padding: 2px 4px;
     border-bottom: 1px solid #0f1a31;

@@ -60,7 +60,6 @@ export function CanvasHeader({
         <span className={`live-pill ${running ? 'live' : ''}`}>
           <i /> {running ? 'Live' : 'Paused'}
         </span>
-        {session.failed && <span className="chip chip-crit">impact budget exceeded</span>}
         <div className="sb-sim" role="group" aria-label="Simulation controls">
           <button
             className="btn btn-primary btn-icon"

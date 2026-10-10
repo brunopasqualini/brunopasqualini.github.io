@@ -25,7 +25,7 @@ export function Tabs<T extends string>({
   className?: string;
 }) {
   return (
-    <BaseTabs.Root value={value} onValueChange={(v) => onChange(v as T)}>
+    <BaseTabs.Root className="tabs-root" value={value} onValueChange={(v) => onChange(v as T)}>
       <BaseTabs.List className={`tabs ${className}`} aria-label={label}>
         {tabs.map((t) => (
           <BaseTabs.Tab key={t.id} value={t.id} className="tab">
