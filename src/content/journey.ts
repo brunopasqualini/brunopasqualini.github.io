@@ -17,7 +17,7 @@ export const JOURNEY: JourneyStage[] = [
     title: 'Software Engineer',
     tagline: 'Fix bugs, design APIs, improve code structure, and understand how applications behave.',
     focus: ['Code structure and modularity', 'How an application behaves under load', 'Reading evidence'],
-    missionIds: ['m1-monolith'],
+    missionIds: ['m1-monolith', 'm7-n-plus-one', 'm8-impatient-client'],
   },
   {
     level: 2,
