@@ -1,6 +1,6 @@
 # Authoring missions
 
-A mission is **data** (`src/missions/*.ts`, typed by `src/missions/types.ts`). The engine, scoring, evidence panels,
+A mission is **data** (`src/content/missions/*.ts`, typed by `src/content/missions/types.ts`). The engine, scoring, evidence panels,
 persistence and debrief are shared; adding a mission needs no UI work.
 
 ```ts
@@ -28,7 +28,7 @@ export const myMission: Mission = {
 };
 ```
 
-Then register it in `src/missions/index.ts`.
+Then register it in `src/content/missions/index.ts`.
 
 ## Principles
 
@@ -40,3 +40,32 @@ Then register it in `src/missions/index.ts`.
   tempting wrong fixes (e.g. "scale the app tier"). Calibrate numbers until both behave.
 * **Actions take time.** `MissionAction.minutes` advances the clock; customers keep experiencing the system.
 * **Scoring is multi-dimensional.** Choose `weights` for the dimensions that matter; others are ignored.
+
+## Decisions and consequences (interconnected missions)
+
+A mission can remember what the player did and react to what they did earlier.
+
+```ts
+// Recorded when the mission is PASSED, derived from the final design:
+decisions: (arch, { adrs, flags }) => [
+  { tag: 'm7-n-plus-one:fixed-in-code', label: 'You removed the N+1 pattern…', carries: 'Later missions start with healthy query habits.' },
+],
+
+// Applied when this mission STARTS, if the matching tag was recorded by an earlier mission:
+consequences: [
+  { id: 'inherited-bigger-db', tag: 'm7-n-plus-one:bought-a-bigger-database', title: '…', text: '…',
+    apply: (arch) => patchNode(arch, 'shop-db', { size: 'large' }), workload: { slowQueryShare: 0.1 } },
+],
+```
+
+Rules that keep this honest:
+
+* **Tags are the contract.** `'<mission-id>:<what-they-did>'`. A mission never reads its own tags.
+* **Every debt must be repairable** with the tools the earlier missions taught, and the worst-case combination must
+  still be passable. `missions.test.ts` has a test that inherits every debt of the capstone and repairs them all.
+* **Only passes record decisions**, so a debt must be reachable by a *passing* design. (A bigger database that blows
+  the budget is not a recorded decision; a medium one that fits is.)
+* **Replay stays deterministic.** The inherited tags are stored with the saved run and passed to `createSession`, so
+  resuming rebuilds the same starting state even if the player has since changed their history.
+* **Fingerprints.** New missions need a row in `game/simVersion.test.ts`; changing simulation behaviour for existing
+  missions requires bumping `SIM_VERSION` (see that file).
