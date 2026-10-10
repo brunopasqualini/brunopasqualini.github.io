@@ -177,7 +177,17 @@ E(
   'Users',
   'Where requests originate: browsers, apps and partners.',
   'Every simulation starts from a workload. Capacity planning is meaningless without one.',
-  { defaults: { share: 1 }, fields: [num('share', 'Share of mission traffic', 0, 2, { step: 0.05 })] },
+  {
+    defaults: { share: 1 },
+    fields: [
+      num('share', 'Share of mission traffic', 0, 2, { step: 0.05 }),
+      bool(
+        'excludeFromSlo',
+        'Exclude from availability and latency',
+        'Requests you are entitled to reject, such as an abusive client over its quota, are not counted against your SLO.',
+      ),
+    ],
+  },
 );
 E(
   'web-frontend',

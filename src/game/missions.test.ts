@@ -718,6 +718,71 @@ describe('Mission 11 — The Hot Key', () => {
   });
 });
 
+describe('Mission 12 — The Noisy Neighbour', () => {
+  const finish = (s: Session) => {
+    s.postmortem = PM_OK;
+    s.chosenCauses = ['runaway-client'];
+    s.panelsSeen = ['dependencies', 'logs', 'metrics'];
+    return verify(s, true);
+  };
+  const failing = (v: ReturnType<typeof verify>) => v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id);
+
+  it('starts with shoppers failing because a runaway client shares their capacity', () => {
+    const v = finish(createSession('m12-noisy-neighbour', 'intermediate'));
+    expect(v.report.metrics.availability).toBeLessThan(50);
+    expect(failing(v)).toEqual(expect.arrayContaining(['avail', 'p95']));
+  });
+
+  it('a per-client usage plan for the partner passes and keeps the partner inside its contract', () => {
+    const s = createSession('m12-noisy-neighbour', 'intermediate');
+    expect(applyAction(s, 'partner-usage-plan').ok).toBe(true);
+    advance(s, 4);
+    const v = finish(s);
+    expect(failing(v)).toEqual([]);
+    expect(v.outcome.passed).toBe(true);
+  });
+
+  it('tripling the API changes nothing: the shared database is the bottleneck', () => {
+    const s = createSession('m12-noisy-neighbour', 'intermediate');
+    applyAction(s, 'scale-api');
+    advance(s, 4);
+    const v = finish(s);
+    expect(v.report.metrics.availability).toBeLessThan(50);
+    expect(failing(v)).toContain('headroom');
+  });
+
+  it('a single global limit sheds shoppers along with the partner', () => {
+    const s = createSession('m12-noisy-neighbour', 'intermediate');
+    applyAction(s, 'global-limit');
+    advance(s, 4);
+    const v = finish(s);
+    expect(v.report.metrics.availability).toBeLessThan(90);
+    expect(v.outcome.passed).toBe(false);
+  });
+
+  it('blocking the partner protects shoppers but breaks the contract', () => {
+    const s = createSession('m12-noisy-neighbour', 'intermediate');
+    applyAction(s, 'block-partner');
+    advance(s, 4);
+    const v = finish(s);
+    expect(v.report.metrics.availability).toBeGreaterThan(99);
+    expect(failing(v)).toEqual(['contract']);
+  });
+
+  it('a throttle that is too tight breaks the contract and one that is too loose lets the flood through', () => {
+    const tight = createSession('m12-noisy-neighbour', 'intermediate');
+    applyAction(tight, 'partner-usage-plan');
+    cfg(tight.draft, 'partner-gw', { throttleRps: 8 });
+    ship(tight, 4);
+    expect(failing(finish(tight))).toContain('contract');
+    const loose = createSession('m12-noisy-neighbour', 'intermediate');
+    applyAction(loose, 'partner-usage-plan');
+    cfg(loose.draft, 'partner-gw', { throttleRps: 200 });
+    ship(loose, 4);
+    expect(failing(finish(loose))).toContain('flood');
+  });
+});
+
 describe('persistence by replay', () => {
   it('replaying logged ops reproduces the same state', async () => {
     const { replay } = await import('@/game/session');

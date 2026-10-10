@@ -924,9 +924,13 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
   // System-level
   const sources = arch.nodes.filter((n) => roleOf(n) === 'source');
   const totalRps = sources.reduce((s, n) => s + (nodeOut[n.id]?.offered ?? 0), 0);
+  // Traffic you are entitled to reject (an abusive client over its quota) does not count against availability or latency.
+  const slo = sources.filter((n) => !n.config.excludeFromSlo);
+  const sloSources = slo.length ? slo : sources;
+  const sloRps = sloSources.reduce((s, n) => s + (nodeOut[n.id]?.offered ?? 0), 0);
   const weighted = (get: (id: string) => number) =>
-    totalRps > 0 ? sources.reduce((s, n) => s + (nodeOut[n.id]?.offered ?? 0) * get(n.id), 0) / totalRps : 0;
-  const successRate = totalRps > 0 ? weighted((id) => succ[id] ?? 1) : 1;
+    sloRps > 0 ? sloSources.reduce((s, n) => s + (nodeOut[n.id]?.offered ?? 0) * get(n.id), 0) / sloRps : 0;
+  const successRate = sloRps > 0 ? weighted((id) => succ[id] ?? 1) : 1;
   let queueBacklog = 0,
     queueDelay = 0,
     dlq = 0,
@@ -949,7 +953,7 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
   );
   const system: SystemMetrics = {
     rps: totalRps,
-    throughput: totalRps * successRate,
+    throughput: sources.reduce((s, n) => s + (nodeOut[n.id]?.offered ?? 0) * (succ[n.id] ?? 1), 0),
     successRate,
     errorRate: 1 - successRate,
     p50: weighted((id) => lat[id] ?? 0),
@@ -967,8 +971,8 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
         .filter((m) => ['compute', 'worker', 'db', 'cache', 'kv'].includes(m.role))
         .map((m) => m.util),
     ),
-    failedRequests: totalRps * 60 * (1 - successRate),
-    customerImpact: totalRps * 60 * (1 - successRate),
+    failedRequests: sloRps * 60 * (1 - successRate),
+    customerImpact: sloRps * 60 * (1 - successRate),
   };
 
   return { snapshot: { minute, rps: totalRps, nodes: nodeMetrics, edges: edgeMetrics, system }, next };
