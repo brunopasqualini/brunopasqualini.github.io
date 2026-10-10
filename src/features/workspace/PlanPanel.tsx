@@ -2,6 +2,7 @@ import { Rocket, RotateCcw, Undo2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { archSignature, diffArch, validateArch } from '@/engine/arch';
 import { solve } from '@/engine/engine';
+import type { MetricChange } from '@/engine/types';
 import { useGame } from '@/game/store';
 import { Chip, diffClass } from '@/shared/ui/common';
 import { usd2 } from '@/shared/lib/fmt';
@@ -142,21 +143,62 @@ export function PlanPanel() {
               No significant metric change yet. Run the simulation for a few minutes — autoscaling and queues take time to react.
             </p>
           )}
-          <ul className="changes">
-            {ex.changes.map((c) => (
-              <li key={c.key} className={c.better ? 'better' : 'worse'}>
-                <div className="row-between">
-                  <b>{c.label}</b>
-                  <span className="mono">
-                    {fmt(c.before, c.unit)} → {fmt(c.after, c.unit)} {c.better ? '▲' : '▼'}
-                  </span>
-                </div>
-                <p>{c.because}</p>
-              </li>
-            ))}
-          </ul>
+          <StoryGroup title="Immediate effect" items={ex.story.immediate} />
+          <StoryGroup title="Propagation" hint="Changes elsewhere in the system that follow from it." items={ex.story.propagation} />
+          {(ex.story.tradeoff.gained.length > 0 || ex.story.tradeoff.lost.length > 0) && (
+            <div className="story-block">
+              <h5>Trade-off</h5>
+              <p>
+                {ex.story.tradeoff.gained.length > 0 && (
+                  <>
+                    Improved: <b>{ex.story.tradeoff.gained.join(', ')}</b>.{' '}
+                  </>
+                )}
+                {ex.story.tradeoff.lost.length > 0 && (
+                  <>
+                    Got worse: <b>{ex.story.tradeoff.lost.join(', ')}</b>.
+                  </>
+                )}
+              </p>
+            </div>
+          )}
+          {ex.story.evidence.length > 0 && (
+            <div className="story-block">
+              <h5>Evidence</h5>
+              <p>
+                Check the {ex.story.evidence.join(', ')} panel{ex.story.evidence.length > 1 ? 's' : ''} to see this for yourself.
+              </p>
+            </div>
+          )}
+          <div className="story-block story-next">
+            <h5>Next investigation</h5>
+            <p>{ex.story.next.text}</p>
+          </div>
         </section>
       )}
+    </div>
+  );
+}
+
+function StoryGroup({ title, hint, items }: { title: string; hint?: string; items: MetricChange[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="story-block">
+      <h5>{title}</h5>
+      {hint && <p className="muted tiny">{hint}</p>}
+      <ul className="changes">
+        {items.map((c) => (
+          <li key={c.key} className={c.better ? 'better' : 'worse'}>
+            <div className="row-between">
+              <b>{c.label}</b>
+              <span className="mono">
+                {fmt(c.before, c.unit)} → {fmt(c.after, c.unit)} {c.better ? '▲' : '▼'}
+              </span>
+            </div>
+            <p>{c.because}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

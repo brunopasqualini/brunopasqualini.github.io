@@ -1,6 +1,7 @@
 import { archSignature, clone, diffArch, type ArchDiffItem, validateArch } from '@/engine/arch';
 import { buildReport, explainChanges, type Report } from '@/engine/analysis';
 import { emptyState, solve, type Chaos } from '@/engine/engine';
+import { buildChangeStory, type ChangeStory } from '@/engine/story';
 import { DEFAULT_WORKLOAD } from '@/engine/params';
 import type { Arch, MetricChange, SimState, Snapshot, Workload } from '@/engine/types';
 import { MISSION_BY_ID } from '@/content/missions';
@@ -28,6 +29,7 @@ export interface ExplainRecord {
   settled: boolean;
   diff: ArchDiffItem[];
   changes: MetricChange[];
+  story: ChangeStory;
   title: string;
 }
 
@@ -194,7 +196,10 @@ function stepMinute(s: Session, mission: Mission, preroll = false) {
   if (!preroll && s.explain && !s.explain.settled && s.minute - s.explain.deployedAt >= 3) {
     const before = s.history[Math.max(0, s.history.length - 1 - (s.minute - s.explain.deployedAt))];
     const after = s.history[s.history.length - 1];
-    if (before && after) s.explain = { ...s.explain, settled: true, changes: explainChanges(before, after, s.live) };
+    if (before && after) {
+      const changes = explainChanges(before, after, s.live);
+      s.explain = { ...s.explain, settled: true, changes, story: buildChangeStory(s.explain.diff, changes, after, s.live) };
+    }
   }
 }
 
@@ -231,6 +236,7 @@ export function deployDraft(s: Session, strategy = 'all-at-once', log = true): D
     settled: false,
     diff,
     changes,
+    story: buildChangeStory(diff, changes, r.snapshot, s.live),
     title:
       diff
         .slice(0, 2)
