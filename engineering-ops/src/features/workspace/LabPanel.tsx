@@ -8,6 +8,7 @@ import { useGame } from '@/game/store';
 import { Chip } from '@/shared/ui/common';
 import { ms, usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
+import { GeographyPanel } from '@/features/workspace/GeographyPanel';
 
 export function evaluateDesign(arch: Arch, workload: Workload) {
   let st = emptyState();
@@ -284,6 +285,7 @@ export function LabPanel() {
           </div>
         )}
       </section>
+      <GeographyPanel />
       <p className="muted tiny">
         All behaviour here is simulated. Costs are estimates, not AWS prices, and nothing touches a real cloud account.{' '}
         <Chip kind="info">sandbox</Chip>
