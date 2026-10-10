@@ -189,7 +189,7 @@
   }
   .ch-kpis {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(8, minmax(0, 1fr));
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: #070e1d;
@@ -200,7 +200,7 @@
     border-radius: 0;
     background: none;
     border-right: 1px solid var(--line);
-    padding: 5px 12px;
+    padding: 5px 9px;
     min-width: 0;
   }
   .ch-kpis .hk:last-child {

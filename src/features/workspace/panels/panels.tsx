@@ -1,3 +1,4 @@
+import { SECURITY_PENALTY, securityBreakdown } from '@/engine/analysis';
 import { useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { edgeClass, flowEdges, nodeById, ofKind, roleOf } from '@/engine/arch';
@@ -576,6 +577,7 @@ export function CostPanel() {
 export function SecurityPanel() {
   const { report } = useLive();
   if (!report) return null;
+  const breakdown = securityBreakdown(report.findings);
   return (
     <div className="panel-body">
       <div className="row-between">
@@ -584,6 +586,12 @@ export function SecurityPanel() {
           Score <b className={report.securityScore < 60 ? 'crit' : report.securityScore < 90 ? 'warn' : 'ok'}>{report.securityScore}</b>/100
         </span>
       </div>
+      {breakdown.items.length > 0 && (
+        <p className="muted tiny">
+          Score = 100 − findings: {breakdown.items.map((i) => `${i.finding.severity} −${i.points}`).join(', ')}. Resolving a finding adds
+          its points back.
+        </p>
+      )}
       {report.findings.length === 0 && (
         <Empty title="No findings">Nothing in the configuration violates the simulated security rules. Real reviews go much further.</Empty>
       )}
@@ -603,6 +611,7 @@ export function SecurityPanel() {
                 <b>{f.title}</b>
               </div>
               <p>{f.detail}</p>
+              <p className="muted tiny">Costs {SECURITY_PENALTY[f.severity]} points.</p>
               <p className="fix">
                 <b>Fix:</b> {f.fix}
               </p>

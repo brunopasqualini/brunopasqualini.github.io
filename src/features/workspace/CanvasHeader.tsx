@@ -1,3 +1,5 @@
+import { securityBreakdown } from '@/engine/analysis';
+import type { Finding } from '@/engine/net';
 import {
   FastForward,
   Network,
@@ -132,7 +134,10 @@ export function CanvasHeader({
           <span>Error rate</span>
           <b>{sys ? `${errPct < 10 ? errPct.toFixed(1) : errPct.toFixed(0)}%` : '—'}</b>
         </div>
-        <div className={`hk hk-${health} hk-spark`}>
+        <div
+          className={`hk hk-${health} hk-spark`}
+          title="Availability: how the system performs right now. It says nothing about what would happen if a zone failed (Resilience) or how fast service would come back (Recovery)."
+        >
           <span>Availability</span>
           <b>{sys ? pct0(sys.successRate * 100) : '—'}</b>
           <Sparkline
@@ -148,11 +153,45 @@ export function CanvasHeader({
           <span>Cost{budget ? ` / ${usd2(budget)}` : ''}</span>
           <b>{sys ? `${usd2(sys.costMonthly)} / mo` : '—'}</b>
         </div>
-        <div className={`hk ${report && report.counts.critical > 0 ? 'hk-crit' : report && report.counts.high > 0 ? 'hk-warn' : ''}`}>
+        <div
+          className={`hk ${report && report.azSurvival < 95 ? 'hk-warn' : ''}`}
+          title="Resilience: the share of traffic still served if one availability zone is lost. Measured by simulating the failure, not read from current health."
+        >
+          <span>Resilience</span>
+          <b>{report ? `${report.azSurvival.toFixed(0)}%` : '—'}</b>
+        </div>
+        <div
+          className={`hk ${report && report.recovery.rtoMinutes > 120 ? 'hk-warn' : ''}`}
+          title="Recovery time (RTO): how long restoring service would take and how much data could be lost (RPO), from your backup and disaster-recovery setup."
+        >
+          <span>Recovery</span>
+          <b>{report ? duration(report.recovery.rtoMinutes) : '—'}</b>
+        </div>
+        <div
+          className={`hk ${report && report.counts.critical > 0 ? 'hk-crit' : report && report.counts.high > 0 ? 'hk-warn' : ''}`}
+          title={securityTitle(report)}
+        >
           <span>Security</span>
           <b>{report ? report.securityScore : '—'}</b>
         </div>
       </div>
     </header>
+  );
+}
+
+function duration(min: number): string {
+  if (min < 60) return `${Math.round(min)}m`;
+  if (min < 60 * 48) return `${(min / 60).toFixed(min % 60 ? 1 : 0)}h`;
+  return `${Math.round(min / 1440)}d`;
+}
+
+function securityTitle(report?: { findings: Finding[] }): string {
+  if (!report) return 'Security score';
+  const top = securityBreakdown(report.findings).items.slice(0, 3);
+  if (!top.length) return 'Security score 100: no findings against the simulated rules.';
+  return (
+    'Security score is lowered by: ' +
+    top.map((i) => `${i.finding.title} (−${i.points})`).join('; ') +
+    '. Open the Security panel for the fix.'
   );
 }

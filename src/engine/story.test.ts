@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { SECURITY_PENALTY, securityBreakdown } from '@/engine/analysis';
+import { securityFindings } from '@/engine/net';
 import { advance, createSession, deployDraft } from '@/game/session';
 
 describe('change story', () => {
@@ -25,5 +27,18 @@ describe('change story', () => {
     const story = s.explain!.story;
     expect(story.tradeoff.lost.length).toBeGreaterThan(0);
     expect(story.next.panel).toBeDefined();
+  });
+});
+
+describe('security score explanation', () => {
+  it('accounts for every point the score lost', () => {
+    const s = createSession('m4-network', 'beginner');
+    advance(s, 3, false);
+    const b = securityBreakdown(securityFindings(s.live));
+    const lost = b.items.reduce((t, i) => t + SECURITY_PENALTY[i.finding.severity], 0);
+    expect(b.score).toBe(Math.max(0, 100 - lost));
+    expect(b.items.length).toBeGreaterThan(0);
+    expect(b.items[0].points).toBeGreaterThanOrEqual(b.items[b.items.length - 1].points);
+    for (const i of b.items) expect(i.finding.fix.length).toBeGreaterThan(0);
   });
 });
