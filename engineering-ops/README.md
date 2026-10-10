@@ -49,6 +49,10 @@ Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings 
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
+Design review: **Plan & deploy → Design review** flags anti-patterns in your draft as you build (single-AZ databases, retries without a
+breaker, queues without a dead-letter queue, connection exhaustion, and more), each with the reason, the fix and a lesson link. It is
+advice, never a deploy gate. See [`docs/DESIGN_REVIEW.md`](docs/DESIGN_REVIEW.md).
+
 ## The missions
 
 | #   | Mission                     | Kind     | Teaches                                                                                                                                  |
