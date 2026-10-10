@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal } from '@/shared/ui/common';
 import { TAGLINE, VISION } from '@/content/positioning';
+import { FIRST_MISSION } from '@/content/journey';
 import { go } from '@/shared/lib/nav';
 
 export function Onboarding({ onClose }: { onClose: () => void }) {
@@ -8,15 +9,7 @@ export function Onboarding({ onClose }: { onClose: () => void }) {
   const steps = [
     {
       t: 'Welcome to Engineering Ops',
-      b: `${VISION} ${TAGLINE}`,
-    },
-    {
-      t: 'The loop',
-      b: 'Read the scenario, investigate the evidence (metrics, logs, traces, changes, cost), form a hypothesis, change the design, deploy, observe, handle side effects, verify, then read the debrief. Every change has a causal, explainable effect, and a fix for one problem can create another.',
-    },
-    {
-      t: 'Your workspace',
-      b: 'Left: the mission, its objectives and recent events. Centre: the architecture canvas, with evidence panels underneath. Right: the component library and the inspector. Drag components onto the canvas and connect them; edits are a draft until you open Plan and press Deploy. Use the panel icons in the canvas header to hide either side column, Run or Space to move simulated time.',
+      b: `${VISION} ${TAGLINE} You will start with a live incident: something is failing, you gather evidence, form a hypothesis, make one change, deploy it and read why the system reacted as it did. A guide in the mission panel walks you through the first one.`,
     },
     {
       t: 'Choose your mode',
@@ -47,10 +40,10 @@ export function Onboarding({ onClose }: { onClose: () => void }) {
               className="btn btn-primary"
               onClick={() => {
                 onClose();
-                go('/play/m1-monolith');
+                go('/play/' + FIRST_MISSION);
               }}
             >
-              Start Mission 1
+              Start the first incident
             </button>
           )}
         </>

@@ -24,6 +24,11 @@ export function AppShell() {
     if (!workspace && g.session) g.setRunning(false);
   }, [workspace]);
 
+  // A player who lands straight in a mission gets that mission's own briefing; never stack the welcome on top of it.
+  useEffect(() => {
+    if (workspace && !settings.onboarded) finishOnboarding();
+  }, [workspace, settings.onboarded, finishOnboarding]);
+
   return (
     <div className={`app ${workspace ? 'app-ws' : ''}`}>
       <a className="skip" href="#main">
@@ -51,7 +56,7 @@ export function AppShell() {
           </div>
         ))}
       </div>
-      {(!settings.onboarded || showHelp) && (
+      {((!settings.onboarded && !workspace) || showHelp) && (
         <Onboarding
           onClose={() => {
             finishOnboarding();

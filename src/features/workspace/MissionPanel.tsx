@@ -1,3 +1,5 @@
+import { FirstRunGuide } from '@/features/workspace/FirstRunGuide';
+import { isFirstRun } from '@/game/guide';
 import { evidenceProgress } from '@/game/diagnosis';
 import { ArrowLeft, BookOpen, CheckCircle2, ClipboardList, Lightbulb, Siren, Target, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -20,6 +22,7 @@ export function MissionPanel() {
   const [pm, setPm] = useState(false);
   const closeSession = useGame((s) => s.closeSession);
   useGame((s) => s.tick);
+  const progress = useGame((s) => s.progress);
 
   const mission = session ? missionOf(session.missionId) : undefined;
   const reqs = useMemo(() => {
@@ -48,6 +51,7 @@ export function MissionPanel() {
   const hardOpen = reqs.filter((r) => r.hard && !r.pass).length;
   const actions = mission.actions.filter((a) => !a.available || a.available(session.live, session.flags));
   const mode = session.mode;
+  const firstRun = isFirstRun(session, Object.keys(progress.completed).length, progress.outcomes.length);
 
   return (
     <div className="mission-panel">
@@ -125,7 +129,9 @@ export function MissionPanel() {
         )}
       </section>
 
-      {mode === 'beginner' && (
+      {firstRun && <FirstRunGuide session={session} />}
+
+      {mode === 'beginner' && !firstRun && (
         <div className="callout callout-info">
           <strong>How to approach this</strong>
           <ol className="steps-mini">

@@ -112,6 +112,8 @@ export const m8: Mission = {
       body: 'Open a trace and add up the spans. Then compare that total with the timeout configured on the caller.',
     },
   ],
+  firstMove:
+    'Fix the contract between the two services: run the “Set the quote timeout” action, then open Plan and press Deploy. Watch what happens to the provider’s request rate.',
   rootCauses: [
     {
       id: 'retry-storm',
