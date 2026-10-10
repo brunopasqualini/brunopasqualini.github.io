@@ -135,6 +135,8 @@ export interface Workload {
   readAfterWriteShare?: number;
   /** Share of writes aimed at one single item (a counter, a stock level, a celebrity's profile). */
   hotKeyShare?: number;
+  /** Average seconds between requests for the same cacheable key. Popular keys (an on-sale page) are re-read within seconds. */
+  keyReuseSeconds?: number;
   /** Customers' data volume growth (GB/day) used by storage cost. */
   logGBPerMillionReq: number;
 }

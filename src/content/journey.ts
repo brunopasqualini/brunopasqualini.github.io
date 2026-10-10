@@ -47,8 +47,8 @@ export const JOURNEY: JourneyStage[] = [
     level: 5,
     title: 'Principal Engineer / Architect',
     tagline: 'Decide across whole systems, balance competing requirements, manage organisational complexity, design for failure at scale.',
-    focus: ['Cross-system trade-offs', 'Organisational complexity', 'Designing for failure at scale'],
-    missionIds: ['m9-merger'],
+    focus: ['Designing from requirements', 'Cross-system trade-offs', 'Organisational complexity'],
+    missionIds: ['m14-blank-page', 'm9-merger'],
   },
 ];
 

@@ -41,6 +41,7 @@ function fingerprint(missionId: string): string {
  */
 const KNOWN: Record<number, Record<string, string>> = {
   1: {
+    'm14-blank-page': '1a0d62ec',
     'm13-regional-outage': '7476ccfd',
     'm12-noisy-neighbour': '30ae5a4',
     'm11-hot-key': 'a18ac573',

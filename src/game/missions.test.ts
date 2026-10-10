@@ -838,6 +838,128 @@ describe('Mission 13 — The Regional Outage', () => {
   });
 });
 
+describe('Mission 14 — The Blank Page', () => {
+  const ADR_TICKETS: ADR = {
+    ...ADR_OK,
+    decision:
+      'A modular app on ECS with a Multi-AZ relational database as the single source of truth for seats, and a short-TTL cache for read pages.',
+    cons: 'The database is the ceiling for writes, and a seat map can be up to five seconds old; we accept both for this volume.',
+  };
+  type Opt = {
+    waf?: boolean;
+    cache?: boolean;
+    ttl?: number;
+    multiAZ?: boolean;
+    replicas?: number;
+    size?: string;
+    db?: 'rds' | 'dynamodb';
+    queue?: boolean;
+    adr?: boolean;
+  };
+  const build = (o: Opt = {}) => {
+    const a: Arch = { nodes: [N('users', 'users')], edges: [] };
+    const waf = o.waf ?? false;
+    add(
+      a,
+      N('alb', 'lb'),
+      N('ecs', 'api', { replicas: o.replicas ?? 4, instanceSize: o.size ?? 'medium', dbPoolSize: 10 }),
+      N('cloudwatch', 'cw'),
+      N('alert-rule', 'alert'),
+    );
+    if (waf) {
+      add(a, N('waf', 'waf', { managedRules: true }));
+      connect(a, 'users', 'waf');
+      connect(a, 'waf', 'lb');
+    } else connect(a, 'users', 'lb');
+    connect(a, 'lb', 'api');
+    if ((o.db ?? 'rds') === 'rds') {
+      add(a, N('rds', 'db', { size: 'medium', multiAZ: o.multiAZ ?? true, connectionPooler: true }));
+      connect(a, 'api', 'db', { weight: 2 });
+    } else {
+      add(a, N('dynamodb', 'db', { capacityMode: 'on-demand' }));
+      connect(a, 'api', 'db', { weight: 2 });
+    }
+    if (o.cache ?? true) {
+      add(a, N('elasticache', 'cache', { ttlSeconds: o.ttl ?? 5, nodes: 2 }));
+      connect(a, 'api', 'cache', { weight: 1 });
+    }
+    if (o.queue ?? true) {
+      add(a, N('sqs', 'q'), N('worker', 'w', { replicas: 2, idempotent: true }));
+      connect(a, 'api', 'q', { weight: 0.1 });
+      connect(a, 'q', 'w');
+    }
+    return a;
+  };
+  const run = (o: Opt = {}, arch = build(o)) => {
+    const s = createSession('m14-blank-page', 'intermediate');
+    s.draft = arch;
+    const r = deployDraft(s);
+    expect(r.blocked ?? []).toEqual([]);
+    advance(s, 20);
+    if (o.adr ?? true) s.adrs = [ADR_TICKETS];
+    s.chosenCauses = ['read-peak', 'contended-inventory', 'zone-failure'];
+    s.panelsSeen = ['notes', 'metrics'];
+    return verify(s, true);
+  };
+  const failing = (v: ReturnType<typeof verify>) => v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id);
+
+  it('starts from a blank canvas', () => {
+    expect(createSession('m14-blank-page', 'intermediate').live.nodes.map((n) => n.kind)).toEqual(['users']);
+  });
+
+  it('a modular app, Multi-AZ relational database and short-TTL cache meets every requirement', () => {
+    const v = run();
+    expect(failing(v)).toEqual([]);
+    expect(v.outcome.passed).toBe(true);
+  });
+
+  it('without a cache the peak overwhelms the database', () => {
+    const v = run({ cache: false });
+    expect(failing(v)).toEqual(expect.arrayContaining(['avail']));
+    expect(v.outcome.passed).toBe(false);
+  });
+
+  it('a long cache TTL fixes the load and breaks the freshness rule', () => {
+    expect(failing(run({ ttl: 300 }))).toEqual(['fresh']);
+  });
+
+  it('a single-zone database fails the zone drill', () => {
+    expect(failing(run({ multiAZ: false }))).toContain('az');
+  });
+
+  it('DynamoDB for the seat inventory fails the transactional requirement', () => {
+    expect(failing(run({ db: 'dynamodb' }))).toContain('inventory');
+  });
+
+  it('over-provisioning “to be safe” blows the budget', () => {
+    expect(failing(run({ replicas: 6 }))).toEqual(['budget']);
+  });
+
+  it('a design without an ADR is not finished', () => {
+    expect(failing(run({ adr: false }))).toEqual(['adr']);
+  });
+
+  it('a fleet of microservices on Kubernetes fails on complexity and cost', () => {
+    const a = build();
+    a.nodes = a.nodes.filter((n) => n.id !== 'api');
+    add(
+      a,
+      N('eks', 'k8s', { replicas: 3, instanceSize: 'medium' }),
+      N('microservice', 'catalogue', { domain: 'catalogue', replicas: 3, instanceSize: 'small' }),
+      N('microservice', 'seats', { domain: 'seats', replicas: 3, instanceSize: 'small' }),
+      N('microservice', 'orders', { domain: 'orders', replicas: 3, instanceSize: 'small' }),
+      N('microservice', 'payments', { domain: 'payments', replicas: 3, instanceSize: 'small' }),
+      N('microservice', 'notify', { domain: 'notify', replicas: 3, instanceSize: 'small' }),
+    );
+    a.edges = a.edges.filter((e) => e.source !== 'api' && e.target !== 'api');
+    for (const id of ['catalogue', 'seats', 'orders', 'payments', 'notify']) connect(a, 'lb', id);
+    for (const id of ['catalogue', 'seats', 'orders']) connect(a, id, 'db', { weight: 2 });
+    const v = run({}, a);
+    expect(v.outcome.passed).toBe(false);
+    expect(failing(v)).toEqual(expect.arrayContaining(['complexity']));
+  });
+});
+
 describe('persistence by replay', () => {
   it('replaying logged ops reproduces the same state', async () => {
     const { replay } = await import('@/game/session');
