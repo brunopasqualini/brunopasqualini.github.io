@@ -291,7 +291,7 @@ export const m8: Mission = {
     ],
     aws: [
       'AWS SDK retry modes (standard and adaptive) with a maximum attempts setting',
-      'Envoy / App Mesh outlier detection and retry budgets',
+      'A proxy or service mesh such as Envoy (via Istio or ECS Service Connect) for timeouts, retries and outlier detection. AWS App Mesh itself was discontinued on 30 September 2026.',
       'API Gateway integration timeouts',
     ],
     experiments: [

@@ -303,7 +303,7 @@ export const m5: Mission = {
       },
       {
         title: 'Visibility timeout',
-        body: 'The window during which a received message is hidden from other consumers. If it is shorter than worst-case processing time, messages are processed twice. Rule of thumb: ≥ 6× the p99 processing time.',
+        body: 'The window during which a received message is hidden from other consumers. If it is shorter than worst-case processing time, messages are processed twice. AWS recommends at least six times the function timeout when a Lambda function consumes the queue; for other consumers, set it above the worst-case processing time with headroom.',
       },
       {
         title: 'Poison messages and DLQs',

@@ -290,7 +290,7 @@ export const m6: Mission = {
       },
       {
         title: 'Cost allocation',
-        body: 'Tags (or accounts) let finance attribute spend to teams; without them nobody owns the bill and nothing gets optimised.',
+        body: 'Tags (or accounts) let finance attribute spend to teams; without them nobody owns the bill and nothing gets optimised. In AWS, a tag must be activated as a cost allocation tag in Billing and only applies from activation onward, so start early.',
       },
     ],
     rootCause:

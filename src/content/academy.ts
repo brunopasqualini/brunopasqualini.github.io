@@ -106,7 +106,7 @@ export const LESSONS: Record<SkillId, Lesson[]> = {
       id: 'aws-2',
       title: 'Multi-AZ vs read replicas',
       unlockXp: 35,
-      body: 'Multi-AZ keeps a synchronous standby for availability; it does not add read capacity. Read replicas add read capacity with replication lag; they are not an automatic failover target. Different problems, different tools.',
+      body: 'In the classic single-standby deployment, Multi-AZ keeps a synchronous standby for availability and the standby does not serve reads. Read replicas add read capacity with replication lag, and on RDS they are not an automatic failover target (Aurora replicas are). Different problems, different tools.',
       takeaway: 'Do not buy a replica to solve an availability problem.',
       mission: 'm2-db-meltdown',
     },

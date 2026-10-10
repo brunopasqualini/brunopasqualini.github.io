@@ -19,7 +19,7 @@ export const m1: Mission = {
     'Why shared databases couple services',
   ],
   story:
-    'Brightcart started as one developer and one Rails-style app. Three years later 14 engineers in three squads (Storefront, Payments, Fulfilment) ship into the same deployable. A catalogue change last week broke refunds. Releases are fortnightly, five of the last eight were rolled back, and review queues take days. The CTO has asked for a design that lets squads move independently — but the team of two platform engineers cannot run twelve services.',
+    'Brightcart started as one developer and one Rails-style app. Three years later 14 engineers in three squads (Storefront, Payments, Fulfilment) ship into the same deployable. A catalogue change last week broke refunds. Releases are fortnightly, five of the last sixteen were rolled back, and review queues take days. The CTO has asked for a design that lets squads move independently — but the team of two platform engineers cannot run twelve services.',
   business: {
     context: 'Series-A e-commerce company, 40 requests/second average, steady growth, small platform team.',
     impact: 'Change failure rate is 31%; features slip by weeks; two senior engineers have resigned citing release pain.',
