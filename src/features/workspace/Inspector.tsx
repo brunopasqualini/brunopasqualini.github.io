@@ -9,6 +9,7 @@ import { Chip, Meter } from '@/shared/ui/common';
 import { ms, num, pct, usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
 import { NodeIcon } from '@/shared/ui/icons';
+import { ConnectionsEditor } from '@/features/workspace/ConnectionsEditor';
 import { FieldEditor } from '@/features/workspace/FieldEditor';
 
 const SCOPE: Record<string, string> = { global: 'Global', regional: 'Regional', zonal: 'Zonal (AZ)', vpc: 'VPC-scoped', none: '' };
@@ -387,33 +388,7 @@ export function Inspector() {
         </>
       )}
 
-      <h4>Dependencies</h4>
-      <ul className="list deps">
-        {incoming.map((e) => (
-          <li key={e.id}>
-            <button className="link" onClick={() => select('edge', e.id)}>
-              ← {nodeById(session.draft, e.source)?.label}
-            </button>{' '}
-            <span className="muted">({edgeClass(session.draft, e)})</span>
-          </li>
-        ))}
-        {outgoing.map((e) => (
-          <li key={e.id}>
-            <button className="link" onClick={() => select('edge', e.id)}>
-              → {nodeById(session.draft, e.target)?.label}
-            </button>{' '}
-            <span className="muted">
-              ({edgeClass(session.draft, e)}
-              {(() => {
-                const t = nodeById(session.draft, e.target);
-                return t && !canConnect(node.kind, t.kind).ok ? ', invalid' : '';
-              })()}
-              )
-            </span>
-          </li>
-        ))}
-        {incoming.length + outgoing.length === 0 && <li className="muted">Not connected to anything yet.</li>}
-      </ul>
+      <ConnectionsEditor nodeId={node.id} />
 
       {cost && cost.lines.length > 0 && (
         <>

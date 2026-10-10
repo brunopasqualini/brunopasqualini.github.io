@@ -639,3 +639,20 @@
     backdrop-filter: none;
   }
 }
+
+@layer features {
+  /* semantic zoom: far away show shapes and names; hovering or selecting a node always reveals everything */
+  .canvas[data-detail='1'] .anode:not(:hover):not(.anode-selected) .anode-mini {
+    display: none;
+  }
+  .canvas[data-detail='0'] .anode:not(:hover):not(.anode-selected) .anode-stats,
+  .canvas[data-detail='0'] .anode:not(:hover):not(.anode-selected) .anode-sub {
+    display: none;
+  }
+  .canvas[data-detail='0'] .anode-title {
+    font-size: 14px;
+  }
+  .react-flow__node:hover {
+    z-index: 20 !important;
+  }
+}
