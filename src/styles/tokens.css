@@ -1,0 +1,26 @@
+@layer tokens {
+:root {
+  --bg: #060b17;
+  --bg2: #091122;
+  --panel: #0b1427;
+  --panel2: #0f1b34;
+  --panel3: #13213f;
+  --line: #1a2947;
+  --line2: #25375b;
+  --text: #dbe7ff;
+  --muted: #8aa0c6;
+  --faint: #5b7099;
+  --cyan: #22d3ee;
+  --blue: #3b82f6;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --green: #34d399;
+  --purple: #a78bfa;
+  --orange: #f97316;
+  --radius: 10px;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: dark;
+}
+}

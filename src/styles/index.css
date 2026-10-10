@@ -1,0 +1,13 @@
+/* Cascade order is the architecture: later layers win regardless of selector specificity.
+   vendor (third-party CSS) < tokens < base < layout < components < features < responsive */
+@layer vendor, tokens, base, layout, components, features, responsive;
+
+@import '@xyflow/react/dist/style.css' layer(vendor);
+@import './tokens.css';
+@import './base.css';
+@import './shell.css';
+@import './components.css';
+@import './pages.css';
+@import './workspace.css';
+@import './canvas.css';
+@import './responsive.css';
