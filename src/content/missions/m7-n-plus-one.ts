@@ -307,6 +307,7 @@ export const m7: Mission = {
     } else if (arch.nodes.some((n) => ['cache', 'elasticache'].includes(n.kind))) {
       out.push({
         tag: 'm7-n-plus-one:hid-it-behind-a-cache',
+        shortcut: true,
         label: 'You hid the N+1 pattern behind a cache.',
         carries: 'The pattern is still in the code; it comes back whenever a cache is cold or the data is hot.',
       });
@@ -314,6 +315,7 @@ export const m7: Mission = {
     if ((db?.config.size ?? 'small') !== 'small') {
       out.push({
         tag: 'm7-n-plus-one:bought-a-bigger-database',
+        shortcut: true,
         label: 'You upsized the database to absorb the load.',
         carries: 'The larger instance keeps costing money every month in later missions.',
       });

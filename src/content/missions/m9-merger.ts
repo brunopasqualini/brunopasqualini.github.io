@@ -76,6 +76,10 @@ const consequences: Consequence[] = [
     text: 'In Mission 2 you scaled the database instead of fixing the query. The unindexed query is back on the storefront database, and it gets expensive at peak.',
     apply: (a) => patchNode(a, 'shop-db', { indexed: false }),
     workload: { slowQueryShare: 0.12 },
+    documented: {
+      text: 'In Mission 2 you scaled the database knowingly and wrote the reason down. The slow query is still there, but the team already watches it and has a fix queued, so it hurts less at peak.',
+      workload: { slowQueryShare: 0.04 },
+    },
   },
   {
     id: 'inherited-bigger-db',
@@ -83,6 +87,9 @@ const consequences: Consequence[] = [
     title: 'An oversized database on the bill',
     text: 'You bought a bigger database in Mission 7. The storefront database starts one size too large and keeps costing money.',
     apply: (a) => patchNode(a, 'shop-db', { size: 'large' }),
+    documented: {
+      text: 'You bought a bigger database in Mission 7 knowingly and recorded the reason. It is still one size too large, but the cost is a planned line item rather than a surprise.',
+    },
   },
   {
     id: 'inherited-n-plus-one',
@@ -90,6 +97,10 @@ const consequences: Consequence[] = [
     title: 'The N+1 pattern is still in the code',
     text: 'You hid the N+1 pattern behind a cache in Mission 7. At three times the traffic the cache will not save you: the storefront makes many calls per request again.',
     apply: (a) => patchEdge(a, 'e-shop-shop-db', { weight: 7 }),
+    documented: {
+      text: 'You hid the N+1 pattern behind a cache in Mission 7, knowingly, with the reason recorded. The hot product pages were batched as a follow-up, so the pattern is less severe.',
+      apply: (a) => patchEdge(a, 'e-shop-shop-db', { weight: 4 }),
+    },
   },
   {
     id: 'inherited-retries',
@@ -97,6 +108,10 @@ const consequences: Consequence[] = [
     title: 'Loose call contracts',
     text: 'You left aggressive retries on a service call in Mission 8. The storefront still calls Parcelly with a tight timeout and three retries.',
     apply: (a) => patchEdge(a, 'e-shop-tracking', { timeoutMs: 250, retries: 3 }),
+    documented: {
+      text: 'You left retries loose in Mission 8 knowingly and recorded why. The storefront still retries, but the budget was capped as a stop-gap: a longer timeout and two retries.',
+      apply: (a) => patchEdge(a, 'e-shop-tracking', { timeoutMs: 600, retries: 2 }),
+    },
   },
   {
     id: 'inherited-retry-budget',

@@ -289,6 +289,7 @@ export const m1: Mission = {
       return [
         {
           tag: 'm1-monolith:extracted-services',
+          kind: 'tradeoff' as const,
           label: `You extracted ${services} service${services === 1 ? '' : 's'} from the monolith.`,
           carries:
             'The platform you inherit has more moving parts to operate, and your boundaries are only as good as their data ownership.',

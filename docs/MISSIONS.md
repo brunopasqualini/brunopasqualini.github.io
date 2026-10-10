@@ -58,6 +58,13 @@ consequences: [
 ],
 ```
 
+**Debt or justified trade-off?** Mark a decision `shortcut: true` when it trades a lasting cost for speed. The game
+then judges it from context (`game/decisions.ts`): with the evidence consulted *and* the reason written down (an ADR that
+states its trade-offs, or a postmortem that says what to prevent) it is a **justified trade-off**; otherwise it is
+**debt**. Give the matching consequence a `documented` variant: a known cost is cheaper to carry, so it should be
+softer (a smaller workload patch, a milder edge weight), never harsher. Decisions that are not shortcuts are
+`investment` by default, or set `kind: 'tradeoff'` for a valid choice with a real operating cost.
+
 Rules that keep this honest:
 
 * **Tags are the contract.** `'<mission-id>:<what-they-did>'`. A mission never reads its own tags.

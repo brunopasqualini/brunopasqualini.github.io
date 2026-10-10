@@ -314,6 +314,7 @@ export const m8: Mission = {
     } else {
       out.push({
         tag: 'm8-impatient-client:left-retries-loose',
+        shortcut: true,
         label: 'You left the quote call retrying aggressively.',
         carries: 'Call contracts across the platform are still loose; a slow dependency can start a retry storm again.',
       });

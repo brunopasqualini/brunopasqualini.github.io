@@ -6,6 +6,7 @@ import { DEFAULT_WORKLOAD } from '@/engine/params';
 import type { Arch, MetricChange, SimState, Snapshot, Workload } from '@/engine/types';
 import { MISSION_BY_ID } from '@/content/missions';
 import type { ADR, Mission, Postmortem } from '@/content/missions/types';
+import { DOCUMENTED, resolveDecisions } from '@/game/decisions';
 import { scoreMission, type Outcome } from '@/game/scoring';
 
 export type Mode = 'beginner' | 'intermediate' | 'advanced';
@@ -131,9 +132,10 @@ export function createSession(missionId: string, mode: Mode, attempt = 1, initia
   if (missionId !== LAB_ID) {
     for (const c of mission.consequences ?? []) {
       if (!inherited.includes(c.tag)) continue;
-      if (c.apply) arch = c.apply(arch);
-      if (c.workload) workload = { ...workload, ...c.workload };
-      consequences.push({ id: c.id, title: c.title, text: c.text });
+      const v = c.documented && inherited.includes(c.tag + DOCUMENTED) ? { ...c, ...c.documented } : c;
+      if (v.apply) arch = v.apply(arch);
+      if (v.workload) workload = { ...workload, ...v.workload };
+      consequences.push({ id: c.id, title: c.title, text: v.text });
     }
   }
   const s: Session = {
@@ -399,6 +401,11 @@ export function verify(s: Session, firstCompletion: boolean): { outcome: Outcome
     failedIncident: s.failed,
     firstCompletion,
   });
-  outcome.decisions = mission.decisions?.(a, { adrs: s.adrs, flags: s.flags }) ?? [];
+  const informed = !outcome.diagnosis || outcome.diagnosis.panelsSeen >= outcome.diagnosis.panelsNeeded;
+  outcome.decisions = resolveDecisions(mission.decisions?.(a, { adrs: s.adrs, flags: s.flags }) ?? [], {
+    adrs: s.adrs,
+    postmortem: s.postmortem,
+    informed,
+  });
   return { outcome, report, window: last5 };
 }

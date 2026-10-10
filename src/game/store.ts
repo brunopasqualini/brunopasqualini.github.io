@@ -27,6 +27,7 @@ import {
   type Session,
 } from '@/game/session';
 import { TEMPLATES, templateWorkload } from '@/content/templates';
+import { tagsFor } from '@/game/decisions';
 import { SAVE_SCHEMA_VERSION, migrateSave } from '@/game/migrate';
 import { isReplayCompatible, SIM_VERSION } from '@/game/simVersion';
 
@@ -662,7 +663,7 @@ export const useGame = create<Store>()(
 
 /** Every decision tag recorded by the missions the player has passed. */
 export function inheritedFrom(completed: Record<string, Outcome>): string[] {
-  return [...new Set(Object.values(completed).flatMap((o) => (o.decisions ?? []).map((d) => d.tag)))].sort();
+  return [...new Set(Object.values(completed).flatMap((o) => tagsFor(o.decisions ?? [])))].sort();
 }
 
 export function unlockedTier(level: number, showAll: boolean): 1 | 2 | 3 {

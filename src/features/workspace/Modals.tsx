@@ -378,7 +378,11 @@ export function Debrief() {
                 <ul className="list">
                   {(o.decisions ?? []).map((d) => (
                     <li key={d.tag}>
+                      <Chip kind={d.kind === 'investment' ? 'ok' : d.kind === 'tradeoff' ? 'info' : 'warn'}>
+                        {d.kind === 'investment' ? 'investment' : d.kind === 'tradeoff' ? 'trade-off' : 'debt'}
+                      </Chip>{' '}
                       <b>{d.label}</b> {d.carries}
+                      {d.judgement && <p className="muted tiny">{d.judgement}</p>}
                     </li>
                   ))}
                 </ul>

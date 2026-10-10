@@ -362,6 +362,7 @@ export const m2: Mission = {
       return [
         {
           tag: 'm2-db-meltdown:scaled-the-database',
+          shortcut: true,
           label: 'You scaled the database instead of fixing the query.',
           carries: 'The slow query is still there; it will return as traffic grows, and the bigger instance keeps costing money.',
         },
