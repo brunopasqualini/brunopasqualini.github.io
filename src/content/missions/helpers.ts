@@ -4,6 +4,10 @@ import type { Arch, ArchEdge, ArchNode, Fault, Workload } from '@/engine/types';
 
 export const wl = (o: Partial<Workload>): Workload => ({ ...DEFAULT_WORKLOAD, ...o });
 
+/** Mission layouts are authored on a compact grid; icon-tile nodes with stats need more room, so scale once here. */
+const LAYOUT_X = 1.25;
+const LAYOUT_Y = 1.2;
+
 export const N = (
   kind: string,
   id: string,
@@ -12,7 +16,7 @@ export const N = (
   config: Record<string, any> = {},
   label?: string,
   faults?: Fault[],
-): ArchNode => makeNode(kind, { x, y }, { id, label, config, faults });
+): ArchNode => makeNode(kind, { x: Math.round(x * LAYOUT_X), y: Math.round(y * LAYOUT_Y) }, { id, label, config, faults });
 
 export const E = (s: string, t: string, config: Partial<ArchEdge['config']> = {}): ArchEdge => makeEdge(s, t, config);
 
