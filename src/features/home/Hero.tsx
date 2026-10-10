@@ -8,12 +8,10 @@ import { go } from '@/shared/lib/nav';
 import { HeroArt } from '@/features/home/HeroArt';
 
 export function Hero() {
-  const { progress, saved, status, unmet } = useMissionState();
+  const { progress, saved, status, unmet, recommended } = useMissionState();
   const mode = useGame((s) => s.settings.mode);
   const setMode = useGame((s) => s.setMode);
   const stage = currentStage(progress.completed);
-  const recommended =
-    MISSIONS.find((m) => status(m) !== 'completed' && unmet(m).length === 0) ?? MISSIONS.find((m) => status(m) !== 'completed');
   const started = Object.keys(saved).some((id) => saved[id].ops.length > 0) || progress.xp > 0;
   return (
     <header className="home-hero">

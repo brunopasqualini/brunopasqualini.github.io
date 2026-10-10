@@ -45,7 +45,7 @@ export const JOURNEY: JourneyStage[] = [
     title: 'Principal Engineer / Architect',
     tagline: 'Decide across whole systems, balance competing requirements, manage organisational complexity, design for failure at scale.',
     focus: ['Cross-system trade-offs', 'Organisational complexity', 'Designing for failure at scale'],
-    missionIds: [],
+    missionIds: ['m9-merger'],
   },
 ];
 
@@ -59,8 +59,8 @@ export interface StageProgress {
   comingSoon: boolean;
 }
 
-export function stageProgress(completed: Done): StageProgress[] {
-  return JOURNEY.map((stage) => {
+export function stageProgress(completed: Done, stages: JourneyStage[] = JOURNEY): StageProgress[] {
+  return stages.map((stage) => {
     const done = stage.missionIds.filter((id) => completed[id]?.passed).length;
     return {
       stage,
@@ -79,4 +79,18 @@ export function currentStage(completed: Done): JourneyStage {
   if (open) return open.stage;
   const last = [...sp].reverse().find((s) => !s.comingSoon);
   return (last ?? sp[0]).stage;
+}
+
+/** The stage a mission belongs to, if it is mapped. */
+export function stageOfMission(id: string): JourneyStage | undefined {
+  return JOURNEY.find((s) => s.missionIds.includes(id));
+}
+
+/** Mission ids in journey order (stage by stage), then any unmapped ones by number. */
+export function journeyOrder<T extends { id: string; number: number }>(missions: T[]): T[] {
+  const rank = (m: T) => {
+    const st = stageOfMission(m.id);
+    return st ? st.level * 100 + st.missionIds.indexOf(m.id) : 1000 + m.number;
+  };
+  return [...missions].sort((a, b) => rank(a) - rank(b));
 }

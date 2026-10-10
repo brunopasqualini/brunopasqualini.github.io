@@ -59,6 +59,18 @@ export function MissionIntro() {
             </ul>
           </div>
         </div>
+        {session.consequences.length > 0 && (
+          <section className="callout callout-purple carried" aria-label="Inherited from your earlier decisions">
+            <strong>Inherited from your earlier decisions</strong>
+            <ul className="list">
+              {session.consequences.map((c) => (
+                <li key={c.id}>
+                  <b>{c.title}.</b> {c.text}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {m.kind === 'incident' && (
           <p className="callout callout-warn">
             This is a live incident: simulated time advances while you work. Opening investigation panels costs a minute of simulated time
@@ -357,6 +369,18 @@ export function Debrief() {
                 </li>
               ))}
             </ul>
+            {o.passed && (o.decisions ?? []).length > 0 && (
+              <div className="callout callout-purple decisions">
+                <strong>Decisions recorded for later missions</strong>
+                <ul className="list">
+                  {(o.decisions ?? []).map((d) => (
+                    <li key={d.tag}>
+                      <b>{d.label}</b> {d.carries}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </section>
         </div>
       )}

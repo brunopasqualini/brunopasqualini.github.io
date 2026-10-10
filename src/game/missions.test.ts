@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeEdge, makeNode } from '@/engine/arch';
 import type { Arch } from '@/engine/types';
-import { advance, applyAction, createSession, deployDraft, verify, type Session } from '@/game/session';
+import { advance, applyAction, createSession, deployDraft, replay, verify, type Session } from '@/game/session';
 import type { ADR, Postmortem } from '@/content/missions/types';
 
 const ADR_OK: ADR = {
@@ -450,6 +450,141 @@ describe('Mission 8 — The Impatient Client', () => {
     applyAction(s, 'breaker');
     advance(s, 8);
     expect(hardOpen(verify(s, true))).toContain('avail');
+  });
+});
+
+describe('Mission 9 — The Merger (capstone)', () => {
+  const ADR2: ADR[] = [ADR_OK, { ...ADR_OK, id: 'a2', title: 'Second decision' }];
+  const merger = (inherited: string[] = []) => createSession('m9-merger', 'advanced', 1, undefined, inherited);
+  const delivery = (a: Arch) => {
+    add(a, N('source-repo', 'repo'), N('ci-pipeline', 'ci'), N('test-suite', 'ts', { unitCoverage: 70, integrationCoverage: 40 }));
+    connect(a, 'repo', 'ci');
+    connect(a, 'ci', 'ts');
+    connect(a, 'ts', 'shop');
+  };
+  const observe = (a: Arch) => {
+    add(a, N('tracing', 'tr'), N('alert-rule', 'al'), N('central-logging', 'lg'));
+    connect(a, 'tr', 'shop');
+    connect(a, 'al', 'shop');
+    connect(a, 'lg', 'shop');
+  };
+  /** The intended plan: safe first (private, Multi-AZ, headroom), cheap second (cache, log level, tags), written down. */
+  const balanced = (s: Session, o: { cache?: boolean; parcelDb?: string } = {}) => {
+    const a = s.draft;
+    cfg(a, 'shop', { moduleBoundaries: 'enforced', logLevel: 'warn', replicas: 4 });
+    cfg(a, 'tracking', { logLevel: 'warn', costTag: 'team=parcel' });
+    cfg(a, 'parcel-alb', { costTag: 'team=parcel' });
+    cfg(a, 'shop-db', { multiAZ: true });
+    cfg(a, 'parcel-db', { size: o.parcelDb ?? 'medium', multiAZ: true, publicAccess: false, costTag: 'team=parcel' });
+    if (o.cache !== false) {
+      add(a, N('elasticache', 'cache', { nodes: 2, size: 'small', ttlSeconds: 90, invalidateOnWrite: true, costTag: 'team=shop' }));
+      connect(a, 'shop', 'cache');
+    }
+    observe(a);
+    delivery(a);
+    ship(s, 8);
+    s.adrs = ADR2;
+  };
+
+  it('looks healthy off-peak, but the audit, the zone drill and the peak all fail', () => {
+    const s = merger();
+    expect(last(s).successRate).toBeGreaterThan(0.99);
+    advance(s, 8);
+    const v = verify(s, true);
+    expect(hardOpen(v).sort()).toEqual(['adr2', 'avail', 'az', 'p95', 'sec'].sort());
+    expect(v.outcome.passed).toBe(false);
+  });
+  it('the balanced plan passes with a strong score', () => {
+    const s = merger();
+    balanced(s);
+    const v = verify(s, true);
+    expect(hardOpen(v)).toEqual([]);
+    expect(v.outcome.passed).toBe(true);
+    expect(v.outcome.overall).toBeGreaterThan(80);
+    expect(v.outcome.decisions!.map((d) => d.tag)).toEqual(['m9-merger:owned-data']);
+  });
+  it('without the cache the storefront database cannot take the peak', () => {
+    const s = merger();
+    balanced(s, { cache: false });
+    expect(hardOpen(verify(s, true))).toEqual(expect.arrayContaining(['avail']));
+  });
+  it('leaving Parcelly’s database small fails at peak', () => {
+    const s = merger();
+    balanced(s, { parcelDb: 'small' });
+    expect(hardOpen(verify(s, true))).toContain('avail');
+  });
+  it('buying capacity everywhere passes the technical bars and fails the budget', () => {
+    const s = merger();
+    const a = s.draft;
+    cfg(a, 'shop', { moduleBoundaries: 'enforced', replicas: 8, instanceSize: 'large' });
+    cfg(a, 'tracking', { replicas: 4, instanceSize: 'large' });
+    cfg(a, 'shop-db', { size: 'large', multiAZ: true });
+    cfg(a, 'parcel-db', { size: 'large', multiAZ: true, publicAccess: false });
+    observe(a);
+    delivery(a);
+    ship(s, 8);
+    s.adrs = ADR2;
+    expect(hardOpen(verify(s, true))).toEqual(['budget']);
+  });
+  it('one ADR is not enough: leadership is written down', () => {
+    const s = merger();
+    balanced(s);
+    s.adrs = [ADR_OK];
+    expect(hardOpen(verify(s, true))).toEqual(['adr2']);
+  });
+
+  describe('consequences of earlier decisions', () => {
+    const ALL_DEBTS = [
+      'm1-monolith:extracted-services',
+      'm2-db-meltdown:scaled-the-database',
+      'm7-n-plus-one:hid-it-behind-a-cache',
+      'm7-n-plus-one:bought-a-bigger-database',
+      'm8-impatient-client:left-retries-loose',
+    ];
+    it('with no history the capstone starts from its own baseline and lists nothing inherited', () => {
+      const s = merger();
+      expect(s.consequences).toEqual([]);
+      expect(s.draft.nodes.find((n) => n.id === 'shop')!.config.moduleBoundaries).toBe('none');
+    });
+    it('good habits start the player ahead; sloppy ones leave named debts on the canvas', () => {
+      const good = merger(['m1-monolith:modular-monolith', 'm2-db-meltdown:fixed-the-query', 'm8-impatient-client:retry-budget']);
+      expect(good.consequences.map((c) => c.id)).toEqual(['inherited-modular', 'inherited-index', 'inherited-retry-budget']);
+      expect(good.draft.nodes.find((n) => n.id === 'shop')!.config.moduleBoundaries).toBe('enforced');
+      const bad = merger(ALL_DEBTS);
+      expect(bad.consequences).toHaveLength(5);
+      expect(bad.draft.nodes.some((n) => n.id === 'billing')).toBe(true);
+      expect(bad.draft.nodes.find((n) => n.id === 'shop-db')!.config).toMatchObject({ size: 'large', indexed: false });
+      expect(bad.draft.edges.find((e) => e.id === 'e-shop-shop-db')!.config.weight).toBe(7);
+      expect(bad.draft.edges.find((e) => e.id === 'e-shop-tracking')!.config).toMatchObject({ retries: 3, timeoutMs: 250 });
+      expect(bad.workload.slowQueryShare).toBeGreaterThan(0);
+    });
+    it('every debt is repairable: the same plan, plus fixing what you inherited, still passes', () => {
+      const s = merger(ALL_DEBTS);
+      const a = s.draft;
+      a.nodes = a.nodes.filter((n) => !['billing', 'accounts'].includes(n.id));
+      a.edges = a.edges.filter((e) => !['billing', 'accounts'].some((id) => e.source === id || e.target === id));
+      cfg(a, 'shop-db', { indexed: true, size: 'medium' });
+      a.edges.find((e) => e.id === 'e-shop-shop-db')!.config.weight = 2;
+      Object.assign(a.edges.find((e) => e.id === 'e-shop-tracking')!.config, { timeoutMs: 1500, retries: 1 });
+      balanced(s);
+      const v = verify(s, true);
+      expect(hardOpen(v)).toEqual([]);
+      expect(v.outcome.passed).toBe(true);
+    });
+    it('ignoring the debts costs the player: the unrepaired plan fails', () => {
+      const s = merger(ALL_DEBTS);
+      balanced(s);
+      expect(verify(s, true).outcome.passed).toBe(false);
+    });
+    it('inherited tags survive save and replay so a resumed run rebuilds the same start', () => {
+      const s = merger(ALL_DEBTS);
+      cfg(s.draft, 'shop', { replicas: 5 });
+      ship(s, 3);
+      const again = replay('m9-merger', 'advanced', 1, s.ops, undefined, ALL_DEBTS);
+      expect(again.live.nodes.find((n) => n.id === 'shop-db')!.config.size).toBe('large');
+      expect(again.minute).toBe(s.minute);
+      expect(JSON.stringify(again.history[again.history.length - 1].system)).toBe(JSON.stringify(s.history[s.history.length - 1].system));
+    });
   });
 });
 

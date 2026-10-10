@@ -1,5 +1,7 @@
 import { Play as PlayIcon, RotateCcw } from 'lucide-react';
 import type { Mission } from '@/content/missions/types';
+import { journeyOrder } from '@/content/journey';
+import { MISSIONS } from '@/content/missions';
 import { useGame } from '@/game/store';
 import { go } from '@/shared/lib/nav';
 
@@ -9,7 +11,10 @@ export function useMissionState() {
   const status = (m: Mission): 'completed' | 'progress' | 'new' =>
     progress.completed[m.id]?.passed ? 'completed' : saved[m.id] && saved[m.id].ops.length > 0 ? 'progress' : 'new';
   const unmet = (m: Mission) => m.prerequisites.filter((p) => !progress.completed[p]?.passed);
-  return { progress, saved, status, unmet };
+  const ordered = journeyOrder(MISSIONS);
+  const recommended =
+    ordered.find((m) => status(m) !== 'completed' && unmet(m).length === 0) ?? ordered.find((m) => status(m) !== 'completed');
+  return { progress, saved, status, unmet, recommended };
 }
 
 export function MissionButtons({ m }: { m: Mission }) {
