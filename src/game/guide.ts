@@ -30,7 +30,7 @@ export function guideSteps(session: Session, mission: Mission): GuideStep[] {
     {
       id: 'investigate',
       title: 'Look at the evidence before changing anything',
-      body: `Open the tabs marked “look here” under the canvas${nextPanel ? ` (try ${nextPanel} next)` : ''}. Real incidents are solved by reading, not guessing. ${seen.length}/${needed.length} key panels opened.`,
+      body: `Open the tabs marked “look here” under the canvas${nextPanel ? ` (try ${nextPanel} next)` : ''}. Real incidents are solved by reading, not guessing.${mission.kind === 'incident' ? ' The incident clock is running: press Pause whenever you want time to think.' : ''} ${seen.length}/${needed.length} key panels opened.`,
       done: seen.length >= needSeen,
       panel: nextPanel,
     },
