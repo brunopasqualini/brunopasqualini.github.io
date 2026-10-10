@@ -13,7 +13,7 @@ or benefits.
 
 * Real, runnable **React + TypeScript + Vite** app. No backend, no account, no cloud calls.
 * A deterministic, rule-based **simulation engine** (pure TypeScript, unit-tested) with explainable causal effects.
-* **Nine playable missions** on one data-driven engine, an **Architecture Lab** sandbox with chaos drills,
+* **Fourteen playable missions** on one data-driven engine, an **Architecture Lab** sandbox with chaos drills,
   scoring across ten dimensions, skill tree, journal, ADRs and postmortems.
 * Everything is **simulated**. Costs are *estimates*, not AWS prices; nothing touches a real cloud account.
 
@@ -62,8 +62,13 @@ Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected 
 | 7 | The N+1 Endpoint | project | N+1 queries, fixing the cause vs a bigger database or a cache, queries per request as a budget |
 | 8 | The Impatient Client | project | timeouts as contracts, retry budgets, circuit breakers, why replicas do not fix a slow dependency |
 | 9 | The Merger (capstone) | project | competing requirements, what to converge, data ownership, audit and peak readiness, ADRs; **inherits debts from missions 1, 2, 7 and 8** |
+| 10 | The Stale Receipt | incident | asynchronous replication, replica lag, read-your-writes, why capacity lowers lag but never removes it |
+| 11 | The Hot Key | incident | DynamoDB per-item limits, throttling with spare capacity, write sharding and what it costs |
+| 12 | The Noisy Neighbour | incident | per-client rate limiting, why a global limit and more capacity fail, backpressure with 429s |
+| 13 | The Regional Outage | project | Region versus zone resilience, RTO and RPO, backup and restore, pilot light, warm standby, active/active |
+| 14 | The Blank Page | project | designing from requirements: contended inventory, short-TTL caching, zone survival, complexity as a cost |
 
-Journey order: Level 1 = missions 2, 7, 8 · Level 2 = 1, 5 · Level 3 = 4, 6 · Level 4 = 3 · Level 5 = 9. New players start with Mission 2: something is visibly failing, which teaches the investigate-and-fix loop faster than an open design brief.
+Journey order: Level 1 = missions 2, 7, 8 · Level 2 = 1, 5, 10 · Level 3 = 4, 6, 11 · Level 4 = 3, 12, 13 · Level 5 = 14, 9. New players start with Mission 2: something is visibly failing, which teaches the investigate-and-fix loop faster than an open design brief.
 
 Each has multiple valid solutions and tempting wrong ones; `src/game/missions.test.ts` encodes both.
 
