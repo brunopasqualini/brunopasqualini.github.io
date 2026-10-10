@@ -1,0 +1,12 @@
+{
+  "name": "Mock Exam Simulator",
+  "short_name": "Exam Sim",
+  "description": "Offline-capable mock exam simulator for any certification test — bring your own question bank.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "icons": [{ "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }],
+  "orientation": "portrait-primary",
+  "background_color": "#050a16",
+  "theme_color": "#070c18"
+}

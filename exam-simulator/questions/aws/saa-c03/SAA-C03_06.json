@@ -1,0 +1,1128 @@
+{
+  "examTitle": "AWS Certified Solutions Architect – Associate (SAA-C03) – Practice Exam Set 06",
+  "questions": [
+    {
+      "id": 1,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A web tier needs the capacity of six instances at peak. The Auto Scaling group spreads instances evenly across three Availability Zones, and the service must still handle the peak if one Availability Zone fails. What is the MINIMUM number of instances that the group must run?",
+      "options": [
+        "Seven instances, with the extra instance placed in only one of the zones of the group",
+        "Nine instances, with three in each Availability Zone, so that two zones carry the peak",
+        "Six instances, with two in each Availability Zone, so that all zones share the peak",
+        "Twelve instances, with four in each Availability Zone, which also survives the loss of a zone"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because with three instances in each zone, losing one zone leaves six instances in the other two zones, which equals the peak requirement. Option A is incorrect because an uneven distribution would leave five or six instances depending on which zone fails, and Auto Scaling balances zones evenly. Option C is incorrect because losing a zone leaves only four instances. Option D is incorrect because it meets the requirement but is not the minimum. Takeaway: size each zone so that the remaining zones carry the peak.",
+      "reference": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_fault_isolation_use_multiaz.html"
+    },
+    {
+      "id": 2,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company replicates a large database from its data center to AWS every night and runs a latency-sensitive application on the same link. Over an internet VPN the throughput varies during the day. The company needs consistent network performance and lower latency variation. Which solution should the company choose?",
+      "options": [
+        "A larger internet connection at the data center with the same VPN in place",
+        "A second Site-to-Site VPN connection with ECMP over the internet",
+        "An AWS Client VPN endpoint that the database servers connect to",
+        "An AWS Direct Connect dedicated connection with a private virtual interface"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Direct Connect uses a dedicated private network path, which provides more consistent latency and throughput than the public internet. Option A is incorrect because more bandwidth at the edge does not remove variability along the path. Option B is incorrect because a second VPN still crosses the internet and shares its variability. Option C is incorrect because Client VPN is designed for individual users and uses the internet. Takeaway: choose Direct Connect for consistent network performance.",
+      "reference": "https://docs.aws.amazon.com/whitepapers/latest/aws-vpc-connectivity-options/aws-direct-connect.html"
+    },
+    {
+      "id": 3,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company has four 10 Gbps AWS Direct Connect connections at the same location and needs to use them as a single 40 Gbps path with one BGP session. The connections have the same bandwidth. Which solution meets this requirement?",
+      "options": [
+        "Create a public virtual interface on each connection and use them in a round robin",
+        "Create four private virtual interfaces and configure ECMP on the customer router",
+        "Create a link aggregation group (LAG) that contains the four connections at the location",
+        "Create a Direct Connect gateway with four associations to the same virtual private gateway"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because a LAG combines connections of the same bandwidth at the same endpoint into a single logical connection using LACP, and virtual interfaces are created on the LAG. Option A is incorrect because public virtual interfaces reach public services and do not aggregate bandwidth. Option B is incorrect because four virtual interfaces would need four BGP sessions and leave load balancing to the router. Option D is incorrect because a Direct Connect gateway connects virtual interfaces to VPCs and does not aggregate bandwidth. Takeaway: use a LAG to aggregate Direct Connect links.",
+      "reference": "https://docs.aws.amazon.com/directconnect/latest/UserGuide/lag-overview.html"
+    },
+    {
+      "id": 4,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company is building an augmented reality application for mobile devices on a 5G network. The application needs ultra-low latency between the devices and the backend compute. Which AWS offering places compute inside the telecommunications provider's network to meet this requirement?",
+      "options": [
+        "AWS Outposts racks, which install AWS infrastructure in the customer's own facility",
+        "AWS Direct Connect locations, which provide dedicated network links to the Region",
+        "Amazon CloudFront edge locations, which cache the content close to the viewers",
+        "AWS Wavelength Zones, which embed compute in the network of telecommunications providers"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Wavelength embeds AWS compute and storage in the data centers of telecommunications providers at the edge of 5G networks, which minimizes latency for mobile devices. Option A is incorrect because Outposts brings AWS infrastructure to the customer's own facility. Option B is incorrect because Direct Connect is a dedicated network link. Option C is incorrect because CloudFront caches content and does not run general application backends. Takeaway: use Wavelength for 5G edge applications.",
+      "reference": "https://aws.amazon.com/wavelength/"
+    },
+    {
+      "id": 5,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A role that an application uses has broad permissions that were granted during development. The application has run for 30 days, and CloudTrail is enabled. The security team wants to replace the permissions with a least-privilege policy based on what the application actually did. Which feature should the team use?",
+      "options": [
+        "IAM Access Analyzer policy generation based on CloudTrail activity",
+        "IAM credential report for the account and its users",
+        "AWS Config rule that reports roles which have unused policies attached",
+        "IAM Access Analyzer external access findings for the role"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because policy generation analyzes CloudTrail activity for a role and creates a policy that contains only the actions that were used. Option B is incorrect because the credential report lists the status of user credentials. Option C is incorrect because Config rules do not produce a policy from usage. Option D is incorrect because external access findings report resources that are shared outside the zone of trust. Takeaway: generate least-privilege policies from access activity.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-policy-generation.html"
+    },
+    {
+      "id": 6,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company hosts a real-time multiplayer game in a Region that is far from a large group of players in a single metropolitan area. Those players experience latency above 60 ms. The company wants to run the game servers closer to these players and keep using the same VPC and AWS services. Which solution meets this requirement?",
+      "options": [
+        "Extend the VPC to an AWS Local Zone in the metropolitan area and launch the game servers there",
+        "Create an AWS Site-to-Site VPN from the players' network to the Region's virtual private gateway",
+        "Move the game servers to a larger EC2 instance type with a higher network bandwidth",
+        "Place an Amazon CloudFront distribution in front of the game servers with a long cache TTL"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Local Zones place compute, storage, and other services close to large population centers as an extension of a Region, which provides single-digit millisecond latency to nearby users. Option B is incorrect because a VPN connects networks over the internet and does not shorten the path. Option C is incorrect because a larger instance does not reduce the distance-related latency. Option D is incorrect because game state is dynamic and cannot be cached. Takeaway: use Local Zones for latency-sensitive workloads near a metropolitan area.",
+      "reference": "https://aws.amazon.com/about-aws/global-infrastructure/localzones/"
+    },
+    {
+      "id": 7,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Application Load Balancer keeps sending requests to an unhealthy instance for about two minutes before it is removed. The health check interval is 30 seconds and the unhealthy threshold is 5. The team wants failing targets to be removed faster without making the health check more expensive. Which change meets this requirement?",
+      "options": [
+        "Increase the deregistration delay so that connections finish before the target is removed",
+        "Increase the health check timeout to 60 seconds so that slow responses count as healthy",
+        "Lower the unhealthy threshold and the health check interval of the target group of the service",
+        "Increase the healthy threshold so that targets need more successful checks to be removed"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because the time to mark a target unhealthy is roughly the interval multiplied by the unhealthy threshold, so lowering either shortens detection. Option A is incorrect because deregistration delay applies after a target is removed and makes draining longer. Option B is incorrect because a longer timeout delays detection of slow responses. Option D is incorrect because the healthy threshold controls how many successes return a target to service. Takeaway: tune the interval and unhealthy threshold for faster failure detection.",
+      "reference": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html"
+    },
+    {
+      "id": 8,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A compliance rule requires that the cryptographic material of a customer managed KMS key is rotated every year. The applications must keep decrypting existing data without re-encryption, and the key ARN must not change. Which solution meets these requirements with the LEAST effort?",
+      "options": [
+        "Import new key material into the key every year and delete the old material after the rotation",
+        "Create a new KMS key every year and update every application to use the new key ARN",
+        "Schedule the deletion of the key after a year and create a replacement key with the same alias",
+        "Enable automatic key rotation on the symmetric customer managed key of the application"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because automatic rotation creates new key material for the same KMS key on a schedule, keeps the older material to decrypt existing ciphertext, and does not change the key ID or ARN. Option A is incorrect because importing material is a manual process and deleting old material would break decryption of existing data. Option B is incorrect because a new key changes the ARN and requires re-encryption or key management by applications. Option C is incorrect because deleting the key makes existing data undecryptable. Takeaway: enable automatic rotation for symmetric customer managed keys.",
+      "reference": "https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html"
+    },
+    {
+      "id": 9,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company processes 50 million short events per day. Each event triggers a workflow with about ten steps that completes in under a minute and does not need an execution history for a year. The Standard workflow bill is high because it charges per state transition. Which change reduces the cost the MOST?",
+      "options": [
+        "Use Standard Workflows with a reduced retention of the execution history",
+        "Use Standard Workflows with a smaller number of states by merging the steps into one Lambda function",
+        "Use Express Workflows and enable X-Ray tracing for each of the executions",
+        "Use Express Workflows, which are priced by the number of requests and the duration"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Express Workflows suit high-volume, short-duration workloads and are billed by executions and duration instead of by state transitions. Option A is incorrect because retention settings do not change the transition charges. Option B is incorrect because it lowers the transition count but still pays the Standard price per transition and reduces the workflow's visibility. Option C is incorrect because tracing adds cost and is not what lowers the workflow price. Takeaway: use Express Workflows for high-volume, short workflows.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html"
+    },
+    {
+      "id": 10,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A workflow reserves inventory, charges a card, and books shipping in three separate services. If the shipping step fails, the earlier steps must be undone. The team wants the undo logic to be part of the workflow definition. Which design meets this requirement?",
+      "options": [
+        "A single Lambda function that calls the three services in sequence and retries the call that failed",
+        "An Amazon SQS queue that holds the messages of all of the steps until the shipping step succeeds",
+        "A Step Functions state machine with Catch blocks that run compensating states for the completed steps",
+        "An Amazon SNS topic that broadcasts a rollback message to every service when any of the steps fails"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because the saga pattern uses compensating actions, and Step Functions Catch and Retry fields let the workflow route failures to states that undo earlier steps. Option A is incorrect because retrying the failed call does not undo the earlier steps and the function has no durable state. Option B is incorrect because holding messages does not undo actions that already completed. Option D is incorrect because a broadcast requires each service to implement its own rollback logic and coordination. Takeaway: use Step Functions for sagas with compensation.",
+      "reference": "https://docs.aws.amazon.com/prescriptive-guidance/latest/modernization-data-persistence/saga-pattern.html"
+    },
+    {
+      "id": 11,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A factory runs a manufacturing control system that must respond within a few milliseconds to equipment on the factory floor and must keep data on site. The company wants to use the same AWS APIs and tools as in the cloud. Which solution meets these requirements?",
+      "options": [
+        "An Amazon CloudFront distribution that caches the responses of the control system at the edge",
+        "An AWS Snowball Edge device that is shipped back to AWS every month to synchronize the data",
+        "AWS Outposts installed in the factory, with the control system running on it",
+        "An Amazon EC2 instance in the closest AWS Region that is reached over AWS Direct Connect"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because Outposts runs AWS-managed infrastructure and services on premises, which gives local low-latency processing and data residency with the same APIs. Option A is incorrect because a cache cannot run control logic. Option B is incorrect because Snowball Edge is intended for data transfer and temporary edge use and is no longer available to new customers. Option D is incorrect because a Region is too far to guarantee a few milliseconds and the data would leave the site. Takeaway: use Outposts for on-premises low-latency processing with AWS APIs.",
+      "reference": "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
+    },
+    {
+      "id": 12,
+      "domain": "Design Resilient Architectures",
+      "type": "multi",
+      "question": "A company wants Amazon Route 53 failover routing for an application whose primary endpoint is inside a VPC with private IP addresses only. Route 53 health checkers cannot reach the private endpoint. Which TWO actions make failover work? (Select TWO)",
+      "options": [
+        "Create a calculated health check that has no child health checks and associate it with the primary record",
+        "Allow the IP ranges of the health checkers in the security group of the private endpoint",
+        "Create a Route 53 health check that monitors the state of that CloudWatch alarm and associate it with the primary record",
+        "Create an endpoint health check that uses the private IP address of the instance",
+        "Create a CloudWatch alarm on a metric that reflects the health of the private endpoint"
+      ],
+      "correctAnswers": [
+        2,
+        4
+      ],
+      "explanation": "Options C and E are correct. Route 53 health checkers are located outside the VPC and cannot reach private IP addresses, so the health check must monitor a CloudWatch alarm that reflects the endpoint's health. Option A is incorrect because a calculated health check with no children has nothing to evaluate. Option B is incorrect because opening the security group does not create a route to a private address. Option D is incorrect because the checkers cannot route to private addresses. Takeaway: use alarm-based health checks for private resources.",
+      "reference": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating.html"
+    },
+    {
+      "id": 13,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A customer asks a company to provide the AWS SOC 2 report and the PCI DSS Attestation of Compliance that cover the AWS infrastructure that the company uses. The company wants to download these documents on demand, without contacting AWS Support. Which service provides them?",
+      "options": [
+        "AWS Artifact, which provides on-demand access to AWS compliance reports",
+        "AWS Trusted Advisor, which provides best practice checks for the company's accounts",
+        "AWS Security Hub, which aggregates the security findings from services and partners",
+        "AWS Audit Manager, which collects evidence about the resources in the company's accounts"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because AWS Artifact is the self-service portal for AWS compliance reports and agreements such as SOC reports and PCI attestations. Option B is incorrect because Trusted Advisor gives best practice checks. Option C is incorrect because Security Hub aggregates findings. Option D is incorrect because Audit Manager collects evidence about the company's own resources. Takeaway: use Artifact to obtain AWS's own compliance documents.",
+      "reference": "https://docs.aws.amazon.com/artifact/latest/ug/what-is-aws-artifact.html"
+    },
+    {
+      "id": 14,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A startup needs a cloud contact center with voice and chat, easy agent setup, call routing, and pay-as-you-go pricing. The startup does not want to buy telephony hardware or manage servers. Which service should the startup use?",
+      "options": [
+        "Amazon Pinpoint, which was a service for marketing messages and campaigns",
+        "Amazon Connect, a cloud contact center with voice, chat, and per-minute pricing",
+        "Amazon Lex, which builds conversational bots for voice and text channels",
+        "Amazon Chime SDK, which provides building blocks for real-time communication"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Amazon Connect is a cloud contact center service with voice and chat, routing, and per-minute pricing without hardware. Option A is incorrect because Pinpoint was a marketing communication service that is being retired. Option C is incorrect because Lex builds conversational bots and is used together with a contact center. Option D is incorrect because the Chime SDK provides building blocks for real-time communication and is not a ready contact center. Takeaway: use Amazon Connect for a managed contact center.",
+      "reference": "https://docs.aws.amazon.com/connect/latest/adminguide/what-is-amazon-connect.html"
+    },
+    {
+      "id": 15,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A news site uses Amazon CloudFront with an origin that occasionally returns 5xx errors during deployments. The site wants viewers to keep receiving the most recent cached copy of an object when the origin fails, instead of an error page. Which solution meets this requirement?",
+      "options": [
+        "Create an invalidation for all objects before each deployment so that the cache is clean",
+        "Set the minimum TTL of the distribution to 0 seconds so that objects are always revalidated",
+        "Enable field-level encryption on the behavior so that cached objects are held longer",
+        "Configure the origin to send the stale-if-error directive in the Cache-Control header"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because CloudFront supports the stale-if-error directive, which allows it to serve a stale cached object when the origin returns an error. Option A is incorrect because invalidating removes the cached copies that could be served. Option B is incorrect because a TTL of 0 forces revalidation, which exposes viewers to origin errors. Option C is incorrect because field-level encryption does not extend cache lifetime. Takeaway: use stale-if-error to keep serving content during origin failures.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Expiration.html"
+    },
+    {
+      "id": 16,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "An Auto Scaling group launches instances that each have a secondary Amazon EBS data volume from a launch template. After scale-in events, hundreds of unattached volumes remain in the account and are billed. The data on these volumes is not needed after termination. Which change prevents this?",
+      "options": [
+        "Set DeleteOnTermination to true for the data volume in the launch template block device mapping",
+        "Enable termination protection on the instances so that the volumes stay attached to the instances of the group",
+        "Increase the size of the data volume so that fewer of the volumes are needed for each of the instances",
+        "Enable EBS encryption by default so that the unattached volumes are billed at a lower rate in the account"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because volumes with DeleteOnTermination set to true are deleted automatically when their instance terminates, whereas additional volumes are retained by default in some launch paths. Option B is incorrect because termination protection would block scale-in. Option C is incorrect because larger volumes cost more. Option D is incorrect because encryption does not change billing of unattached volumes. Takeaway: set DeleteOnTermination for disposable volumes.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/preserving-volumes-on-termination.html"
+    },
+    {
+      "id": 17,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "An application instance cannot connect to a database instance in another subnet of the same VPC. The team suspects that a route, security group, or network ACL is blocking the traffic, and wants to find the blocking component without sending test traffic. Which tool should the team use?",
+      "options": [
+        "AWS X-Ray, which records traces of the requests that flow between the application components",
+        "VPC Traffic Mirroring, which copies the packets of live traffic to an inspection appliance",
+        "VPC Reachability Analyzer, which analyzes the configuration of the path between the two instances",
+        "Amazon CloudWatch Synthetics, which runs scripted canaries against the endpoints"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because Reachability Analyzer analyzes the configuration between a source and destination and identifies the component that blocks the path, without sending packets. Option A is incorrect because X-Ray traces application requests and does not analyze network configuration. Option B is incorrect because Traffic Mirroring copies live packets and needs traffic to exist. Option D is incorrect because Synthetics canaries test endpoints from outside. Takeaway: use Reachability Analyzer for configuration-based path checks.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/reachability/what-is-reachability-analyzer.html"
+    },
+    {
+      "id": 18,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company wants app.example.com to resolve to a public load balancer for internet users and to a private IP address for instances inside the VPC that use the same name. Which configuration meets this requirement?",
+      "options": [
+        "A public hosted zone and a private hosted zone for example.com that is associated with the VPC, each with its own record for app",
+        "One private hosted zone that is associated with the VPC and a public DNS provider that mirrors the same record for app",
+        "One public hosted zone with two weighted records for app, one that points to the public and one to the private address",
+        "A public hosted zone with a latency record for app that returns the private address to queries that come from the VPC"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because a private hosted zone answers queries from associated VPCs before public DNS, so the same name can resolve differently inside and outside (split-horizon). Option B is incorrect because a mirrored record would return the same value everywhere. Option C is incorrect because weighted records are returned to all clients at random and public zones cannot reliably hand a private address to VPC clients. Option D is incorrect because latency routing is based on Region and does not identify VPC queries. Takeaway: use public and private hosted zones for split-horizon DNS.",
+      "reference": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-private-considerations.html"
+    },
+    {
+      "id": 19,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "multi",
+      "question": "An AWS Lambda function is invoked for every few messages of an Amazon SQS queue that receives many small messages, and the invocation count drives the cost. The messages can wait a few seconds for processing. Which TWO settings on the event source mapping reduce the number of invocations? (Select TWO)",
+      "options": [
+        "Increase the batch size so that each invocation receives more messages",
+        "Reduce the function timeout so that each of the invocations completes faster",
+        "Set a maximum batching window so that Lambda waits to collect messages before it invokes the function",
+        "Enable provisioned concurrency so that the invocations are billed at a lower rate",
+        "Reduce the visibility timeout of the queue so that messages are delivered again sooner"
+      ],
+      "correctAnswers": [
+        0,
+        2
+      ],
+      "explanation": "Options A and C are correct. A larger batch size and a batching window let Lambda gather more messages per invocation, which reduces the number of invocations. Option B is incorrect because a shorter timeout does not change the number of invocations. Option D is incorrect because provisioned concurrency adds a charge. Option E is incorrect because a shorter visibility timeout can cause duplicate deliveries and more invocations. Takeaway: batch messages to reduce invocation cost.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html"
+    },
+    {
+      "id": 20,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A microservices application intermittently returns errors to users. Requests pass through eight services, and the team cannot tell which downstream service is responsible for the failures. Which service should the team use to find the failing dependency?",
+      "options": [
+        "AWS X-Ray with tracing enabled for the services and its service map",
+        "Amazon Macie with a discovery job on the buckets that the services use",
+        "Amazon Inspector with a scan of the instances that run the services",
+        "AWS CloudTrail with a trail for management events in the account"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because X-Ray traces requests across services and its service map highlights the node with elevated errors or latency. Option B is incorrect because Macie discovers sensitive data. Option C is incorrect because Inspector identifies vulnerabilities. Option D is incorrect because CloudTrail records API activity and not application requests. Takeaway: use distributed tracing to find failing dependencies.",
+      "reference": "https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html"
+    },
+    {
+      "id": 21,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Amazon CloudWatch alarm signals that a web service on an Amazon EC2 instance has stopped responding. The team wants the service to be restarted automatically, with a record of each remediation step, and without maintaining a custom script host. Which solution meets this requirement?",
+      "options": [
+        "An SNS notification to the on-call engineer, who signs in to the instance and restarts the service by hand",
+        "An AWS Config rule that marks the instance noncompliant and invokes a cron job that runs on the same instance",
+        "A CloudWatch alarm action that terminates the instance and relies on Auto Scaling to launch a replacement for it",
+        "An EventBridge rule for the alarm that starts a Systems Manager Automation runbook that restarts the service"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Systems Manager Automation runbooks execute defined remediation steps, keep an execution history, and can be triggered by EventBridge rules for alarm state changes. Option A is incorrect because it depends on a person. Option B is incorrect because Config rules do not run cron jobs and a failing instance may not be able to fix itself. Option C is incorrect because replacing the instance is more disruptive than restarting a service and does not create a step-by-step record. Takeaway: automate remediation with Automation runbooks.",
+      "reference": "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html"
+    },
+    {
+      "id": 22,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An operations team wants to be notified automatically when AWS plans to retire the underlying host of one of its Amazon EC2 instances, so that it can replace the instance during a maintenance window. Which solution meets this requirement?",
+      "options": [
+        "An AWS Config rule that checks the instance type of the EC2 instances in the account",
+        "An AWS Budgets alert for the EC2 service that sends an email to the team",
+        "An Amazon CloudWatch alarm on the StatusCheckFailed metric of the instance",
+        "An Amazon EventBridge rule for AWS Health events that targets an Amazon SNS topic"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because AWS Health publishes account-specific events, such as scheduled instance retirements, that EventBridge can route to notification targets. Option A is incorrect because Config rules do not know about planned retirements. Option B is incorrect because Budgets tracks spending. Option C is incorrect because a status check alarm reacts only after a failure occurs. Takeaway: use Health events for planned maintenance notifications.",
+      "reference": "https://docs.aws.amazon.com/health/latest/ug/cloudwatch-events-health.html"
+    },
+    {
+      "id": 23,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "Employees connect to a VPC through AWS Client VPN. All of their internet traffic is currently routed through the VPN and out of the VPC, which increases cost and slows video calls. The company wants only traffic that is destined for the VPC to use the tunnel. Which change meets this requirement?",
+      "options": [
+        "Change the endpoint to use mutual authentication with client certificates instead of directory credentials",
+        "Enable split-tunnel on the Client VPN endpoint, so that only VPC routes are pushed to clients",
+        "Add a route for 0.0.0.0/0 to the endpoint's route table that targets a NAT gateway in the VPC",
+        "Create an authorization rule that denies the internet destination for every user group of the endpoint"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because split-tunnel pushes only the endpoint's routes to clients, so internet traffic goes directly from the user's device. Option A is incorrect because the authentication method does not affect routes. Option C is incorrect because it sends internet traffic through the VPC, which is the current behavior. Option D is incorrect because authorization rules allow access and do not change client routing. Takeaway: enable split-tunnel to limit tunneled traffic.",
+      "reference": "https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/split-tunnel-vpn.html"
+    },
+    {
+      "id": 24,
+      "domain": "Design High-Performing Architectures",
+      "type": "multi",
+      "question": "On an Amazon Redshift cluster, short dashboard queries wait behind long-running ETL queries and take much longer than expected during the morning load. The team wants the dashboards to stay fast without adding nodes. Which TWO actions help? (Select TWO)",
+      "options": [
+        "Add a read replica cluster of Redshift so that the dashboards use the replica of the cluster",
+        "Increase the query timeout for all queues so that the ETL queries can finish without being canceled",
+        "Change the distribution style of every table to ALL so that the queries read less data",
+        "Enable automatic workload management and give the dashboard queue a higher priority than the ETL queue",
+        "Enable short query acceleration so that short queries run in a dedicated space and do not wait behind long ones"
+      ],
+      "correctAnswers": [
+        3,
+        4
+      ],
+      "explanation": "Options D and E are correct. Workload management with priorities lets important queries get resources first, and short query acceleration runs short queries in a dedicated space so that they do not queue behind long ones. Option A is incorrect because Redshift clusters do not have read replicas in that way. Option B is incorrect because a longer timeout keeps long queries running and does not help short ones. Option C is incorrect because ALL distribution for every table increases storage and load time and does not address queueing. Takeaway: use workload management and SQA to protect short queries.",
+      "reference": "https://docs.aws.amazon.com/redshift/latest/dg/cm-c-implementing-workload-management.html"
+    },
+    {
+      "id": 25,
+      "domain": "Design High-Performing Architectures",
+      "type": "multi",
+      "question": "A company uploads and downloads 5 GB media files from Amazon S3 over a fast network, but the transfers use a single connection and are slow. Which TWO changes improve the transfer speed? (Select TWO)",
+      "options": [
+        "Download the files with byte-range fetches in parallel over several connections",
+        "Compress the bucket policy so that requests are authorized more quickly",
+        "Enable S3 Versioning on the bucket so that the parts of an object are stored on several hosts",
+        "Move the objects to S3 Glacier Flexible Retrieval so that the transfers use a faster path",
+        "Upload the files with multipart upload and send the parts in parallel"
+      ],
+      "correctAnswers": [
+        0,
+        4
+      ],
+      "explanation": "Options A and E are correct. Multipart upload lets a client send parts in parallel and retry only failed parts, and byte-range fetches let a client download portions of an object concurrently. Option B is incorrect because bucket policy size has no effect on transfer throughput. Option C is incorrect because versioning keeps object versions and does not affect transfer speed. Option D is incorrect because Glacier storage classes add retrieval delays. Takeaway: parallelize transfers of large objects.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance-design-patterns.html"
+    },
+    {
+      "id": 26,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "Applications in a VPC access Amazon DynamoDB through a gateway VPC endpoint. The security team wants to make sure that traffic through the endpoint can reach only the company's own orders table and cannot be used to copy data to tables in other accounts. Which solution meets this requirement?",
+      "options": [
+        "Attach a security group to the gateway endpoint that allows outbound traffic to the orders table only",
+        "Attach an endpoint policy to the gateway endpoint that allows access only to the ARN of the orders table",
+        "Add a route to the route table that sends the orders table's traffic to the endpoint and blocks all other traffic",
+        "Attach a network ACL to the subnets that denies the DynamoDB service's public IP address ranges"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because an endpoint policy limits which resources and actions are accessible through the endpoint, so requests for other tables, including those in other accounts, are denied. Option A is incorrect because gateway endpoints do not have security groups. Option C is incorrect because route tables direct traffic by prefix list and cannot select a table. Option D is incorrect because a network ACL would also block the endpoint traffic and cannot distinguish tables. Takeaway: use endpoint policies to restrict what is reachable through an endpoint.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-ddb.html"
+    },
+    {
+      "id": 27,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A finance analyst asks how AWS Elastic Beanstalk affects the bill of a web application that runs in an environment with Amazon EC2 instances and an Application Load Balancer. Which statement is correct?",
+      "options": [
+        "Elastic Beanstalk charges a percentage of the EC2 cost for every instance that runs in the environment",
+        "Elastic Beanstalk is billed only for the deployments that the team runs in the environment each month",
+        "Elastic Beanstalk adds a fixed monthly fee for each environment on top of the charges for the resources",
+        "There is no additional charge for Elastic Beanstalk, and the company pays for the AWS resources it creates"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Elastic Beanstalk itself has no additional charge, and customers pay only for the underlying resources such as instances and load balancers. Option A is incorrect because there is no percentage surcharge. Option B is incorrect because deployments are not billed. Option C is incorrect because there is no per-environment fee. Takeaway: Elastic Beanstalk is free and the resources are charged.",
+      "reference": "https://aws.amazon.com/elasticbeanstalk/pricing/"
+    },
+    {
+      "id": 28,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "A company connects production and development VPCs to one AWS Transit Gateway. Production and development VPCs must not reach each other, but both must reach a shared services VPC. Which TWO actions meet these requirements? (Select TWO)",
+      "options": [
+        "Propagate only the shared services attachment's routes into both the production and development route tables",
+        "Create separate transit gateway route tables for production and development, and associate each VPC attachment with its own",
+        "Propagate the routes of the production and development attachments into the same route table for all attachments",
+        "Create VPC peering connections between production and shared services and remove the transit gateway",
+        "Associate every attachment with the default route table and use network ACLs to block the other environment"
+      ],
+      "correctAnswers": [
+        0,
+        1
+      ],
+      "explanation": "Options A and B are correct. Transit gateway route tables control which routes each attachment can use, so separate tables with propagation from only the shared services attachment give reachability to shared services and no route to the other environment. Option C is incorrect because a common table exposes both environments to each other. Option D is incorrect because it discards the hub design and scales poorly. Option E is incorrect because the default route table would propagate all routes and network ACLs would be a fragile way to block traffic. Takeaway: isolate environments with separate transit gateway route tables.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/tgw/how-transit-gateways-work.html"
+    },
+    {
+      "id": 29,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company wants its mobile app to read articles aloud to users with natural sounding voices in several languages. The company does not want to record the audio itself. Which service should the company use?",
+      "options": [
+        "Amazon Lex, which builds conversational interfaces for voice and text",
+        "Amazon Transcribe, which converts speech into text transcripts",
+        "Amazon Comprehend, which analyzes the meaning of text documents",
+        "Amazon Polly, which converts text into lifelike speech"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Polly turns text into lifelike speech in multiple languages and voices. Option A is incorrect because Lex builds conversational interfaces. Option B is incorrect because Transcribe converts speech to text, the opposite direction. Option C is incorrect because Comprehend analyzes text meaning. Takeaway: use Polly for text-to-speech.",
+      "reference": "https://docs.aws.amazon.com/polly/latest/dg/what-is.html"
+    },
+    {
+      "id": 30,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A mobile application needs a single request to fetch data from a DynamoDB table and an Amazon OpenSearch Service domain, and it must receive real-time updates when items change. The team wants a managed backend without writing server code. Which service should the team use?",
+      "options": [
+        "Amazon API Gateway REST APIs with one Lambda function for each data source",
+        "Amazon Kinesis Data Streams with a consumer application on each device",
+        "AWS AppSync with resolvers for each data source and GraphQL subscriptions",
+        "Amazon SNS topics that the application polls for the changes to each data source"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because AppSync provides a managed GraphQL API that can combine multiple data sources in one query through resolvers and delivers real-time data through subscriptions. Option A is incorrect because it needs separate calls and custom code, and REST APIs do not push updates. Option B is incorrect because a stream consumer on each device is not practical and does not provide queries. Option D is incorrect because SNS is not polled by clients and does not query data sources. Takeaway: use AppSync for GraphQL with subscriptions.",
+      "reference": "https://docs.aws.amazon.com/appsync/latest/devguide/what-is-appsync.html"
+    },
+    {
+      "id": 31,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A team runs an API on AWS Lambda that receives a constant, high request rate around the clock. Each invocation uses 1 GB of memory and runs for 800 ms. The monthly Lambda bill is high, and the load is predictable. Which change is MOST likely to reduce cost?",
+      "options": [
+        "Increase the memory of the function to 3 GB so that each invocation runs more quickly and costs less",
+        "Add an Amazon SQS queue in front of the function so that the requests of the clients are buffered",
+        "Configure provisioned concurrency for the peak concurrency of the API and keep it around the clock",
+        "Run the API on EC2 or containers sized for the steady load and covered by a Savings Plan"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because at a sustained high request rate, fixed capacity with commitment discounts is cheaper than paying per request and per GB-second. Option A is incorrect because more memory increases the rate per millisecond and the duration may not fall enough. Option B is incorrect because a queue adds request charges and does not change function billing. Option C is incorrect because provisioned concurrency adds a charge for the reserved capacity. Takeaway: constant high load can be cheaper on provisioned compute.",
+      "reference": "https://aws.amazon.com/lambda/pricing/"
+    },
+    {
+      "id": 32,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A REST API in Amazon API Gateway returns product data that changes once an hour. The backend database is under heavy read load and response times are high. Which change reduces the latency and the load with the LEAST effort?",
+      "options": [
+        "Add a usage plan with a quota so that each client makes fewer requests",
+        "Enable API caching on the stage with a TTL that matches the hourly changes",
+        "Deploy the API as a private API so that requests take a shorter network path",
+        "Increase the throttling limits of the stage so that more requests reach the backend"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because stage-level caching stores responses for the TTL, so repeated requests are answered without calling the backend. Option A is incorrect because quotas restrict clients and do not lower latency for allowed calls. Option C is incorrect because a private API limits access to a VPC and does not add caching. Option D is incorrect because more throughput sends more requests to the overloaded backend. Takeaway: enable API caching for read-heavy, slowly changing data.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html"
+    },
+    {
+      "id": 33,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Amazon EventBridge rule invokes an AWS Lambda function. During an outage of the function's Region, some events could not be delivered after the retries and were dropped. The team wants to capture the events that failed to be delivered. What should the team configure?",
+      "options": [
+        "A second rule that matches the same events and targets an SNS topic",
+        "A longer retry policy with a maximum event age of 30 days for the rule's target",
+        "A dead-letter queue on the rule's target that uses an Amazon SQS queue",
+        "An archive on the event bus that replays the failed events to the target automatically"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because a target dead-letter queue stores events that EventBridge could not deliver after the retry policy, so they can be inspected or reprocessed. Option A is incorrect because a second rule would deliver the events again and does not capture the failure. Option B is incorrect because the maximum event age of a retry policy is limited to 24 hours. Option D is incorrect because archives store events for manual replay and do not automatically replay failures. Takeaway: use target DLQs to capture undelivered events.",
+      "reference": "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-rule-dlq.html"
+    },
+    {
+      "id": 34,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A team plans a subnet for an application that needs 50 IP addresses for instances and network interfaces. The team wants the smallest IPv4 CIDR block that provides enough usable addresses. AWS reserves five addresses in every subnet. Which CIDR block should the team choose?",
+      "options": [
+        "/25, which has 123 usable addresses",
+        "/26, which has 59 usable addresses",
+        "/27, which has 27 usable addresses",
+        "/28, which has 11 usable addresses"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because a /26 has 64 addresses, and after the five reserved addresses 59 remain, which covers the requirement of 50 as the smallest sufficient size. Option A is incorrect because a /25 is larger than needed. Option C is incorrect because a /27 has 32 addresses and 27 usable. Option D is incorrect because a /28 has 16 addresses and 11 usable. Takeaway: subtract the five reserved addresses when sizing subnets.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html"
+    },
+    {
+      "id": 35,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "On-premises servers connected to a VPC through AWS Direct Connect must resolve the names in a Route 53 private hosted zone that is associated with the VPC. The company's DNS servers can forward queries for that domain. Which solution meets this requirement?",
+      "options": [
+        "Create a public hosted zone with the same domain name and delegate it to the on-premises DNS servers",
+        "Create a Route 53 Resolver outbound endpoint and a rule that forwards the domain's queries to the on-premises DNS servers",
+        "Create a VPC peering connection between the VPC and the on-premises network to share the private hosted zone",
+        "Create a Route 53 Resolver inbound endpoint in the VPC and forward the domain's queries from on-premises DNS to its IP addresses"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because an inbound endpoint gives on-premises resolvers IP addresses in the VPC to which they can forward queries for the private hosted zone. Option A is incorrect because a public zone would not hold the private records and would expose names. Option B is incorrect because an outbound endpoint sends queries from the VPC to on-premises, which is the opposite direction. Option C is incorrect because VPC peering does not connect to on-premises networks. Takeaway: inbound endpoints serve queries from on-premises to AWS.",
+      "reference": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-forwarding-inbound-queries.html"
+    },
+    {
+      "id": 36,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company wants employees to reach internal web applications from unmanaged networks without a VPN client. Each request must be evaluated against the user's identity from the corporate identity provider and the security posture of the user's device. Which service meets these requirements?",
+      "options": [
+        "AWS Site-to-Site VPN with a customer gateway in each employee's home network",
+        "AWS Client VPN with mutual authentication and a split-tunnel configuration",
+        "AWS Verified Access with trust providers for the identity and the device posture of users",
+        "Amazon CloudFront with signed cookies that are issued to the employees at sign-in"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because Verified Access provides VPN-less, zero trust access to applications and evaluates policies that use identity and device trust data for every request. Option A is incorrect because a Site-to-Site VPN connects networks and not individual users. Option B is incorrect because Client VPN requires a VPN client and grants network-level access. Option D is incorrect because signed cookies control access to content but do not evaluate device posture. Takeaway: use Verified Access for per-request zero trust access.",
+      "reference": "https://docs.aws.amazon.com/verified-access/latest/ug/what-is-verified-access.html"
+    },
+    {
+      "id": 37,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company inspects traffic between spoke VPCs with AWS Network Firewall endpoints in an inspection VPC that is attached to a transit gateway. Some connections fail because the return traffic is inspected in a different Availability Zone than the request. Which configuration fixes this?",
+      "options": [
+        "Move the firewall endpoints into the same subnet as the transit gateway attachment of the inspection VPC",
+        "Enable cross-zone load balancing on the transit gateway attachments of the spoke VPCs to spread the flows",
+        "Enable appliance mode on the inspection VPC's transit gateway attachment to keep each flow in one zone",
+        "Add a second firewall policy with stateless rules that allow all of the return traffic in both directions"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because appliance mode keeps traffic of a flow in the same Availability Zone, which maintains flow symmetry for stateful inspection. Option A is incorrect because endpoints and attachments are placed in dedicated subnets and moving them does not affect symmetry. Option B is incorrect because cross-zone load balancing is an attribute of load balancers. Option D is incorrect because stateless rules that allow everything bypass the inspection intent and do not solve the routing asymmetry. Takeaway: use appliance mode for stateful inspection through a transit gateway.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-appliance-scenario.html"
+    },
+    {
+      "id": 38,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "multi",
+      "question": "A company runs fault-tolerant batch pods on Amazon EKS with managed node groups. The company wants to lower compute cost and reduce the impact of Spot interruptions. Which TWO configurations should the company use? (Select TWO)",
+      "options": [
+        "Enable a Multi-AZ setting on the node group so that Spot prices are lower in each Availability Zone",
+        "Specify several instance types with similar vCPU and memory in the node group to diversify the pools",
+        "Use one large instance type so that all of the pods run on the same node of the group",
+        "Set the capacity type of the managed node group to SPOT for the batch workload",
+        "Set the capacity type to ON_DEMAND and buy Reserved Instances for the peak of the batch workload"
+      ],
+      "correctAnswers": [
+        1,
+        3
+      ],
+      "explanation": "Options B and D are correct. Spot capacity in managed node groups provides discounted instances, and diversifying across instance types of similar size increases the chance to find capacity and reduces interruptions. Option A is incorrect because node groups do not have a Multi-AZ setting that lowers Spot prices. Option C is incorrect because a single instance type concentrates the interruption risk. Option E is incorrect because On-Demand with reservations for the peak pays for capacity that batch pods do not use all of the time. Takeaway: use Spot node groups with diversified instance types.",
+      "reference": "https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html"
+    },
+    {
+      "id": 39,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A team runs an Amazon Managed Workflows for Apache Airflow environment only to execute a five-step workflow twice per day. The environment is billed for every hour, and the workflow needs no custom Airflow plugins. Which change reduces cost the MOST?",
+      "options": [
+        "Add a second Airflow environment in another Region so that the runs are shared between them",
+        "Rebuild the workflow as an AWS Step Functions state machine that runs on a schedule",
+        "Buy a Savings Plan that covers the hourly cost of the Airflow environment for one year",
+        "Resize the Airflow environment to a larger class so that the workflow finishes faster"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Step Functions is serverless and billed by state transitions, so a small workflow that runs twice a day costs very little compared with an always-on environment. Option A is incorrect because a second environment doubles the hourly cost. Option C is incorrect because Savings Plans do not apply to MWAA. Option D is incorrect because a larger class raises the hourly cost. Takeaway: use serverless orchestration for simple, infrequent workflows.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html"
+    },
+    {
+      "id": 40,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A latency-sensitive AWS Lambda function must have no cold starts between 8 AM and 6 PM on weekdays, but it is almost unused at other times. Provisioned concurrency currently runs all day and every day. Which change reduces cost while meeting the requirement?",
+      "options": [
+        "Use Application Auto Scaling scheduled actions to set provisioned concurrency only during working hours",
+        "Remove provisioned concurrency and increase the function timeout so that cold starts do not matter to users",
+        "Move the function to a larger memory size so that the cold start is shorter and no longer costs anything",
+        "Set reserved concurrency to zero outside of working hours so that the function is removed by Lambda"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because provisioned concurrency is billed for the time it is configured, and scheduled scaling can raise it for the working hours and lower it afterward. Option B is incorrect because a longer timeout does not remove cold starts. Option C is incorrect because more memory costs more per millisecond and cold starts are not free. Option D is incorrect because reserved concurrency of zero blocks invocations and does not delete the function. Takeaway: schedule provisioned concurrency.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html"
+    },
+    {
+      "id": 41,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "A company uses AWS Client VPN so that employees can reach resources in a VPC. Authentication uses Active Directory. Engineers must reach the 10.1.0.0/16 network, and finance staff must reach only 10.2.0.0/24. Which TWO actions meet these requirements? (Select TWO)",
+      "options": [
+        "Create security groups that are named after the AD groups and attach them to the users' laptops",
+        "Create one authorization rule that allows the 0.0.0.0/0 destination for every authenticated user",
+        "Configure the endpoint to use Active Directory authentication for the users",
+        "Create authorization rules that allow each AD group access to its own destination CIDR only",
+        "Create route table entries in the VPC for each AD group so that traffic is filtered by group"
+      ],
+      "correctAnswers": [
+        2,
+        3
+      ],
+      "explanation": "Options C and D are correct. Client VPN can authenticate users against Active Directory, and authorization rules map AD groups to the destination networks they may reach. Option A is incorrect because security groups attach to network interfaces in the VPC and not to laptops. Option B is incorrect because a single rule for all destinations gives every user access to everything. Option E is incorrect because routes do not filter by user group. Takeaway: use authorization rules for group-based network access.",
+      "reference": "https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/cvpn-working-rules.html"
+    },
+    {
+      "id": 42,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company allows workloads only in eu-west-1 and eu-central-1. The security team wants to prevent principals in all member accounts from creating resources in any other Region, while global services such as IAM must continue to work. Which solution meets this requirement?",
+      "options": [
+        "An SCP that denies all actions in every Region except us-east-1 because the global services run in that Region",
+        "An SCP that denies actions unless aws:RequestedRegion is an approved Region, with global services excluded by NotAction",
+        "A CloudWatch alarm on resource creation events that deletes the resources created outside the approved Regions",
+        "An IAM permissions boundary on the root user of each member account that limits the Regions that it can use"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because an SCP with a deny that uses the aws:RequestedRegion condition key and excludes global service actions restricts all principals in the member accounts. Option A is incorrect because it would block the approved Regions. Option C is incorrect because alarms cannot delete resources and detection is not prevention. Option D is incorrect because permissions boundaries cannot be attached to the root user. Takeaway: use RequestedRegion conditions in SCPs for Region restriction.",
+      "reference": "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_examples_general.html"
+    },
+    {
+      "id": 43,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A single-AZ Amazon RDS for PostgreSQL instance becomes unavailable for several minutes during monthly maintenance windows. The team wants to reduce the downtime that maintenance causes, without changing the application. Which change meets this requirement?",
+      "options": [
+        "Convert the DB instance to a Multi-AZ deployment so that maintenance is applied to the standby first",
+        "Increase the DB instance class so that the maintenance operations run faster on the larger instance",
+        "Add a read replica in the same Region and point the application at the read replica during maintenance",
+        "Disable automated backups so that the maintenance window contains fewer operations"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because in Multi-AZ deployments, maintenance is applied to the standby, which then fails over, so the downtime is limited to the failover time. Option B is incorrect because a larger instance may shorten the operations but the instance is still unavailable while they run. Option C is incorrect because a read replica cannot accept writes and requires application changes. Option D is incorrect because backups are not what causes the downtime, and disabling them removes recovery options. Takeaway: Multi-AZ shortens maintenance downtime.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.Maintenance.html"
+    },
+    {
+      "id": 44,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company wants a conversational bot for its website and its contact center that understands customer intents, collects details such as order numbers over several turns, and can use both voice and text. The company does not want to build language models. Which service should the company use?",
+      "options": [
+        "Amazon Personalize, which provides real-time recommendations for users of applications",
+        "Amazon Lex, which builds conversational bots for voice and text",
+        "Amazon Kendra, which provides intelligent search across enterprise documents",
+        "Amazon Comprehend, which analyzes the meaning of text but does not manage a dialog"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Lex builds conversational voice and text interfaces with intent recognition and slot filling and integrates with Amazon Connect. Option A is incorrect because Personalize provides recommendations. Option C is incorrect because Kendra is an enterprise search service. Option D is incorrect because Comprehend analyzes text and does not manage a dialog. Takeaway: use Lex for conversational interfaces.",
+      "reference": "https://docs.aws.amazon.com/lexv2/latest/dg/what-is.html"
+    },
+    {
+      "id": 45,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company runs many AWS Lambda functions in one account. A batch function scales to thousands of concurrent invocations and occasionally exhausts the account concurrency limit, which causes throttling of a critical payment function. Which change protects the payment function?",
+      "options": [
+        "Configure a dead-letter queue for the batch function",
+        "Increase the memory of the payment function to shorten its duration",
+        "Configure reserved concurrency for the payment function",
+        "Configure provisioned concurrency for the batch function"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because reserved concurrency sets aside a share of the account limit exclusively for the function, so other functions cannot consume it. Option A is incorrect because a dead-letter queue captures failed events and does not prevent throttling. Option B is incorrect because more memory can shorten duration but does not guarantee capacity. Option D is incorrect because provisioned concurrency for the batch function keeps more environments warm and does not limit its scaling. Takeaway: use reserved concurrency to guarantee capacity for critical functions.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html"
+    },
+    {
+      "id": 46,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A production Amazon Aurora MySQL cluster must be patched to a new minor engine version. The application cannot tolerate dropped connections when possible, and the team wants the patch to disrupt clients as little as possible. Which feature reduces the disruption?",
+      "options": [
+        "Zero-downtime patching, which tries to preserve client connections while the engine is patched",
+        "Backtrack, which rewinds the cluster to the version before the patch if connections are dropped",
+        "Database activity streams, which buffer the connections while the writer restarts",
+        "Cross-Region read replicas, which take over the connections of the writer during the patch"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because zero-downtime patching applies engine patches while attempting to preserve client connections, when conditions such as no long-running transactions allow it. Option B is incorrect because Backtrack rewinds data and does not reverse an engine version. Option C is incorrect because activity streams provide auditing and do not buffer connections. Option D is incorrect because replicas do not take over connections during patching. Takeaway: zero-downtime patching minimizes disruption for Aurora maintenance.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Updates.html"
+    },
+    {
+      "id": 47,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An operations team is paged by separate alarms for high error rate and high latency, and many pages are false alarms because brief spikes in only one metric are harmless. The team wants to page only when both conditions are true at the same time. Which feature meets this requirement?",
+      "options": [
+        "A CloudWatch dashboard that displays both metrics on the same graph for the on-call engineer",
+        "A CloudWatch metric math expression that adds the two metrics into one metric",
+        "A CloudWatch composite alarm that combines the two alarms with an AND rule for paging",
+        "A CloudWatch anomaly detection band on the latency metric with a wider threshold"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because composite alarms evaluate the state of other alarms with logical rules, so the action runs only when both alarms are in the alarm state. Option A is incorrect because a dashboard does not trigger actions. Option B is incorrect because adding metrics with different units produces a meaningless number and cannot express AND logic. Option D is incorrect because a wider band changes the sensitivity of a single metric. Takeaway: use composite alarms to reduce noisy alerts.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Create_Composite_Alarm.html"
+    },
+    {
+      "id": 48,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company wants to notify the security team by email every time the root user signs in to the AWS Management Console. Which solution meets this requirement with the LEAST operational effort?",
+      "options": [
+        "An Amazon EventBridge rule that matches root user console sign-in events and targets an SNS topic",
+        "An IAM policy that denies console access to the root user and sends a notification whenever it is used",
+        "An Amazon GuardDuty suppression rule that forwards the low severity findings about the root user",
+        "An AWS Config rule that checks once a day whether the root user of the account has an active session"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because sign-in events are recorded by CloudTrail and can be matched by EventBridge with the user identity type Root, and the rule can notify an SNS topic. Option B is incorrect because an IAM policy cannot restrict the root user and cannot send notifications. Option C is incorrect because suppression rules hide findings and do not forward events. Option D is incorrect because Config does not track sign-in sessions. Takeaway: use EventBridge rules on CloudTrail events for security alerts.",
+      "reference": "https://docs.aws.amazon.com/signin/latest/userguide/cloudtrail_signin_events.html"
+    },
+    {
+      "id": 49,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A security team wants to be alerted within minutes when API calls in the account fail with AccessDenied or UnauthorizedOperation errors more than five times in five minutes. The team already has an AWS CloudTrail trail. Which solution meets this requirement with the LEAST custom code?",
+      "options": [
+        "Create an AWS Config rule that evaluates every API call of the account and marks the failed calls as noncompliant",
+        "Enable Amazon Macie on the bucket of the trail and configure it to notify an SNS topic for each access denied event",
+        "Send the trail to CloudWatch Logs, create a metric filter on the error codes, and create an alarm that notifies an SNS topic",
+        "Query the trail logs with Amazon Athena on an hourly schedule and send the result to the security team by email"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because a metric filter on CloudTrail events in CloudWatch Logs turns error codes into a metric, and an alarm with a threshold and period sends the notification within minutes. Option A is incorrect because Config evaluates resource configurations and not API calls. Option B is incorrect because Macie discovers sensitive data and does not analyze API errors. Option D is incorrect because an hourly query cannot alert within minutes and needs scheduling code. Takeaway: metric filters and alarms provide near real-time detection from logs.",
+      "reference": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/monitor-cloudtrail-log-files-with-cloudwatch-logs.html"
+    },
+    {
+      "id": 50,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A support platform must show user-generated comments in the reader's language in near real time, and the company does not want to manage translation models. Which service should the company use?",
+      "options": [
+        "Amazon Rekognition",
+        "Amazon Polly",
+        "Amazon Textract",
+        "Amazon Translate"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Translate provides neural machine translation through an API for text in real time or in batch. Option A is incorrect because Rekognition analyzes images. Option B is incorrect because Polly synthesizes speech. Option C is incorrect because Textract extracts text from documents and does not translate. Takeaway: use Translate for machine translation.",
+      "reference": "https://docs.aws.amazon.com/translate/latest/dg/what-is.html"
+    },
+    {
+      "id": 51,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company must prepare for a PCI DSS audit. Auditors want evidence, such as configuration snapshots and API activity, that is mapped to each control. The security team currently collects screenshots by hand and wants the evidence to be gathered continuously and automatically. Which service should the team use?",
+      "options": [
+        "AWS Security Hub findings that the team exports every quarter and attaches to the audit file",
+        "Amazon Inspector reports that are generated for each instance before the auditors arrive",
+        "AWS Audit Manager with a PCI DSS framework and an assessment that covers the accounts in scope",
+        "AWS Config conformance packs that deliver the noncompliant resources to an Amazon S3 bucket"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because Audit Manager continuously collects evidence from AWS services and maps it to the controls of a framework, then assembles it for auditors. Option A is incorrect because Security Hub findings are security signals, and manual exports still leave the mapping and assembly to the team. Option B is incorrect because Inspector reports cover vulnerabilities only. Option D is incorrect because conformance packs evaluate configuration compliance and do not map evidence to audit controls. Takeaway: use Audit Manager to automate audit evidence collection.",
+      "reference": "https://docs.aws.amazon.com/audit-manager/latest/userguide/what-is.html"
+    },
+    {
+      "id": 52,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An application in a VPC in us-east-1 uses names from a Route 53 private hosted zone. The DR environment in a VPC in us-west-2 must resolve the same private names after a failover, without copying the records to a second zone. Which solution meets this requirement?",
+      "options": [
+        "Create a public hosted zone with the same records and delegate it to the us-west-2 VPC",
+        "Create a Route 53 Resolver outbound endpoint in us-west-2 that forwards the queries to the internet",
+        "Create a second private hosted zone in us-west-2 and copy the records to it with a script",
+        "Associate the us-west-2 VPC with the existing private hosted zone so that it resolves the same records"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because a private hosted zone can be associated with VPCs in any Region, so the DR VPC resolves the same records without duplication. Option A is incorrect because public zones would expose private records. Option B is incorrect because forwarding queries to the internet does not resolve private records. Option C is incorrect because a copy requires maintenance and can drift. Takeaway: associate DR VPCs with the private hosted zone.",
+      "reference": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-private-associate-vpcs-different-accounts.html"
+    },
+    {
+      "id": 53,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A multi-tenant SaaS application has complex authorization rules, such as users being allowed to edit only documents of their own tenant and managers being allowed to approve within limits. The team wants to keep these rules out of application code, manage them as policies, and evaluate them with a managed service. Which service should the team use?",
+      "options": [
+        "Amazon Verified Permissions with a policy store that uses Cedar policies for the application",
+        "AWS IAM Identity Center with a permission set for every tenant of the application",
+        "Amazon Cognito user pools with a custom attribute for each of the tenants and for the rules",
+        "AWS WAF with custom rules that match the tenant identifier in each of the request paths"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Verified Permissions is a managed authorization service for applications that evaluates Cedar policies separately from application code and supports fine-grained, attribute-based rules. Option B is incorrect because Identity Center manages workforce access to AWS accounts and applications. Option C is incorrect because user pool attributes carry identity data and do not evaluate policies. Option D is incorrect because WAF filters requests and cannot model resource-level authorization. Takeaway: use Verified Permissions for application-level fine-grained authorization.",
+      "reference": "https://docs.aws.amazon.com/verifiedpermissions/latest/userguide/what-is-avp.html"
+    },
+    {
+      "id": 54,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company runs two Amazon EC2 instances with a mail server software only to send about 2 million transactional emails per month. The team spends time on maintenance and IP reputation. The company wants to reduce cost and operational effort. Which solution meets this requirement?",
+      "options": [
+        "Amazon EC2 with a larger instance type that runs the mail server software with a Savings Plan",
+        "Amazon SNS with an SMS topic that sends each of the messages to the subscribers of the topic",
+        "Amazon Pinpoint with a journey that emails each of the recipients through a campaign of messages",
+        "Amazon Simple Email Service (Amazon SES) with a verified sending domain and DKIM"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because SES is a managed email service with low per-message pricing and no servers to maintain, and it manages sending reputation tools for the sender. Option A is incorrect because a larger instance adds cost and keeps the maintenance. Option B is incorrect because SMS is a different channel and costs more. Option C is incorrect because Pinpoint is a marketing campaign service and is being retired. Takeaway: use SES for transactional email at scale.",
+      "reference": "https://docs.aws.amazon.com/ses/latest/dg/Welcome.html"
+    },
+    {
+      "id": 55,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company enabled detailed monitoring on all 400 Amazon EC2 instances. The metrics are used only for daily reports, and the team does not use alarms that need a one-minute resolution. Which change reduces CloudWatch cost?",
+      "options": [
+        "Create a metric stream for all instance metrics to Amazon S3 and then delete the metrics from CloudWatch",
+        "Enable CloudWatch Logs Insights on the instances so that it replaces the collection of the metrics",
+        "Convert the instance metrics to high-resolution metrics with a one-second period for all instances",
+        "Disable detailed monitoring on the instances and use the default five-minute basic monitoring"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because basic monitoring publishes metrics every five minutes at no charge, while detailed monitoring publishes every minute for an additional fee per instance. Option A is incorrect because a metric stream adds cost and does not delete the metrics. Option B is incorrect because Logs Insights queries logs and is billed by the data scanned. Option C is incorrect because high-resolution metrics increase cost. Takeaway: use detailed monitoring only where needed.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-cloudwatch-new.html"
+    },
+    {
+      "id": 56,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "A company runs a MySQL database on Amazon RDS and wants to understand its part of the shared responsibility model. Which TWO tasks remain the customer's responsibility? (Select TWO)",
+      "options": [
+        "Patch the hypervisor of the physical servers that run the DB instance",
+        "Decide whether to encrypt the database and choose the backup retention period",
+        "Maintain the physical security, power, and cooling of the data center that hosts the database",
+        "Patch the operating system of the underlying database host that runs the DB instance",
+        "Manage database users and their permissions, and control network access with security groups"
+      ],
+      "correctAnswers": [
+        1,
+        4
+      ],
+      "explanation": "Options B and E are correct. For a managed service such as RDS, the customer controls data-level configuration, including database accounts, network access, encryption choices, and backup settings. Option A is incorrect because the hypervisor is part of the AWS-managed infrastructure. Option C is incorrect because AWS is responsible for physical security. Option D is incorrect because AWS patches the operating system of RDS hosts. Takeaway: with managed services, AWS operates the platform and the customer configures access and data protection.",
+      "reference": "https://aws.amazon.com/compliance/shared-responsibility-model/"
+    },
+    {
+      "id": 57,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A photo-sharing application receives hundreds of thousands of images per day. The company wants to detect unsafe content automatically before the images are published, without building or training a model. Which service should the company use?",
+      "options": [
+        "Amazon Textract, which extracts printed text and forms from scanned documents",
+        "Amazon Comprehend, which detects entities and sentiment in text documents",
+        "Amazon Rekognition content moderation, which detects unsafe content in images",
+        "Amazon Transcribe, which converts the speech in audio files into text"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because Rekognition offers pre-trained image and video analysis, including moderation labels for unsafe content. Option A is incorrect because Textract extracts text and data from documents. Option B is incorrect because Comprehend analyzes text. Option D is incorrect because Transcribe converts speech to text. Takeaway: use Rekognition for image and video analysis.",
+      "reference": "https://docs.aws.amazon.com/rekognition/latest/dg/moderation.html"
+    },
+    {
+      "id": 58,
+      "domain": "Design Resilient Architectures",
+      "type": "multi",
+      "question": "A production Amazon EKS cluster runs a deployment with six replicas, and the scheduler sometimes places most of the pods on nodes in one Availability Zone. An outage of that zone would take down most replicas. Which TWO changes improve the zone resilience? (Select TWO)",
+      "options": [
+        "Run the managed node groups in subnets of at least three Availability Zones",
+        "Increase the CPU request of the pods so that fewer pods fit on each of the nodes",
+        "Disable the cluster autoscaler so that nodes are never moved between zones",
+        "Add topology spread constraints on the pods that use the zone topology key",
+        "Set a node selector so that all pods are scheduled on the largest node in the cluster"
+      ],
+      "correctAnswers": [
+        0,
+        3
+      ],
+      "explanation": "Options A and D are correct. Topology spread constraints tell the scheduler to distribute pods evenly across zones, and nodes must exist in multiple zones for the pods to be spread. Option B is incorrect because a larger request changes how many pods fit on a node and does not spread them across zones. Option C is incorrect because the autoscaler does not move nodes between zones. Option E is incorrect because a single node is a single point of failure. Takeaway: combine topology spread constraints with multi-AZ node groups.",
+      "reference": "https://docs.aws.amazon.com/eks/latest/best-practices/reliability.html"
+    },
+    {
+      "id": 59,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Amazon OpenSearch Service domain takes automated snapshots that are kept for 14 days. Compliance now requires that domain data can be restored from up to 90 days ago. Which solution meets this requirement?",
+      "options": [
+        "Register an S3 snapshot repository and take manual snapshots on a schedule that fits the retention period",
+        "Increase the number of data nodes so that the domain keeps more history of the indices that it stores",
+        "Enable UltraWarm storage so that the snapshots of the domain are stored on warm nodes for 90 days",
+        "Enable slow logs on the domain so that the historical data can be rebuilt from the logs when needed"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because manual snapshots are stored in an S3 repository that the customer controls, so they can be retained as long as needed. Option B is incorrect because more data nodes add capacity and not history. Option C is incorrect because UltraWarm is a storage tier for indices and is not a snapshot retention feature. Option D is incorrect because slow logs record slow queries and cannot rebuild data. Takeaway: use manual snapshots in S3 for longer retention.",
+      "reference": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-snapshots.html"
+    },
+    {
+      "id": 60,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "Two instances in the same Availability Zone exchange data over a single TCP flow, and the flow is limited to about 5 Gbps even though the instances have much more aggregate bandwidth. The team also wants lower tail latency. Which feature helps?",
+      "options": [
+        "Enable ENA Express on the network interfaces of the supported instance types in the zone",
+        "Increase the MTU to 1500 bytes so that each of the packets carries more data",
+        "Place the instances in different Availability Zones so that separate paths are used",
+        "Attach additional Elastic IP addresses to the instances so that more flows are used"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because ENA Express uses the Scalable Reliable Datagram protocol to raise the single-flow bandwidth limit up to 25 Gbps and reduce tail latency between supported instances in the same zone. Option B is incorrect because 1500 bytes is the standard MTU and smaller than the jumbo MTU. Option C is incorrect because ENA Express requires the same zone, and cross-zone traffic has higher latency. Option D is incorrect because Elastic IP addresses do not add network paths. Takeaway: use ENA Express for higher single-flow throughput.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ena-express.html"
+    },
+    {
+      "id": 61,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An e-commerce company wants to detect a broken checkout flow before customers report it. The check must simulate a user who signs in, adds an item to the cart, and pays, every minute, and must raise an alarm when the flow fails. Which service should the company use?",
+      "options": [
+        "Amazon Inspector network reachability scans",
+        "AWS Trusted Advisor performance checks",
+        "Amazon CloudWatch Synthetics canaries",
+        "AWS Config rules for the load balancer"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because Synthetics canaries run scripted workflows on a schedule against endpoints and publish metrics that can drive alarms. Option A is incorrect because Inspector analyzes network exposure. Option B is incorrect because Trusted Advisor performs periodic account checks and not scripted workflows. Option D is incorrect because Config evaluates resource settings and cannot exercise a user flow. Takeaway: use canaries for proactive end-to-end monitoring.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html"
+    },
+    {
+      "id": 62,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A team enabled AWS X-Ray on a high-traffic API and records a trace for every request. The X-Ray bill is high, and the team needs only a representative sample of traces to find latency problems. Which change reduces the cost?",
+      "options": [
+        "Increase the retention period of the traces so that fewer new traces are stored",
+        "Configure sampling rules to record a small percentage of requests after the first request each second",
+        "Send the trace data to CloudWatch Logs so that the traces are billed at the log ingestion rate",
+        "Enable active tracing on all of the functions so that more requests are grouped into one trace"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because X-Ray bills by the number of traces recorded and retrieved, and sampling rules reduce the recorded traces to a representative subset. Option A is incorrect because X-Ray keeps traces for a fixed period and retention is not configurable. Option C is incorrect because traces are not billed as logs. Option D is incorrect because more tracing does not reduce the count. Takeaway: use sampling to control tracing cost.",
+      "reference": "https://docs.aws.amazon.com/xray/latest/devguide/xray-console-sampling.html"
+    },
+    {
+      "id": 63,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company runs 60 containers that use about 90 percent of the CPU and memory of a fixed fleet of instances around the clock, and the workload is predictable for at least three years. The team currently uses AWS Fargate. Which change is MOST likely to reduce cost?",
+      "options": [
+        "Move the containers to AWS Lambda functions that are invoked by an Amazon EventBridge schedule",
+        "Use larger Fargate tasks so that fewer tasks are needed to serve the same workload each day",
+        "Keep Fargate and add a second cluster in another Region so that the idle capacity can be shared",
+        "Run the containers on ECS with EC2 instances that are covered by a Compute Savings Plan or reserved capacity"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because densely packed, steady workloads use EC2 capacity efficiently, and commitment discounts lower the hourly price further than Fargate's per-vCPU and per-GB rates. Option A is incorrect because long-running containers do not fit Lambda's execution model and duration-based pricing. Option B is incorrect because larger tasks are billed for the resources they request. Option C is incorrect because a second cluster doubles the capacity that is paid for. Takeaway: steady, high-utilization container fleets are cheaper on discounted EC2 capacity.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html"
+    },
+    {
+      "id": 64,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company reads events from a Kinesis data stream with a fleet of Amazon EC2 instances that batch the events and write them to Amazon S3. The fleet runs around the clock and requires maintenance. No transformation is needed. Which change reduces cost and operational effort?",
+      "options": [
+        "Replace the consumers with a Lambda function for every shard that polls the stream continuously",
+        "Add a second stream so that the events are split between two smaller consumer fleets",
+        "Move the consumers to larger instances so that the batching finishes with fewer instances",
+        "Use Amazon Data Firehose with the stream as the source and S3 as the destination"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Firehose delivers stream data to S3 with buffering and no servers to run, and it removes the fleet's compute and maintenance cost. Option A is incorrect because functions that poll continuously add invocation cost and code to maintain. Option B is incorrect because a second stream adds cost and complexity. Option C is incorrect because larger instances still run around the clock. Takeaway: use Firehose for simple delivery to S3.",
+      "reference": "https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html"
+    },
+    {
+      "id": 65,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company protects a REST API in Amazon API Gateway by requiring an API key on each request. Auditors point out that any person who holds a key can call the API, and that the keys do not identify individual users. The company wants per-user authentication. Which change meets this requirement?",
+      "options": [
+        "Rotate the API keys every week and distribute the new keys again to all of the users",
+        "Add an Amazon Cognito user pool authorizer to the API methods so that each caller signs in as a user",
+        "Enable API caching on the stage so that requests with valid keys are answered from the cache",
+        "Increase the throttling limits in the usage plan that is linked to the API keys of the users"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because API keys and usage plans are meant for throttling and quotas and are not an authorization mechanism, while a Cognito user pool authorizer authenticates individual users with tokens. Option A is incorrect because rotation does not tie a key to an individual. Option C is incorrect because caching improves performance and does not authenticate. Option D is incorrect because throttling limits do not identify users. Takeaway: use authorizers for authentication and usage plans for quotas.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html"
+    }
+  ]
+}

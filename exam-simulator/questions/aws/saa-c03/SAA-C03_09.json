@@ -1,0 +1,1128 @@
+{
+  "examTitle": "AWS Certified Solutions Architect – Associate (SAA-C03) – Practice Exam Set 09",
+  "questions": [
+    {
+      "id": 1,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A team wants to deploy a pretrained open-source language model for a proof of concept, with a few clicks or lines of code and without building a training pipeline. Which service capability should the team use?",
+      "options": [
+        "AWS Glue DataBrew",
+        "Amazon SageMaker AI Ground Truth",
+        "Amazon Comprehend Medical",
+        "Amazon SageMaker AI JumpStart"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because JumpStart provides pretrained models and solution templates that can be deployed to an endpoint quickly. Option A is incorrect because DataBrew prepares data visually. Option B is incorrect because Ground Truth is for labeling data. Option C is incorrect because Comprehend Medical extracts health information from text. Takeaway: use JumpStart for quick deployments of pretrained models.",
+      "reference": "https://docs.aws.amazon.com/sagemaker/latest/dg/studio-jumpstart.html"
+    },
+    {
+      "id": 2,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company uses AWS DataSync to copy data from an on-premises NFS server to Amazon S3 over AWS Direct Connect. The security team asks whether the data is encrypted in transit, and whether they must configure anything. Which statement is correct?",
+      "options": [
+        "DataSync sends data in plaintext, so the team must set up a VPN on top of the Direct Connect connection",
+        "DataSync encrypts data only when the team enables a task option that uses a customer managed KMS key",
+        "DataSync encrypts data in transit with TLS by default, and no additional configuration is required",
+        "DataSync relies on Direct Connect, which encrypts all of the traffic with MACsec on every kind of connection"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because DataSync encrypts data with TLS when it transfers it between the agent and AWS, without any configuration. Option A is incorrect because the data is not sent in plaintext. Option B is incorrect because in-transit encryption does not depend on a customer managed key. Option D is incorrect because MACsec is available only on some dedicated connections and is not the mechanism that DataSync uses. Takeaway: DataSync encrypts in transit by default.",
+      "reference": "https://docs.aws.amazon.com/datasync/latest/userguide/encryption-in-transit.html"
+    },
+    {
+      "id": 3,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company stores database connection passwords in AWS Glue connections and wants the Data Catalog metadata and these passwords to be encrypted with a customer managed KMS key. Which configuration meets this requirement?",
+      "options": [
+        "Enable S3 server-side encryption on the buckets that the crawlers of the account read",
+        "Enable encryption on the IAM role of the crawler so that the permissions of the role are encrypted",
+        "Enable TLS on the JDBC connection so that the stored connection password is encrypted at rest",
+        "Enable Data Catalog encryption settings for metadata and connection password encryption with the key"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because the Data Catalog encryption settings allow encrypting the metadata and the connection passwords at rest with a KMS key. Option A is incorrect because bucket encryption protects the data objects and not the catalog. Option B is incorrect because IAM roles are not encrypted this way. Option C is incorrect because TLS protects data in transit and does not encrypt stored passwords. Takeaway: enable Data Catalog encryption for metadata and passwords.",
+      "reference": "https://docs.aws.amazon.com/glue/latest/dg/encrypt-glue-data-catalog.html"
+    },
+    {
+      "id": 4,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A Kinesis data stream carries records that contain personal data. The security team requires encryption at rest with a customer managed KMS key. Which combination meets this requirement?",
+      "options": [
+        "Enable client-side encryption in the consumers only, because the stream stores the records without encryption",
+        "Enable enhanced fan-out on the stream so that the stored records are encrypted with a separate key for each consumer",
+        "Enable TLS on the endpoints of the stream, which also encrypts the records that are stored in the shards",
+        "Enable server-side encryption on the stream with the customer managed key, and grant producers and consumers KMS permissions"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Kinesis supports server-side encryption with KMS keys, and producers and consumers need permissions such as kms:GenerateDataKey and kms:Decrypt for the key. Option A is incorrect because encryption in consumers happens after the data has been stored unencrypted. Option B is incorrect because enhanced fan-out is a throughput feature. Option C is incorrect because TLS protects data in transit and not data at rest. Takeaway: enable stream encryption and grant the key permissions.",
+      "reference": "https://docs.aws.amazon.com/streams/latest/dev/server-side-encryption.html"
+    },
+    {
+      "id": 5,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A workload makes about 2 billion GET requests per month against a 200 GB dataset in Amazon S3 Standard, and the request charges dominate the bill. The data can be recreated, and single-zone storage is acceptable. Which change is MOST likely to reduce cost?",
+      "options": [
+        "Enable S3 Transfer Acceleration for the bucket so that the number of requests to the dataset is reduced",
+        "Move the dataset to S3 Express One Zone, which has lower request prices and a higher storage price",
+        "Enable S3 Intelligent-Tiering for the dataset so that the request prices of the objects are reduced automatically",
+        "Move the dataset to S3 Glacier Instant Retrieval, which has the lowest storage price of the classes with immediate access"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because S3 Express One Zone has much lower per-request prices, and for a small dataset with an extreme request rate the lower request cost outweighs the higher storage price. Option A is incorrect because acceleration adds a charge and does not reduce request counts. Option C is incorrect because Intelligent-Tiering does not reduce request prices. Option D is incorrect because Glacier Instant Retrieval has higher retrieval and request costs for frequent access. Takeaway: request-heavy, small datasets can be cheaper on S3 Express One Zone.",
+      "reference": "https://aws.amazon.com/s3/pricing/"
+    },
+    {
+      "id": 6,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An operations team learns about Amazon RDS failovers and low storage conditions only when customers complain. The team wants to receive a notification whenever a DB instance fails over or runs low on storage. Which solution meets this requirement with the LEAST effort?",
+      "options": [
+        "Create a cron job on an EC2 instance that connects to the database every minute and reports the errors",
+        "Create a CloudTrail trail and search the logs for the failover API calls every morning at the start of the shift",
+        "Create an AWS Config rule that checks the Availability Zone of the DB instance every hour of the day",
+        "Create an RDS event subscription for the failover and low storage categories that publishes to an SNS topic"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because RDS event subscriptions send notifications about events such as failovers and low storage to SNS topics without extra infrastructure. Option A is incorrect because a custom probe needs maintenance and does not report storage events. Option B is incorrect because a failover is not an API call by a user and a daily search is not timely. Option C is incorrect because Config does not report failover events. Takeaway: use RDS event subscriptions for operational notifications.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Events.Subscribing.html"
+    },
+    {
+      "id": 7,
+      "domain": "Design Resilient Architectures",
+      "type": "multi",
+      "question": "An Amazon ECS service behind an Application Load Balancer must be deployed with a blue/green strategy. Traffic should shift to the new tasks gradually and roll back automatically when an alarm fires. Which TWO configurations are required? (Select TWO)",
+      "options": [
+        "Use the external deployment controller with a Lambda function that changes the listener rules by hand",
+        "Use one target group and replace the tasks in place, and rely on the load balancer to route by the task version",
+        "Use the AWS CodeDeploy deployment controller for the ECS service with two target groups on the load balancer",
+        "Use the rolling update deployment type with a minimum healthy percent of zero and a maximum percent of 100",
+        "Configure a deployment configuration that shifts traffic in steps, and attach CloudWatch alarms for automatic rollback"
+      ],
+      "correctAnswers": [
+        2,
+        4
+      ],
+      "explanation": "Options C and E are correct. Blue/green deployments for ECS use the CodeDeploy controller with two target groups, and the deployment configuration and alarms control the traffic shift and rollback. Option A is incorrect because a manual approach does not provide managed shifting and rollback. Option B is incorrect because replacing tasks in place with one target group does not create a second environment. Option D is incorrect because a rolling update with zero healthy tasks causes downtime and is not blue/green. Takeaway: use CodeDeploy for ECS blue/green with alarms.",
+      "reference": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-bluegreen.html"
+    },
+    {
+      "id": 8,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company runs a provisioned AWS DMS replication instance that is sized for the peak of a large migration, and the instance is idle most of the time. Migration tasks start at unpredictable times with very different sizes. The team wants to stop paying for idle capacity and stop sizing the instance. Which change meets this requirement?",
+      "options": [
+        "Use AWS DMS Serverless replications, which provision and scale capacity automatically",
+        "Convert the replication instance to a Multi-AZ deployment so that idle time is billed at a lower rate",
+        "Buy a Reserved Instance for the current replication instance with a three-year term",
+        "Increase the allocated storage of the replication instance so that the tasks finish sooner"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because DMS Serverless provisions and scales replication capacity automatically and bills for the capacity that is used, which suits intermittent and variable migrations. Option B is incorrect because Multi-AZ adds cost. Option C is incorrect because a reservation for an idle instance pays for unused capacity for three years. Option D is incorrect because more storage adds cost and does not remove idle time. Takeaway: use serverless replication for variable migration workloads.",
+      "reference": "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Serverless.html"
+    },
+    {
+      "id": 9,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A Kinesis data stream is configured with a retention period of 365 days, but the consumers process each record within a few minutes and no one replays data. The storage-related charges for the stream are high. Which change reduces cost?",
+      "options": [
+        "Reduce the retention period to the default of 24 hours, which the consumers need",
+        "Enable enhanced fan-out so that the retention of the records is billed for each of the consumers",
+        "Switch the stream to on-demand mode so that the charge for the retention of the records is removed",
+        "Increase the number of shards so that the records are stored in more places for the retention period"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because retention beyond 24 hours is charged, and long-term retention has additional charges, so lowering it to the default removes the charges when the data is not replayed. Option B is incorrect because enhanced fan-out adds consumer charges. Option C is incorrect because capacity mode does not remove retention charges. Option D is incorrect because more shards add shard-hour costs. Takeaway: set retention to what consumers need.",
+      "reference": "https://aws.amazon.com/kinesis/data-streams/pricing/"
+    },
+    {
+      "id": 10,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A non-critical development DynamoDB table of 500 GB needs a restore point once per day and seven days of retention. Point-in-time recovery is enabled and its charge is high. Which change reduces cost while meeting the requirement?",
+      "options": [
+        "Convert the table to on-demand capacity mode so that the charge for the backups is removed from the bill",
+        "Enable DynamoDB Streams and store the change records in S3 for the seven days of the retention period",
+        "Disable point-in-time recovery and use AWS Backup with a daily backup rule and seven-day retention",
+        "Keep point-in-time recovery and enable a longer recovery period so that the restores are cheaper for the table"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because point-in-time recovery is billed continuously per GB-month, while scheduled on-demand backups are billed per GB-month for the backups that are retained and are cheaper for a daily restore point. Option A is incorrect because capacity mode does not affect backup pricing. Option B is incorrect because streams add processing and storage cost and do not provide restores. Option D is incorrect because the recovery period cannot be extended beyond 35 days and does not lower cost. Takeaway: match the backup mechanism to the recovery requirement.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/backuprestore_HowItWorks.html"
+    },
+    {
+      "id": 11,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An operations team suspects that engineers changed security group rules in the console for resources that a CloudFormation stack created. The team wants to identify the differences from the template without changing anything. Which feature should the team use?",
+      "options": [
+        "CloudFormation termination protection on the stack",
+        "CloudFormation drift detection on the stack",
+        "CloudFormation stack policy on the stack",
+        "CloudFormation rollback triggers on the stack"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because drift detection compares the actual configuration of the stack's resources with the template and reports differences. Option A is incorrect because termination protection prevents stack deletion. Option C is incorrect because a stack policy restricts updates through CloudFormation. Option D is incorrect because rollback triggers monitor alarms during updates. Takeaway: use drift detection to find out-of-band changes.",
+      "reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html"
+    },
+    {
+      "id": 12,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company must be able to restore a critical DynamoDB table in another Region if the primary Region is unavailable, and it accepts a restore time of hours and a recovery point of one day. The company wants to avoid the cost of a global table. Which solution meets this requirement?",
+      "options": [
+        "DynamoDB Streams with a Lambda function that writes each change to a table in the other Region",
+        "Point-in-time recovery, which keeps the table available in the second Region at all times",
+        "An Auto Scaling policy on the table that adds replicas in the second Region during an outage",
+        "An AWS Backup plan with a daily rule that copies the backups to a vault in another Region"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because AWS Backup can take scheduled backups of DynamoDB tables and copy them across Regions, which supports restoring the table after a Regional failure at a lower cost than a global table. Option A is incorrect because it needs custom code and continuous cost. Option B is incorrect because point-in-time recovery restores within the table's own scope and does not keep a running copy in another Region. Option C is incorrect because auto scaling adjusts capacity and does not create replicas. Takeaway: use cross-Region backup copies for low-cost DR.",
+      "reference": "https://docs.aws.amazon.com/aws-backup/latest/devguide/cross-region-backup.html"
+    },
+    {
+      "id": 13,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A media company wants to generate subtitle files in SRT and WebVTT format for thousands of recorded videos, without training a model. The audio is in English and Spanish. Which service should the company use?",
+      "options": [
+        "Amazon Comprehend with the entity recognition feature that analyzes the text of the transcripts",
+        "Amazon Rekognition Video with the label detection feature that analyzes the frames of the videos",
+        "Amazon Polly with a lexicon that is created for each one of the videos in the library",
+        "Amazon Transcribe with subtitle output enabled, which produces SRT and WebVTT files"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Transcribe converts speech to text, supports English and Spanish, and can output subtitle files in SRT and WebVTT formats. Option A is incorrect because Comprehend analyzes text that already exists. Option B is incorrect because Rekognition analyzes visual content and does not transcribe speech. Option C is incorrect because Polly converts text to speech. Takeaway: use Transcribe for speech-to-text and subtitles.",
+      "reference": "https://docs.aws.amazon.com/transcribe/latest/dg/subtitles.html"
+    },
+    {
+      "id": 14,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "An online retailer wants to show personalized product recommendations that update in real time as users click, and it has no machine learning team. The company has historical interaction data. Which service should the company use?",
+      "options": [
+        "Amazon Forecast, which produces time-series forecasts and is closed to new customers",
+        "Amazon Personalize, which provides real-time recommendations from interaction data",
+        "Amazon Lex, which builds conversational interfaces for voice and text applications",
+        "Amazon Comprehend, which analyzes text for entities, sentiment, and key phrases"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Personalize provides managed real-time personalization and recommendations from interaction data without requiring machine learning expertise. Option A is incorrect because Forecast is a time-series forecasting service that is closed to new customers. Option C is incorrect because Lex builds conversational interfaces. Option D is incorrect because Comprehend analyzes text. Takeaway: use Personalize for recommendations.",
+      "reference": "https://docs.aws.amazon.com/personalize/latest/dg/what-is-personalize.html"
+    },
+    {
+      "id": 15,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A team uses asynchronous Step Functions Express Workflows to process payments. During tests, some payments were processed twice after a transient failure. Which design change addresses this?",
+      "options": [
+        "Enable X-Ray tracing on the workflow so that duplicate executions are detected and blocked by the service",
+        "Change the workflow to run with a higher memory allocation so that retries are not needed for the step",
+        "Make the payment step idempotent, for example with an idempotency key, because Express Workflows run at least once",
+        "Increase the timeout of the workflow so that Express Workflows are guaranteed to run exactly one time"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because asynchronous Express Workflows have at-least-once execution semantics, so steps that must not repeat should be idempotent, or Standard Workflows can be used for exactly-once execution. Option A is incorrect because tracing observes executions and does not prevent duplicates. Option B is incorrect because Step Functions does not have a memory setting for the workflow. Option D is incorrect because a longer timeout does not change the execution semantics. Takeaway: design for at-least-once semantics in Express Workflows.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html"
+    },
+    {
+      "id": 16,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A support team wants to route tickets automatically into company-specific categories, such as billing dispute and account closure. The team has 20,000 labeled examples and no machine learning engineers. Which solution meets this requirement with the LEAST effort?",
+      "options": [
+        "Use Amazon Textract to extract the text of the tickets and map the keywords of the text to the categories",
+        "Train an Amazon Comprehend custom classifier with the labeled tickets and use it for real-time or batch classification",
+        "Use Amazon Comprehend sentiment analysis and map the positive and negative results to the categories of the tickets",
+        "Build and train a deep learning model on Amazon EC2 GPU instances with a custom framework and a pipeline"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Comprehend custom classification trains a model on labeled documents without machine learning expertise and provides an endpoint or batch jobs. Option A is incorrect because Textract extracts text from documents and does not classify. Option C is incorrect because sentiment does not map to custom categories. Option D is incorrect because building a model from scratch requires expertise and effort. Takeaway: use custom classification for company-specific labels.",
+      "reference": "https://docs.aws.amazon.com/comprehend/latest/dg/how-document-classification.html"
+    },
+    {
+      "id": 17,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company runs an Amazon DocumentDB cluster in us-east-1 and needs a disaster recovery plan for a Regional outage with a low RPO of seconds and a low RTO of minutes. The plan should use managed cross-Region replication. Which solution meets this requirement?",
+      "options": [
+        "A DocumentDB cluster in each Region with an application that writes to both of the clusters",
+        "Daily automated snapshots that are copied to another Region and restored after an outage",
+        "An Amazon DocumentDB global cluster with a secondary cluster in another Region for the failover",
+        "AWS DMS tasks that copy the collections to an S3 bucket in the second Region every hour"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because global clusters replicate data to secondary Regions with typical lag of under a second and support a fast failover by promoting the secondary cluster. Option A is incorrect because dual writes from the application are hard to keep consistent. Option B is incorrect because daily snapshots give an RPO of up to a day and a long restore time. Option D is incorrect because hourly copies to S3 give an RPO of an hour and do not provide a running database. Takeaway: use global clusters for cross-Region DR.",
+      "reference": "https://docs.aws.amazon.com/documentdb/latest/developerguide/global-clusters.html"
+    },
+    {
+      "id": 18,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A team must process 20 million small objects in an Amazon S3 bucket by running a function on each object, with thousands of parallel executions. The team wants a managed workflow that reads the objects and tracks failures. Which solution meets this requirement?",
+      "options": [
+        "A single Lambda function that lists the bucket and processes each object in a sequential loop until it is done",
+        "An AWS Step Functions Distributed Map state that reads the S3 objects and runs child workflows in parallel",
+        "An Amazon SQS queue with one message for each object and a single consumer instance that processes all of them",
+        "An inline Map state in a Standard Workflow with the list of the objects passed in the input of the workflow"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because the Distributed Map state can iterate over millions of S3 objects and launch up to ten thousand parallel child executions, with failure tolerance settings. Option A is incorrect because a single function would exceed the time limit and does not run in parallel. Option C is incorrect because a single consumer does not provide parallelism. Option D is incorrect because an inline Map is limited by payload size and concurrency. Takeaway: use Distributed Map for large-scale parallel processing.",
+      "reference": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-asl-use-map-state-distributed.html"
+    },
+    {
+      "id": 19,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A user deletes a directory on an Amazon EFS file system that is protected by AWS Backup. The team wants to recover only that directory without overwriting the current data on the file system. Which approach meets this requirement?",
+      "options": [
+        "Create a new file system from the recovery point and delete the original file system afterward",
+        "Restore the full recovery point over the existing file system and accept the loss of the newer data",
+        "Restore the specific directory from the recovery point into a new directory on the existing file system",
+        "Use EFS Replication to fail back the file system from its replica to the original file system"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because AWS Backup can restore selected files or directories from an EFS recovery point into a new directory on the existing file system, which leaves current data intact. Option A is incorrect because deleting the original file system is disruptive and unnecessary. Option B is incorrect because it overwrites newer data. Option D is incorrect because replication would also replicate the deletion. Takeaway: use item-level restores for EFS.",
+      "reference": "https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-efs.html"
+    },
+    {
+      "id": 20,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "multi",
+      "question": "A team lists 500 million objects in an S3 bucket every week with the ListObjectsV2 API to build a report, and the request charges and run time are high. Which TWO changes reduce cost and effort? (Select TWO)",
+      "options": [
+        "Enable S3 Inventory on the bucket to deliver a weekly report of the objects",
+        "Enable versioning on the bucket so that list requests return the objects from a cached index",
+        "Enable Transfer Acceleration on the bucket so that list requests are billed at a lower rate",
+        "Increase the number of parallel list requests so that the report finishes in less time",
+        "Query the inventory files with Amazon Athena instead of calling the list API for all objects"
+      ],
+      "correctAnswers": [
+        0,
+        4
+      ],
+      "explanation": "Options A and E are correct. S3 Inventory provides scheduled reports of objects and metadata at a low price per million objects, and Athena can query the report files. Option B is incorrect because versioning does not provide a cached index and can increase the object count. Option C is incorrect because Transfer Acceleration does not change list request pricing. Option D is incorrect because more parallel list requests increase the request charges. Takeaway: use Inventory for large-scale object listings.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-inventory.html"
+    },
+    {
+      "id": 21,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "multi",
+      "question": "A data science team leaves Amazon SageMaker AI notebook instances running overnight and on weekends, although the notebooks are used only during working hours. The team wants to lower the compute cost without deleting the notebooks or their data. Which TWO actions should the team take? (Select TWO)",
+      "options": [
+        "Move the notebooks to a larger instance type so that the work finishes before people leave",
+        "Attach a lifecycle configuration that stops notebook instances after a period of idle time",
+        "Delete the EBS volume of each notebook instance each evening to stop the compute charges",
+        "Stop the notebook instances that are not in use, because the stopped instances keep their storage volumes",
+        "Convert the notebook instances to Multi-AZ so that the idle instances are billed at a lower rate"
+      ],
+      "correctAnswers": [
+        1,
+        3
+      ],
+      "explanation": "Options B and D are correct. Compute charges apply while instances run, so an idle-shutdown configuration and stopping unused instances remove the compute charges, and the stopped instances keep their data on the attached volume. Option A is incorrect because larger instances cost more per hour. Option C is incorrect because deleting the volume loses data and does not stop the instance charge. Option E is incorrect because notebook instances do not have a Multi-AZ setting. Takeaway: stop idle notebook instances to save cost.",
+      "reference": "https://docs.aws.amazon.com/sagemaker/latest/dg/notebook-lifecycle-config.html"
+    },
+    {
+      "id": 22,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company runs an Amazon DocumentDB cluster and needs to ensure that all client connections use TLS. Some legacy clients currently connect without it. Which change enforces the requirement?",
+      "options": [
+        "Set the tls parameter to enabled in the cluster parameter group and update clients to use the certificate bundle",
+        "Enable Multi-AZ on the cluster so that the connections between the replicas and the primary are encrypted",
+        "Attach a security group that allows only port 443 to the DocumentDB cluster and its instances",
+        "Enable encryption at rest with a customer managed key so that clients connect to the cluster securely"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because the tls cluster parameter controls whether connections must use TLS, and clients need the certificate bundle to connect. Option B is incorrect because Multi-AZ replicates data and does not force TLS for clients. Option C is incorrect because DocumentDB listens on port 27017 and security groups cannot enforce TLS. Option D is incorrect because encryption at rest does not affect the connection encryption. Takeaway: enforce TLS with the cluster parameter group.",
+      "reference": "https://docs.aws.amazon.com/documentdb/latest/developerguide/security.encryption.ssl.html"
+    },
+    {
+      "id": 23,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "An AWS Glue Spark job processes datasets whose size varies from a few gigabytes to a few hundred gigabytes. The job is configured with 100 G.2X workers, and most of them are idle for smaller runs. Which change reduces cost with the LEAST effort?",
+      "options": [
+        "Enable Glue Auto Scaling and set a maximum number of workers so that the job uses only the workers it needs",
+        "Convert the job to a Python shell job so that the job uses a fraction of a DPU for its processing",
+        "Move the job to an EMR cluster that runs all day and shares its capacity with the other jobs of the team",
+        "Increase the number of workers to 200 so that all of the runs finish twice as fast as they do today"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Glue Auto Scaling adds and removes workers during the run, so smaller runs do not pay for idle workers. Option B is incorrect because a Python shell job is not suitable for Spark workloads of this size. Option C is incorrect because an always-on cluster adds idle cost. Option D is incorrect because more workers raise the cost. Takeaway: use auto scaling to match worker count to the data volume.",
+      "reference": "https://docs.aws.amazon.com/glue/latest/dg/auto-scaling.html"
+    },
+    {
+      "id": 24,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "An application needs a simple, in-memory cache for database query results. The cache does not need persistence, replication, or complex data types, and the team wants to scale by adding nodes and to use multiple cores per node. Which engine is the BEST fit?",
+      "options": [
+        "Amazon DynamoDB Accelerator with a three-node cluster, which caches the reads of DynamoDB tables",
+        "Amazon MemoryDB with a multi-shard cluster, which is a durable Redis-compatible database",
+        "Amazon ElastiCache for Redis with Multi-AZ and persistence enabled for the cache nodes",
+        "Amazon ElastiCache for Memcached, which is a simple multi-threaded cache that scales by adding nodes"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Memcached is a simple, multi-threaded cache that scales horizontally by adding nodes and suits caching without persistence or replication. Option A is incorrect because DAX is a cache for DynamoDB only. Option B is incorrect because MemoryDB is a durable primary database. Option C is incorrect because Multi-AZ and persistence are features that the requirement does not need and cost more. Takeaway: choose Memcached for simple multi-threaded caches.",
+      "reference": "https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/SelectEngine.html"
+    },
+    {
+      "id": 25,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "An IAM role has an identity policy that allows s3:* and ec2:*. The role has a permissions boundary that allows s3:* and dynamodb:*. The account is subject to an SCP that allows ec2:* and s3:*. Which actions can the role perform?",
+      "options": [
+        "Only the ec2:* actions, because the SCP and the identity policy both allow them",
+        "Only the s3:* actions, because they are allowed by all three of the policy types",
+        "The s3:* and ec2:* actions, because the boundary does not restrict the identity policy",
+        "The s3:*, ec2:*, and dynamodb:* actions, because the policies are added together"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because the effective permissions are the intersection of the identity policy, the permissions boundary, and the SCP, and only s3:* is allowed by all three. Option A is incorrect because ec2:* is not allowed by the boundary. Option C is incorrect because ec2:* is blocked by the boundary. Option D is incorrect because it is the union of the policies. Takeaway: effective permissions are the intersection of the applicable policy types.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html"
+    },
+    {
+      "id": 26,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A company has 40 VPCs, and each VPC has its own interface endpoints for the same 10 AWS services in three Availability Zones. The hourly and data processing charges for these endpoints are high. Which change reduces cost while keeping private access?",
+      "options": [
+        "Create the interface endpoints in a shared services VPC and let the other VPCs use them through Transit Gateway and shared DNS",
+        "Delete the endpoints and route the traffic to the services through a NAT gateway in each one of the VPCs",
+        "Keep the endpoints in every VPC and reduce the number of Availability Zones to one in each of the VPCs",
+        "Replace the interface endpoints with gateway endpoints for all ten services in each of the VPCs of the company"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because endpoints in a shared VPC replace hundreds of endpoint interfaces with one set, and other VPCs reach them through the transit gateway and private DNS, which lowers the hourly charges. Option B is incorrect because NAT gateways add hourly and data processing charges and use public paths. Option C is incorrect because it reduces resilience and only saves part of the charges. Option D is incorrect because gateway endpoints exist only for S3 and DynamoDB. Takeaway: centralize interface endpoints to reduce cost at scale.",
+      "reference": "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/centralized-access-to-vpc-private-endpoints.html"
+    },
+    {
+      "id": 27,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A team must encrypt the log data that is stored in an existing Amazon CloudWatch Logs log group with a customer managed KMS key. Which step is required in addition to associating the key with the log group?",
+      "options": [
+        "Export the log group to Amazon S3 and enable SSE-KMS on the destination bucket of the export task",
+        "Enable server-side encryption on the log group by using the AWS managed key alias/aws/logs of the service",
+        "Add a metric filter to the log group so that the events are encrypted when they match the filter pattern",
+        "Add a statement to the key policy that allows the CloudWatch Logs service principal to use the key"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because CloudWatch Logs must be allowed by the key policy to use the KMS key for encrypting and decrypting log data. Option A is incorrect because encrypting an exported copy does not encrypt the log group itself. Option B is incorrect because the requirement is a customer managed key and there is no such alias for log groups. Option C is incorrect because metric filters do not encrypt data. Takeaway: grant the Logs service principal access in the key policy.",
+      "reference": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html"
+    },
+    {
+      "id": 28,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "Amazon Data Firehose delivers clickstream records to an Amazon S3 bucket. The compliance team requires that the delivered objects are encrypted with a customer managed KMS key. Which configuration meets this requirement?",
+      "options": [
+        "Configure the S3 destination of the delivery stream to use the KMS key, and allow the Firehose role to use it",
+        "Configure a Lambda function that encrypts the objects after they have been delivered to the destination bucket",
+        "Enable Amazon Macie on the destination bucket so that objects which are not encrypted are encrypted after delivery",
+        "Enable Transfer Acceleration on the bucket so that the objects are encrypted while they are uploaded by Firehose"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because the delivery stream can encrypt objects that it writes to S3 by using a KMS key, and the Firehose role needs permission to use the key. Option B is incorrect because post-delivery encryption leaves objects unencrypted for some time and needs custom code. Option C is incorrect because Macie does not encrypt objects. Option D is incorrect because Transfer Acceleration speeds up uploads and does not select the encryption. Takeaway: set the encryption on the delivery stream destination.",
+      "reference": "https://docs.aws.amazon.com/firehose/latest/dev/encryption.html"
+    },
+    {
+      "id": 29,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company uses an S3 File Gateway to store files from on-premises servers in Amazon S3. Policy requires that the objects are encrypted with a customer managed KMS key that the security team controls. Which configuration meets this requirement?",
+      "options": [
+        "Use an S3 bucket policy that denies all uploads that use TLS so that only encrypted objects can arrive",
+        "Enable the encryption of the local cache disk on the gateway virtual machine, which protects the cache",
+        "Configure the file share of the gateway to use SSE-KMS with the customer managed key",
+        "Create a second gateway that uses SSE-S3 for its shares and copy the objects between the two buckets"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because a file share of an S3 File Gateway can be configured to encrypt the objects that it writes with SSE-KMS by using a customer managed key. Option A is incorrect because denying TLS would block secure uploads and does not encrypt objects with KMS. Option B is incorrect because encrypting the local cache does not encrypt the objects in S3. Option D is incorrect because SSE-S3 does not use a customer managed key. Takeaway: configure the KMS key on the file share.",
+      "reference": "https://docs.aws.amazon.com/filegateway/latest/files3/encryption.html"
+    },
+    {
+      "id": 30,
+      "domain": "Design Resilient Architectures",
+      "type": "multi",
+      "question": "An Auto Scaling group that uses a single instance type in one subnet sometimes fails to scale out with InsufficientInstanceCapacity errors during demand peaks. The team wants to reduce these failures without changing the application. Which TWO changes help? (Select TWO)",
+      "options": [
+        "Attach an additional security group to the launch template so that more capacity is found",
+        "Add subnets in additional Availability Zones to the Auto Scaling group",
+        "Increase the maximum size of the group so that more capacity is requested at once",
+        "Configure a mixed instances policy with several instance types of similar size from different families",
+        "Increase the health check grace period so that new launches are given more time"
+      ],
+      "correctAnswers": [
+        1,
+        3
+      ],
+      "explanation": "Options B and D are correct. Diversifying instance types and Availability Zones gives Auto Scaling more capacity pools from which it can launch instances. Option A is incorrect because security groups do not affect capacity. Option C is incorrect because a higher maximum does not create capacity in a pool that is exhausted. Option E is incorrect because the grace period concerns health checks. Takeaway: diversify instance types and zones for capacity resilience.",
+      "reference": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html"
+    },
+    {
+      "id": 31,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A team runs a production AWS Elastic Beanstalk environment and wants to release a new version with near-zero downtime and the ability to roll back quickly by returning to the previous version. Which approach meets this requirement?",
+      "options": [
+        "Deploy the new version in place with a rolling policy with a batch size of 100 percent",
+        "Create a second environment with the new version and swap the environment URLs",
+        "Deploy the new version with the all at once policy and redeploy the old one if there is a problem",
+        "Terminate the production environment and create it again with the new version"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because a blue/green deployment with a swap of the environment URLs shifts traffic to the new environment and lets the team swap back if needed. Option A is incorrect because a rolling batch of 100 percent updates all instances at once. Option C is incorrect because all at once causes downtime and a rollback requires another deployment. Option D is incorrect because terminating the environment causes downtime. Takeaway: swap URLs for blue/green deployments in Elastic Beanstalk.",
+      "reference": "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.CNAMESwap.html"
+    },
+    {
+      "id": 32,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company imported third-party TLS certificates into AWS Certificate Manager, and ACM does not renew imported certificates automatically. The security team wants to be notified by email well before any of these certificates expires. Which solution meets this requirement with the LEAST effort?",
+      "options": [
+        "An Amazon Inspector scan of the load balancers that lists the certificates that are about to expire",
+        "An AWS Config rule that checks every certificate every day and renews the certificates that will expire",
+        "An Amazon EventBridge rule for the ACM certificate approaching expiration event that targets an SNS topic",
+        "A CloudWatch alarm on the CPU utilization of the load balancer that terminates the TLS connections"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because ACM publishes an event to EventBridge as certificates approach expiration, and a rule can send it to SNS for notification. Option A is incorrect because Inspector looks for vulnerabilities and not certificate expiry dates. Option B is incorrect because Config rules evaluate compliance and cannot renew imported certificates. Option D is incorrect because CPU utilization does not reflect certificate expiry. Takeaway: use EventBridge events to track ACM certificate expiry.",
+      "reference": "https://docs.aws.amazon.com/acm/latest/userguide/supported-events.html"
+    },
+    {
+      "id": 33,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company streams events into Amazon MSK and needs to continuously write them to Amazon S3 by using the existing open-source Kafka Connect S3 sink connector. The team does not want to run and scale Kafka Connect workers. Which solution meets this requirement?",
+      "options": [
+        "Amazon Data Firehose with a Lambda function that reads from the Kafka topics and forwards the records",
+        "A fleet of Amazon EC2 instances that run Kafka Connect in distributed mode with an Auto Scaling group",
+        "AWS Glue crawlers that read the Kafka topics and write the results of the crawls to the bucket",
+        "Amazon MSK Connect with the S3 sink connector plugin, which runs the workers as a managed service"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because MSK Connect runs Kafka Connect connectors as a managed service with autoscaling, and it supports existing open-source connectors. Option A is incorrect because a custom function adds code and does not use the connector. Option B is incorrect because managing instances contradicts the requirement. Option C is incorrect because crawlers infer schemas and do not move stream data. Takeaway: use MSK Connect for managed Kafka Connect.",
+      "reference": "https://docs.aws.amazon.com/msk/latest/developerguide/msk-connect.html"
+    },
+    {
+      "id": 34,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A data analyst team with limited programming experience must build ETL jobs that read CSV files from Amazon S3, join them, and write Parquet output. The team wants a visual interface and does not want to write Spark code or manage servers. Which service should the team use?",
+      "options": [
+        "Amazon Redshift with stored procedures that run on a schedule for the transformations",
+        "AWS Glue Studio with its visual job editor, which generates serverless Spark jobs",
+        "AWS Lambda functions that are written in Python for each of the transformations",
+        "Amazon EMR with a Spark cluster and a notebook that the team writes the code in"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Glue Studio provides a drag-and-drop editor that creates serverless Spark ETL jobs and generates the code. Option A is incorrect because stored procedures require a cluster and SQL programming. Option C is incorrect because writing functions for each transformation is code-heavy and hits the limits of Lambda for large data. Option D is incorrect because EMR requires cluster management and coding. Takeaway: use Glue Studio for visual, serverless ETL.",
+      "reference": "https://docs.aws.amazon.com/glue/latest/ug/what-is-glue-studio.html"
+    },
+    {
+      "id": 35,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A team uses Amazon MemoryDB as a primary database. A reporting application must be able to run only read commands on keys that start with report:, and the writer application needs full access. Which feature provides this control?",
+      "options": [
+        "MemoryDB access control lists with users whose access strings limit the commands and key patterns",
+        "A separate cluster for each application, which gives every application its own set of keys and users",
+        "IAM policies on the role of the reporting application that allow only the dynamodb read actions",
+        "A security group rule that allows the reporting application to connect on a read-only port"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because MemoryDB ACLs assign users with access strings that limit which commands and key patterns each user may use. Option B is incorrect because a separate cluster for each application adds cost and does not restrict commands within a cluster. Option C is incorrect because dynamodb actions apply to DynamoDB and not to MemoryDB. Option D is incorrect because security groups do not control commands and MemoryDB has no read-only port. Takeaway: use ACLs to restrict commands and keys.",
+      "reference": "https://docs.aws.amazon.com/memorydb/latest/devguide/clusters.acls.html"
+    },
+    {
+      "id": 36,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "An Amazon Aurora MySQL cluster serves an OLTP application, and analysts run large table scans with filters and aggregations that take a long time and compete with transactions. The team wants to speed up these queries without moving the data. Which feature helps?",
+      "options": [
+        "Aurora database activity streams, which cache the query results for the next scan",
+        "Aurora parallel query, which pushes the processing down to the distributed storage layer",
+        "Aurora Backtrack, which rewinds the data to a time that is faster to scan",
+        "Aurora Multi-AZ standby, which processes the analytical queries in a separate instance"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because parallel query pushes filtering and aggregation work down to the distributed storage layer, which speeds up analytical scans and reduces the load on the compute instance. Option A is incorrect because activity streams provide auditing. Option C is incorrect because Backtrack rewinds the database state and does not accelerate queries. Option D is incorrect because Aurora does not have a standby that serves queries in that way. Takeaway: use parallel query for analytics on Aurora MySQL.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html"
+    },
+    {
+      "id": 37,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A review finds many Amazon EBS io1 volumes that are provisioned with high IOPS, although the volumes use a small part of the IOPS. The team wants data-driven recommendations for cheaper volume types and settings. Which service should the team use?",
+      "options": [
+        "Amazon Inspector findings for the attached instances",
+        "AWS Compute Optimizer EBS volume recommendations",
+        "Amazon Macie discovery of the data on the volumes",
+        "AWS Config rules for volume encryption status"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Compute Optimizer analyzes utilization metrics of EBS volumes and recommends volume types and configurations, such as moving to gp3 with lower IOPS. Option A is incorrect because Inspector reports vulnerabilities. Option C is incorrect because Macie discovers sensitive data in S3. Option D is incorrect because Config rules for encryption do not analyze performance use. Takeaway: use Compute Optimizer to right-size EBS volumes.",
+      "reference": "https://docs.aws.amazon.com/compute-optimizer/latest/ug/view-ebs-recommendations.html"
+    },
+    {
+      "id": 38,
+      "domain": "Design High-Performing Architectures",
+      "type": "multi",
+      "question": "A company wants to add semantic search to a product catalog so that a query such as 'warm jacket for hiking' returns relevant items even when the words do not match exactly. The company uses Amazon OpenSearch Service. Which TWO steps enable this? (Select TWO)",
+      "options": [
+        "Store the embeddings in a k-NN vector index and run approximate nearest neighbor searches",
+        "Generate vector embeddings for the product descriptions and the queries with an embedding model",
+        "Increase the number of shards of the keyword index so that exact matches are found faster",
+        "Enable UltraWarm storage for the index so that similar words are grouped on the same node",
+        "Add a synonym list for every product description that a merchandiser writes by hand"
+      ],
+      "correctAnswers": [
+        0,
+        1
+      ],
+      "explanation": "Options A and B are correct. Semantic search converts text to embeddings, and OpenSearch's k-NN vector search finds the nearest vectors for a query. Option C is incorrect because more shards do not add semantic matching. Option D is incorrect because UltraWarm is a storage tier and does not add semantic understanding. Option E is incorrect because manual synonym lists do not scale and are not semantic. Takeaway: combine embeddings with a vector index for semantic search.",
+      "reference": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/knn.html"
+    },
+    {
+      "id": 39,
+      "domain": "Design High-Performing Architectures",
+      "type": "multi",
+      "question": "An Amazon EMR cluster that runs Spark jobs with variable load is sized for the peak and mostly idle. The team wants the cluster to scale automatically with the workload while protecting the HDFS data on core nodes from being lost during scale-in. Which TWO settings meet these requirements? (Select TWO)",
+      "options": [
+        "Enable EMR managed scaling with a minimum and a maximum number of instances or units",
+        "Disable managed scaling and resize the cluster by hand before each of the jobs starts",
+        "Limit the maximum number of core units so that the extra capacity is provided by task nodes",
+        "Run all of the extra capacity as core nodes on Spot Instances so that HDFS blocks are spread widely",
+        "Set the maximum number of units to the peak size so that the cluster never scales in"
+      ],
+      "correctAnswers": [
+        0,
+        2
+      ],
+      "explanation": "Options A and C are correct. Managed scaling adjusts capacity to the workload between limits, and limiting core units keeps HDFS on a stable set of nodes while task nodes, which hold no HDFS data, absorb the elasticity. Option B is incorrect because manual resizing is not automatic. Option D is incorrect because Spot core nodes can be interrupted and put HDFS data at risk. Option E is incorrect because a maximum equal to the peak does not stop scaling in. Takeaway: scale with task nodes and protect core nodes.",
+      "reference": "https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-managed-scaling.html"
+    },
+    {
+      "id": 40,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A team runs Apache Spark jobs of varying size several times a day on Amazon EMR, and it spends time sizing and managing clusters. The team wants to run the jobs without provisioning or managing clusters, and to pay only for the resources that the jobs use. Which solution meets this requirement?",
+      "options": [
+        "Amazon EMR Serverless with an application for Spark jobs",
+        "AWS Lambda functions that run the Spark code in parallel",
+        "Amazon EMR on EC2 with a cluster that has managed scaling enabled",
+        "Amazon Redshift with the stored procedures rewritten for each job"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because EMR Serverless runs Spark and Hive jobs without cluster management and scales the resources to the workload. Option B is incorrect because Lambda does not run Spark. Option C is incorrect because a cluster with managed scaling still has to be provisioned and managed. Option D is incorrect because rewriting jobs as stored procedures changes the workload. Takeaway: use EMR Serverless to run big data jobs without clusters.",
+      "reference": "https://docs.aws.amazon.com/emr/latest/EMR-Serverless-UserGuide/emr-serverless.html"
+    },
+    {
+      "id": 41,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company runs an Amazon Neptune cluster. After a faulty data load at 09:15, the team wants to recover the graph as it was at 09:00 with the least effort. Automated backups are enabled with a retention of seven days. What should the team do?",
+      "options": [
+        "Restore the cluster to a new cluster at 09:00 by using point-in-time recovery of the backups",
+        "Enable Neptune Streams and reverse the changes that were recorded after 09:00",
+        "Restore the cluster from the latest automated snapshot and replay the queries since then",
+        "Promote a read replica that was created before the faulty load to be the new writer"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Neptune automated backups support point-in-time recovery within the retention period, restoring to a new cluster at the chosen time. Option B is incorrect because Streams are not enabled retroactively and do not reverse changes. Option C is incorrect because the latest snapshot may contain the faulty load and replaying queries is manual. Option D is incorrect because replicas share the cluster volume and contain the faulty data. Takeaway: use point-in-time recovery into a new cluster.",
+      "reference": "https://docs.aws.amazon.com/neptune/latest/userguide/backup-restore-restore-snapshot.html"
+    },
+    {
+      "id": 42,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A team created an Amazon RDS for PostgreSQL read replica in another Region only to offload reporting queries. Data transfer and replica costs are high. There is no disaster recovery requirement for the replica. Which change reduces cost while keeping the reporting workload off the primary?",
+      "options": [
+        "Replace the replica with a larger primary instance and run the reports on the primary",
+        "Promote the cross-Region replica and run the reports directly on it as a standalone database",
+        "Keep the cross-Region replica and enable Multi-AZ on it so that the transfer is free",
+        "Replace the cross-Region replica with a read replica in the same Region as the primary"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because a same-Region replica avoids inter-Region data transfer charges and still offloads the reporting queries from the primary. Option A is incorrect because running reports on the primary contradicts the requirement and costs more. Option B is incorrect because a promoted replica no longer receives updates and reports would use stale data. Option C is incorrect because Multi-AZ adds cost and does not make the transfer free. Takeaway: keep replicas in the same Region when cross-Region resilience is not needed.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html"
+    },
+    {
+      "id": 43,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company wants its security operations team to manage IAM Identity Center assignments and permission sets, without using the management account of the organization for daily work. Which solution meets this requirement?",
+      "options": [
+        "Move the identity source of IAM Identity Center to a member account by using the AWS CLI",
+        "Attach an SCP to the member account that allows the sso:* actions for the team",
+        "Create IAM users for the team in the management account with the AdministratorAccess policy",
+        "Register a member account as the delegated administrator for IAM Identity Center"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because IAM Identity Center supports a delegated administrator member account, which lets the team manage assignments and permission sets without signing in to the management account. Option A is incorrect because the instance stays in the management account. Option B is incorrect because SCPs limit permissions and do not delegate administration. Option C is incorrect because it increases use of the management account. Takeaway: delegate Identity Center administration to a member account.",
+      "reference": "https://docs.aws.amazon.com/singlesignon/latest/userguide/delegated-admin.html"
+    },
+    {
+      "id": 44,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Amazon Aurora Serverless v2 cluster has one writer and one reader. After a failover, the promoted reader is too small for the write load and takes time to scale. The team wants the reader that is promoted to already have capacity that matches the writer. Which configuration meets this requirement?",
+      "options": [
+        "Set the minimum capacity of the cluster to zero ACUs so that scaling of the instances is faster",
+        "Disable Multi-AZ on the cluster so that the reader has more memory available for the workload",
+        "Put the reader in promotion tier 0 or 1 so that its capacity scales with the writer",
+        "Put the reader in promotion tier 15 so that it scales independently of the writer of the cluster"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because Serverless v2 readers in promotion tiers 0 and 1 scale together with the writer, so a promoted reader has matching capacity. Option A is incorrect because a minimum of zero ACUs adds a resume delay. Option B is incorrect because Multi-AZ is not a setting that provides memory and disabling it reduces availability. Option D is incorrect because readers in higher tiers scale independently and may be small when promoted. Takeaway: use promotion tiers 0 or 1 for fast failover capacity in Serverless v2.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.setting-capacity.html"
+    },
+    {
+      "id": 45,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company requires that every object that is uploaded to a bucket is encrypted with SSE-KMS, and uploads that request another encryption type or none must be rejected. Which solution meets this requirement?",
+      "options": [
+        "An S3 Inventory report that lists the encryption status of each object in the bucket once every week",
+        "A bucket policy that allows s3:PutObject only from the IP address range of the offices of the company",
+        "A bucket policy that denies s3:PutObject when the s3:x-amz-server-side-encryption header is not aws:kms",
+        "An S3 lifecycle rule that deletes objects that are not encrypted with SSE-KMS after a period of one day"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because a deny statement with a condition on the x-amz-server-side-encryption header rejects uploads that do not request SSE-KMS. Option A is incorrect because a report detects after the fact. Option B is incorrect because an IP restriction does not control encryption. Option D is incorrect because lifecycle rules cannot select objects by encryption type and would allow them to exist for a day. Takeaway: use deny conditions on the encryption header to enforce the encryption type.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html"
+    },
+    {
+      "id": 46,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "During Auto Scaling scale-in events, users of an application behind an Application Load Balancer sometimes receive errors because in-flight requests are cut off when an instance is terminated. Which setting reduces these errors?",
+      "options": [
+        "Set the deregistration delay of the target group to a value that covers the longest request",
+        "Set the health check interval of the target group to the lowest value that the service allows for it",
+        "Enable sticky sessions on the target group with a duration of one day for all of the clients",
+        "Disable cross-zone load balancing so that the requests stay within the zone of the load balancer node"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because the deregistration delay keeps a target that is being removed in the draining state so that in-flight requests can complete before the instance is terminated. Option B is incorrect because a shorter health check interval detects failures faster and does not protect in-flight requests. Option C is incorrect because stickiness does not change how termination works. Option D is incorrect because cross-zone settings do not affect draining. Takeaway: configure the deregistration delay for graceful scale-in.",
+      "reference": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html"
+    },
+    {
+      "id": 47,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An AWS Lambda function is configured to run in a VPC with a single subnet. During an Availability Zone outage, invocations of the function fail with network errors. Which change makes the function resilient to the loss of one zone?",
+      "options": [
+        "Increase the reserved concurrency of the function so that it can also run in more zones",
+        "Configure the function with subnets in at least two Availability Zones of the VPC",
+        "Attach an additional security group to the function so that it can use the other zones",
+        "Increase the memory of the function so that it is scheduled in a zone that is healthy"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Lambda runs functions in the subnets that are configured for the function, and subnets in multiple zones let it use healthy zones if one fails. Option A is incorrect because concurrency does not choose zones. Option C is incorrect because security groups do not affect zone placement. Option D is incorrect because memory does not affect the placement of the function. Takeaway: configure subnets in multiple zones for VPC-attached functions.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html"
+    },
+    {
+      "id": 48,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company runs an Amazon Neptune graph database and wants applications on Amazon EC2 to authenticate with their IAM roles rather than with database credentials. Which solution meets this requirement?",
+      "options": [
+        "Enable Neptune Streams so that the requests from the applications are authenticated by the stream consumer",
+        "Create a Neptune user for each application and store its password in the environment variables of the application",
+        "Place the cluster in a private subnet, which authenticates the applications by the subnet that they use",
+        "Enable IAM database authentication on the cluster and have the applications sign requests with Signature Version 4"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Neptune supports IAM database authentication, and clients sign HTTP requests with SigV4 using credentials of their IAM role, which are authorized by IAM policies. Option A is incorrect because Streams capture changes and do not authenticate clients. Option B is incorrect because Neptune does not use database users with passwords in this way and stored passwords are a risk. Option C is incorrect because a private subnet limits network reach but does not authenticate. Takeaway: use IAM authentication for Neptune.",
+      "reference": "https://docs.aws.amazon.com/neptune/latest/userguide/iam-auth.html"
+    },
+    {
+      "id": 49,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company attaches an SCP to the organization root that denies the creation of Amazon EC2 instances outside two approved Regions. Users in the management account can still create instances in other Regions. Why does this happen?",
+      "options": [
+        "SCPs apply only to the root user of the accounts and not to IAM users or roles",
+        "SCPs do not restrict the users and roles of the management account of the organization",
+        "SCPs do not apply to actions that are related to Amazon EC2 instances",
+        "SCPs must be attached to each account individually and cannot be attached to the root"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because service control policies affect member accounts and do not restrict principals in the management account, which is why workloads should not run there. Option A is incorrect because SCPs affect all IAM users and roles, including the root user of member accounts. Option C is incorrect because SCPs can restrict EC2 actions. Option D is incorrect because SCPs can be attached to the root, OUs, or accounts. Takeaway: SCPs do not apply to the management account.",
+      "reference": "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html"
+    },
+    {
+      "id": 50,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A small internal application uses ten long-lived connections to an Amazon RDS for MySQL instance with 2 vCPUs. The team added RDS Proxy in the past, but the application does not experience connection storms or failover issues. RDS Proxy is billed per vCPU-hour of the database. What should the team do to reduce cost?",
+      "options": [
+        "Enable Multi-AZ on the proxy so that the connection pool is billed once for both zones",
+        "Remove RDS Proxy and connect the application directly to the DB instance of the database",
+        "Increase the number of vCPUs of the DB instance so that the proxy is billed at a lower rate",
+        "Add a second RDS Proxy endpoint so that the connections are split between two proxies"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because RDS Proxy is billed per vCPU-hour of the database instance, and a small application without connection surges does not benefit from it, so removing it saves the charge. Option A is incorrect because a proxy does not have a Multi-AZ setting that changes billing. Option C is incorrect because more vCPUs increase the proxy charge. Option D is incorrect because a second endpoint does not lower the charge. Takeaway: use RDS Proxy where connection management matters.",
+      "reference": "https://aws.amazon.com/rds/proxy/pricing/"
+    },
+    {
+      "id": 51,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A team runs Amazon ElastiCache for Redis as a cache that holds precomputed data that takes hours to rebuild. After a node replacement, the cache was empty and the application was slow for hours. The team wants to be able to restore the cache contents quickly. What should the team do?",
+      "options": [
+        "Add a CloudFront distribution in front of the cache to keep a copy of the cached data at the edge locations",
+        "Switch the engine to Memcached, which supports automatic backups of the cached data on the nodes",
+        "Increase the TTL of the keys so that the cached data never expires and is therefore never lost by the cache",
+        "Enable automatic backups with a retention period and restore a cluster from the latest snapshot"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because ElastiCache for Redis can take daily snapshots and restore a cluster from them, so the data set does not have to be rebuilt. Option A is incorrect because CloudFront does not cache the contents of an ElastiCache cluster. Option B is incorrect because Memcached does not support backups. Option C is incorrect because a long TTL does not protect data from node loss. Takeaway: use snapshots to protect data in Redis caches that are costly to rebuild.",
+      "reference": "https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups.html"
+    },
+    {
+      "id": 52,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "A company copies snapshots of an encrypted Amazon Redshift cluster to another Region for disaster recovery. The copies must stay encrypted. Which configuration is required in the destination Region?",
+      "options": [
+        "An S3 bucket in the destination Region that receives the snapshots with SSE-S3 enabled",
+        "An IAM role in the source Region that allows the destination Region's Redshift service to decrypt",
+        "A cross-Region replica of the source KMS key with the same key ID as the source",
+        "A snapshot copy grant that allows Amazon Redshift to use a KMS key in the destination Region"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Redshift needs a snapshot copy grant for a KMS key in the destination Region so that it can re-encrypt the copied snapshots. Option A is incorrect because Redshift snapshots are not delivered to a customer's S3 bucket. Option B is incorrect because an IAM role does not provide the key in the destination Region. Option C is incorrect because replica keys are a feature of multi-Region KMS keys and are not what Redshift requires for snapshot copies. Takeaway: use snapshot copy grants for encrypted cross-Region snapshot copies.",
+      "reference": "https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-db-encryption.html"
+    },
+    {
+      "id": 53,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "An application stores session data in Amazon ElastiCache for Redis. The security team requires that all clients authenticate with a password or token and that traffic is encrypted in transit. Which configuration meets these requirements?",
+      "options": [
+        "Enable at-rest encryption on the replication group and rely on the security group for authentication of clients",
+        "Enable in-transit encryption on the replication group and configure Redis AUTH or role-based access control",
+        "Place the cluster in a public subnet and restrict inbound access to the application's IP addresses only",
+        "Enable Multi-AZ with automatic failover, which authenticates the clients while a failover takes place"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Redis AUTH and role-based access control require in-transit encryption to be enabled, and together they provide authenticated and encrypted connections. Option A is incorrect because at-rest encryption protects stored data and a security group does not authenticate clients. Option C is incorrect because a public subnet and IP restrictions do not provide authentication or encryption. Option D is incorrect because Multi-AZ improves availability and does not affect authentication. Takeaway: combine in-transit encryption with AUTH or RBAC.",
+      "reference": "https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/auth.html"
+    },
+    {
+      "id": 54,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "A secret in AWS Secrets Manager in account A must be read by an application role in account B. The secret is encrypted with a customer managed KMS key. Which TWO actions are required? (Select TWO)",
+      "options": [
+        "Encrypt the secret with the AWS managed key aws/secretsmanager so that other accounts can decrypt it",
+        "Attach a service control policy to account A that allows account B to read all of its secrets",
+        "Copy the secret value into a new secret in account B by using a scheduled script in account A",
+        "Allow the role in account B to use the KMS key by adding it to the key policy, and grant kms:Decrypt in the role's policy",
+        "Attach a resource policy to the secret that allows the role in account B to call secretsmanager:GetSecretValue"
+      ],
+      "correctAnswers": [
+        3,
+        4
+      ],
+      "explanation": "Options D and E are correct. Cross-account access needs a resource policy on the secret and access to the customer managed key that encrypts it. Option A is incorrect because the AWS managed key of Secrets Manager cannot be used by other accounts, so cross-account secrets need a customer managed key. Option B is incorrect because SCPs do not grant permissions. Option C is incorrect because copying the value creates a second secret to maintain. Takeaway: cross-account secrets need a resource policy and a shareable key.",
+      "reference": "https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples_cross.html"
+    },
+    {
+      "id": 55,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An engineer deleted several Amazon EBS snapshots by mistake, and the team needs to prevent permanent loss of accidentally deleted snapshots in the future. The team wants deleted snapshots to be recoverable for 14 days without extra tooling. Which feature meets this requirement?",
+      "options": [
+        "Recycle Bin with a retention rule for EBS snapshots that keeps the deleted snapshots",
+        "EBS fast snapshot restore enabled on all of the snapshots in every one of the Availability Zones",
+        "An S3 lifecycle rule that keeps the deleted snapshots for 14 days in a bucket of the account",
+        "EBS Multi-Attach enabled on the volumes so that the snapshots are shared by several instances"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because Recycle Bin retains deleted snapshots and AMIs for a period that a retention rule defines, so they can be recovered. Option B is incorrect because fast snapshot restore speeds up volume creation and does not protect against deletion. Option C is incorrect because snapshots are not stored in customer buckets. Option D is incorrect because Multi-Attach lets instances share a volume and is not related to snapshots. Takeaway: use Recycle Bin to protect against accidental deletion of snapshots.",
+      "reference": "https://docs.aws.amazon.com/ebs/latest/userguide/recycle-bin.html"
+    },
+    {
+      "id": 56,
+      "domain": "Design Secure Architectures",
+      "type": "multi",
+      "question": "A company discovers that an existing Amazon EFS file system with 3 TB of data was created without encryption at rest. Compliance requires encryption at rest for this data. Which TWO actions meet this requirement? (Select TWO)",
+      "options": [
+        "Enable EFS Replication to a new file system, which encrypts the existing data automatically in place",
+        "Copy the data from the old file system to the new one, for example by using AWS DataSync, and then switch the mount targets",
+        "Attach a customer managed KMS key to the existing file system by using a file system policy",
+        "Enable encryption on the existing file system by modifying its settings in the EFS console",
+        "Create a new EFS file system with encryption at rest enabled"
+      ],
+      "correctAnswers": [
+        1,
+        4
+      ],
+      "explanation": "Options B and E are correct. Encryption at rest for EFS can be enabled only when the file system is created, so the data must be copied to a new encrypted file system and clients moved to it. Option A is incorrect because replication creates a destination file system, and the source stays unencrypted. Option C is incorrect because a file system policy controls access and does not select encryption keys. Option D is incorrect because the setting cannot be modified after creation. Takeaway: EFS encryption at rest must be chosen at creation.",
+      "reference": "https://docs.aws.amazon.com/efs/latest/ug/encryption-at-rest.html"
+    },
+    {
+      "id": 57,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A web application behind an Auto Scaling group has a minimum size of 12 instances to handle the daytime load, but it needs only 3 instances between 10 PM and 6 AM. The team wants to reduce cost without affecting daytime performance. Which change meets this requirement?",
+      "options": [
+        "Increase the scale-in cooldown to 24 hours so that instances are terminated more slowly at night",
+        "Change the health check type to ELB so that unused instances are removed by the load balancer at night",
+        "Create scheduled actions that lower the minimum and desired capacity at night and raise them in the morning",
+        "Purchase Reserved Instances for the 12 instances of the group with a three-year term for a discount"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because scheduled actions adjust the group's capacity limits at fixed times, so fewer instances run overnight. Option A is incorrect because a longer cooldown delays scale-in and does not lower the minimum. Option B is incorrect because health checks replace unhealthy instances and do not scale in. Option D is incorrect because reservations for 12 instances pay for capacity that is unused at night. Takeaway: schedule capacity for predictable off-peak periods.",
+      "reference": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scheduled-scaling.html"
+    },
+    {
+      "id": 58,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "An AWS Lambda function processes records from a Kinesis data stream with four shards. The iterator age keeps increasing during peaks because each shard is processed by one invocation at a time. Record ordering per partition key must be preserved, and adding shards is not possible now. Which change helps?",
+      "options": [
+        "Increase the parallelization factor of the event source mapping so that several batches of a shard run concurrently",
+        "Reduce the batch size of the event source mapping to one so that each of the invocations of the function is very short",
+        "Increase the function timeout so that each one of the invocations can process many more of the records of a batch",
+        "Enable enhanced fan-out on the stream so that the Lambda function reads faster from each one of the shards of the stream"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because the parallelization factor lets Lambda process up to ten batches from each shard concurrently while it keeps the order of records for each partition key. Option B is incorrect because a batch size of one increases the number of invocations and does not add parallelism within a shard. Option C is incorrect because a longer timeout does not add concurrency. Option D is incorrect because enhanced fan-out addresses read throughput and does not change how many batches are processed concurrently. Takeaway: use the parallelization factor to speed up shard processing.",
+      "reference": "https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html"
+    },
+    {
+      "id": 59,
+      "domain": "Design Cost-Optimized Architectures",
+      "type": "single",
+      "question": "A small business runs a WordPress website with low, steady traffic on an oversized EC2 instance with an EBS volume, an Elastic IP address, and data transfer charges. The business wants the simplest option with a predictable monthly price. Which service is the BEST fit?",
+      "options": [
+        "AWS Elastic Beanstalk with a load-balanced environment that has two instances behind a load balancer",
+        "Amazon ECS on AWS Fargate with an Application Load Balancer and an auto scaling policy for the tasks",
+        "Amazon Lightsail with a WordPress instance plan that includes storage and a data transfer allowance",
+        "Amazon EC2 with a Dedicated Host so that the price of the instance is fixed for the business each month"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because Lightsail offers bundled plans with a predictable monthly price that include compute, storage, and a data transfer allowance, which suits small, steady workloads. Option A is incorrect because a load-balanced environment with two instances costs more. Option B is incorrect because Fargate with a load balancer adds cost and complexity for a small site. Option D is incorrect because Dedicated Hosts are expensive. Takeaway: use Lightsail for simple, predictable workloads.",
+      "reference": "https://docs.aws.amazon.com/lightsail/latest/userguide/what-is-amazon-lightsail.html"
+    },
+    {
+      "id": 60,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A team loads 50 million items into an Amazon DynamoDB table by calling PutItem one item at a time from a single thread, and the load takes many hours. The table uses on-demand capacity. Which change speeds up the load the MOST?",
+      "options": [
+        "Switch the writes to strongly consistent PutItem calls so that each one of the items is stored faster by the table",
+        "Use BatchWriteItem calls of up to 25 items from several parallel workers and retry the unprocessed items",
+        "Increase the size of each item so that fewer of the items are needed to carry the same volume of the data",
+        "Enable DynamoDB Streams on the table so that the writes of the load are applied in the background of the table"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because batching up to 25 writes per request and running several workers in parallel reduces round trips and increases throughput, and unprocessed items must be retried. Option A is incorrect because writes do not have a consistency option and are always durable. Option C is incorrect because larger items consume more write capacity. Option D is incorrect because Streams record changes and do not speed up writes. Takeaway: batch and parallelize bulk writes.",
+      "reference": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html"
+    },
+    {
+      "id": 61,
+      "domain": "Design High-Performing Architectures",
+      "type": "multi",
+      "question": "A table in Amazon Athena has hundreds of thousands of date-based partitions in S3. Queries spend a long time on partition metadata lookups, and new partitions must be added continuously. Which TWO actions improve the situation? (Select TWO)",
+      "options": [
+        "Convert the table to a view that scans all objects under the prefix without partition filters",
+        "Remove the need to register new partitions, because projected partitions are computed from the table properties",
+        "Configure partition projection on the table with the ranges and format of the date partition key",
+        "Enable S3 Transfer Acceleration on the bucket so that the partition lookups are faster",
+        "Increase the number of AWS Glue crawlers that run on the table so that partitions are added faster"
+      ],
+      "correctAnswers": [
+        1,
+        2
+      ],
+      "explanation": "Options B and C are correct. With partition projection Athena calculates partition values and locations from the configured properties instead of retrieving them from the catalog, which speeds up planning and avoids registering new partitions. Option A is incorrect because scanning all objects is slower and costs more. Option D is incorrect because Transfer Acceleration does not affect the catalog lookups. Option E is incorrect because more crawlers add cost and do not remove the lookups. Takeaway: use partition projection for tables with many predictable partitions.",
+      "reference": "https://docs.aws.amazon.com/athena/latest/ug/partition-projection.html"
+    },
+    {
+      "id": 62,
+      "domain": "Design High-Performing Architectures",
+      "type": "single",
+      "question": "A company builds a fraud detection feature that must traverse relationships between accounts, devices, and addresses several hops deep in milliseconds. Relational joins are too slow for these queries. Which database should the company use?",
+      "options": [
+        "Amazon DynamoDB with a global secondary index for every one of the relationship types",
+        "Amazon ElastiCache for Memcached with a key for each one of the relationships",
+        "Amazon Redshift with a distribution key on the account identifier of each of the rows",
+        "Amazon Neptune, a graph database that is built for highly connected data"
+      ],
+      "correctAnswers": [
+        3
+      ],
+      "explanation": "Option D is correct because Neptune is a purpose-built graph database that is optimized for traversing highly connected data with low latency. Option A is incorrect because indexes do not support multi-hop traversals efficiently. Option B is incorrect because a cache does not model or traverse relationships. Option C is incorrect because Redshift is a data warehouse for analytics and not for millisecond traversals. Takeaway: use a graph database for relationship-heavy queries.",
+      "reference": "https://docs.aws.amazon.com/neptune/latest/userguide/intro.html"
+    },
+    {
+      "id": 63,
+      "domain": "Design Secure Architectures",
+      "type": "single",
+      "question": "An Auto Scaling group launches instances from an AMI whose EBS snapshots are encrypted with a customer managed KMS key. The launches fail with an error that the instance could not be launched because of a KMS key authorization problem. Which change fixes the issue?",
+      "options": [
+        "Replace the customer managed key with the AWS managed key alias/aws/ebs in the launch template of the group",
+        "Allow the Auto Scaling service-linked role in the key policy, including permission to create grants",
+        "Attach the AWSKeyManagementServicePowerUser policy to the instance profile that the launched instances use after the launch",
+        "Enable automatic key rotation on the customer managed key so that the failing launches are authorized again"
+      ],
+      "correctAnswers": [
+        1
+      ],
+      "explanation": "Option B is correct because Auto Scaling uses its service-linked role to launch instances with encrypted volumes, and the role must be allowed by the key policy to use the key and create grants for the volumes. Option A is incorrect because the AMI snapshots are already encrypted with the customer managed key, so changing the launch template does not remove the need. Option C is incorrect because the instance profile applies to the running instance and not to the launch operation. Option D is incorrect because rotation does not change authorization. Takeaway: authorize the service-linked role in the key policy.",
+      "reference": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/key-policy-requirements-EBS-encryption.html"
+    },
+    {
+      "id": 64,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "An Amazon EventBridge rule sends events to a third-party HTTPS API that allows 10 requests per second and sometimes returns errors. The team wants EventBridge to respect the rate limit, retry failed calls, and keep events that could not be delivered. Which configuration meets these requirements?",
+      "options": [
+        "An SNS topic with an HTTPS subscription that has a delivery policy of 10 requests per second",
+        "A Lambda function that calls the API for each event and sleeps between the calls to respect the limit",
+        "An API destination with an invocation rate limit of 10 per second, a retry policy, and a dead-letter queue",
+        "A Step Functions Express Workflow that starts for each event and waits for the response of the API"
+      ],
+      "correctAnswers": [
+        2
+      ],
+      "explanation": "Option C is correct because API destinations support an invocation rate limit per second, a retry policy, and a dead-letter queue for events that cannot be delivered. Option A is incorrect because SNS delivery policies control retries and not a strict request rate for third-party APIs in this way. Option B is incorrect because it adds code and cost and does not provide managed retries or a DLQ. Option D is incorrect because a workflow for each event adds cost and can exceed the rate. Takeaway: use API destinations for rate-limited HTTP targets.",
+      "reference": "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html"
+    },
+    {
+      "id": 65,
+      "domain": "Design Resilient Architectures",
+      "type": "single",
+      "question": "A company stores critical data in an S3 bucket with versioning enabled. The team wants to be able to restore the bucket contents to any second within the last 30 days after an accidental mass deletion or overwrite, managed by AWS Backup. Which solution meets this requirement?",
+      "options": [
+        "An AWS Backup plan with continuous backups for the S3 bucket, which allows point-in-time restores",
+        "An AWS Backup plan with a daily backup rule and a retention of 30 days for the bucket",
+        "An S3 lifecycle rule that keeps 30 noncurrent versions of each object in the source bucket",
+        "S3 Cross-Region Replication with delete marker replication enabled to a second bucket"
+      ],
+      "correctAnswers": [
+        0
+      ],
+      "explanation": "Option A is correct because continuous backups for S3 enable point-in-time restore to any time within the retention period, up to 35 days, and require versioning. Option B is incorrect because daily backups restore only to the daily points. Option C is incorrect because keeping versions does not offer a bucket-wide restore to a point in time. Option D is incorrect because replicating delete markers would replicate the deletion to the second bucket. Takeaway: use continuous backups for point-in-time S3 recovery.",
+      "reference": "https://docs.aws.amazon.com/aws-backup/latest/devguide/s3-backups.html"
+    }
+  ]
+}
