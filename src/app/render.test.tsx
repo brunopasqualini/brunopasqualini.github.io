@@ -2,6 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App from '@/app/App';
+import { MISSIONS } from '@/content/missions';
 import { useGame } from '@/game/store';
 
 let root: Root | undefined;
@@ -72,11 +73,11 @@ describe('primary navigation renders every section', () => {
       expect(host!.querySelectorAll('.navtab').length).toBe(7);
     });
   }
-  it('Mission Control lists all six missions with controls', async () => {
+  it('Mission Control lists every mission with controls', async () => {
     await mount('#/missions');
     await waitFor('.mission-card');
-    expect(host!.querySelectorAll('.mission-card').length).toBe(6);
-    expect(host!.querySelectorAll('.mission-card .btn-primary').length).toBe(6);
+    expect(host!.querySelectorAll('.mission-card').length).toBe(MISSIONS.length);
+    expect(host!.querySelectorAll('.mission-card .btn-primary').length).toBe(MISSIONS.length);
   });
 });
 

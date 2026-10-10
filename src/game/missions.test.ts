@@ -355,6 +355,104 @@ describe('Mission 6 — The Cloud Bill Shock', () => {
   });
 });
 
+const last = (s: Session) => s.history[s.history.length - 1].system;
+const hardOpen = (v: ReturnType<typeof verify>) => v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id);
+
+describe('Mission 7 — The N+1 Endpoint', () => {
+  const start = () => createSession('m7-n-plus-one', 'beginner');
+  it('starts with a saturated database', () => {
+    const s = start();
+    expect(last(s).maxUtil).toBeGreaterThan(1.2);
+    expect(last(s).successRate).toBeLessThan(0.5);
+  });
+  it('batching the lookups removes the cause and passes with a high score', () => {
+    const s = start();
+    expect(applyAction(s, 'batch').ok).toBe(true);
+    advance(s, 6);
+    const v = verify(s, true);
+    expect(hardOpen(v)).toEqual([]);
+    expect(v.outcome.passed).toBe(true);
+    expect(v.outcome.reqs.find((r) => r.id === 'calls')!.pass).toBe(true);
+    expect(v.outcome.decisions!.map((d) => d.tag)).toEqual(['m7-n-plus-one:fixed-in-code']);
+  });
+  it('buying a bigger database blows the budget', () => {
+    const s = start();
+    cfg(s.draft, 'db', { size: 'large' });
+    ship(s, 6);
+    const v = verify(s, true);
+    expect(hardOpen(v)).toEqual(['budget']);
+    expect(v.outcome.decisions!.map((d) => d.tag)).toContain('m7-n-plus-one:bought-a-bigger-database');
+  });
+  it('a cache alone is not enough, and the pattern is still there', () => {
+    const s = start();
+    add(s.draft, N('elasticache', 'c', { nodes: 1, size: 'small', ttlSeconds: 60 }));
+    connect(s.draft, 'api', 'c');
+    ship(s, 8);
+    const v = verify(s, true);
+    expect(hardOpen(v)).toContain('p95');
+  });
+  it('a cache plus pagination is a valid but weaker alternative that keeps the defect', () => {
+    const s = start();
+    add(s.draft, N('elasticache', 'c', { nodes: 1, size: 'small', ttlSeconds: 60 }));
+    connect(s.draft, 'api', 'c');
+    applyAction(s, 'paginate');
+    ship(s, 8);
+    const v = verify(s, true);
+    expect(hardOpen(v)).toEqual([]);
+    expect(v.outcome.reqs.find((r) => r.id === 'calls')!.pass).toBe(false);
+    expect(v.outcome.decisions!.map((d) => d.tag)).toContain('m7-n-plus-one:hid-it-behind-a-cache');
+  });
+  it('adding application replicas makes no difference to a saturated database', () => {
+    const s = start();
+    cfg(s.draft, 'api', { replicas: 8 });
+    ship(s, 6);
+    expect(last(s).successRate).toBeLessThan(0.1);
+  });
+});
+
+describe('Mission 8 — The Impatient Client', () => {
+  const start = () => createSession('m8-impatient-client', 'beginner');
+  const worst = (s: Session) => Math.max(...Object.values(s.history[s.history.length - 1].edges).map((e) => e.amplification));
+  it('starts in a retry storm', () => {
+    const s = start();
+    expect(worst(s)).toBeGreaterThan(2);
+    expect(last(s).successRate).toBeLessThan(0.1);
+  });
+  it('a measured timeout plus a retry budget passes', () => {
+    const s = start();
+    applyAction(s, 'timeout');
+    applyAction(s, 'retries');
+    advance(s, 8);
+    const v = verify(s, true);
+    expect(hardOpen(v)).toEqual([]);
+    expect(v.outcome.passed).toBe(true);
+    expect(v.outcome.decisions!.map((d) => d.tag)).toEqual(['m8-impatient-client:retry-budget']);
+  });
+  it('fixing only the timeout works but leaves loose retries on the record', () => {
+    const s = start();
+    applyAction(s, 'timeout');
+    advance(s, 8);
+    const v = verify(s, true);
+    expect(hardOpen(v)).toEqual([]);
+    expect(v.outcome.reqs.find((r) => r.id === 'retry-budget')!.pass).toBe(false);
+    expect(v.outcome.decisions!.map((d) => d.tag)).toEqual(['m8-impatient-client:left-retries-loose']);
+  });
+  it('adding pricing replicas does not stop the storm and blows the budget', () => {
+    const s = start();
+    cfg(s.draft, 'pricing', { replicas: 8 });
+    ship(s, 8);
+    const v = verify(s, true);
+    expect(hardOpen(v)).toContain('avail');
+    expect(hardOpen(v)).toContain('budget');
+  });
+  it('a circuit breaker alone does not fix an over-eager contract', () => {
+    const s = start();
+    applyAction(s, 'breaker');
+    advance(s, 8);
+    expect(hardOpen(verify(s, true))).toContain('avail');
+  });
+});
+
 describe('persistence by replay', () => {
   it('replaying logged ops reproduces the same state', async () => {
     const { replay } = await import('@/game/session');

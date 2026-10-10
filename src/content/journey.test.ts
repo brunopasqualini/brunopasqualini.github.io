@@ -14,12 +14,15 @@ describe('journey', () => {
       ).toBe(true);
   });
 
-  it('starts at level 1 and advances as stages complete', () => {
+  it('starts at level 1 and advances only when every mission of a stage is passed', () => {
     expect(currentStage({}).level).toBe(1);
-    expect(currentStage({ 'm1-monolith': { passed: true } }).level).toBe(2);
+    expect(currentStage({ 'm1-monolith': { passed: true } }).level).toBe(1);
+    const stage1 = Object.fromEntries(JOURNEY[0].missionIds.map((id) => [id, { passed: true }]));
+    expect(currentStage(stage1).level).toBe(2);
     const all = Object.fromEntries(MISSIONS.map((m) => [m.id, { passed: true }]));
-    // everything playable is done: the player stays at the last playable stage
-    expect(currentStage(all).level).toBe(4);
+    // everything playable is done: the player stays at the last stage that has missions
+    const lastPlayable = [...JOURNEY].reverse().find((s) => s.missionIds.length > 0)!;
+    expect(currentStage(all).level).toBe(lastPlayable.level);
   });
 
   it('reports stages without scenarios as coming soon rather than empty progress', () => {
