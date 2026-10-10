@@ -1,7 +1,7 @@
 import { Play as PlayIcon, RotateCcw } from 'lucide-react';
 import type { Mission } from '@/content/missions/types';
 import { useGame } from '@/game/store';
-import { go } from '@/app/router';
+import { go } from '@/shared/lib/nav';
 
 export function useMissionState() {
   const progress = useGame((s) => s.progress);

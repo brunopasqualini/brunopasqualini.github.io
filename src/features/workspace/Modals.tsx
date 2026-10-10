@@ -6,7 +6,7 @@ import { missionOf } from '@/game/session';
 import { useGame } from '@/game/store';
 import { Chip, Meter, Modal } from '@/shared/ui/common';
 import { usd2 } from '@/shared/lib/fmt';
-import { go } from '@/app/router';
+import { go } from '@/shared/lib/nav';
 
 export function MissionIntro() {
   const session = useGame((s) => s.session);

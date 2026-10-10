@@ -7,7 +7,7 @@ import { LESSONS } from '@/content/academy';
 import { useGame } from '@/game/store';
 import { Chip, Meter, Empty } from '@/shared/ui/common';
 import { when } from '@/shared/lib/fmt';
-import { go } from '@/app/router';
+import { go } from '@/shared/lib/nav';
 
 export function AcademyPage() {
   const progress = useGame((s) => s.progress);

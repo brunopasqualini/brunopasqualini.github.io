@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router';
 import { diffArch } from '@/engine/arch';
 import { LAB_ID } from '@/game/session';
 import { useGame } from '@/game/store';
@@ -108,4 +109,14 @@ export function Play({ missionId, template }: { missionId: string; template?: st
       <Debrief />
     </div>
   );
+}
+
+export function PlayRoute() {
+  const { missionId } = useParams();
+  return missionId ? <Play missionId={missionId} /> : null;
+}
+
+export function LabRoute() {
+  const [params] = useSearchParams();
+  return <Play missionId={LAB_ID} template={params.get('template') ?? undefined} />;
 }

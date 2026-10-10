@@ -4,7 +4,7 @@ import { useGame } from '@/game/store';
 import { Chip, Sparkline } from '@/shared/ui/common';
 import { clock, ms, pct0, usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
-import { go } from '@/app/router';
+import { go } from '@/shared/lib/nav';
 
 export function StatusBar() {
   const { session, snap, report } = useLive();
