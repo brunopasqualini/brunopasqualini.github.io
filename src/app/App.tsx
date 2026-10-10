@@ -3,7 +3,11 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { levelFromXp } from '@/game/progression';
 import { useGame } from '@/game/store';
 import { Modal } from '@/shared/ui/common';
-import { Academy, CommandCenter, IncidentResponse, Journal, MissionControl } from '@/features/pages';
+import { AcademyPage as Academy } from '@/features/academy/AcademyPage';
+import { HomePage as CommandCenter } from '@/features/home/HomePage';
+import { IncidentsPage as IncidentResponse } from '@/features/incidents/IncidentsPage';
+import { JournalPage as Journal } from '@/features/journal/JournalPage';
+import { MissionsPage as MissionControl } from '@/features/missions/MissionsPage';
 import { go, useRoute } from '@/app/router';
 
 const Play = lazy(() => import('@/features/workspace/PlayPage').then((m) => ({ default: m.Play })));
