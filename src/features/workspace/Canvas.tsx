@@ -7,6 +7,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  useStore,
   type BuiltInEdge,
   type Connection,
   type Edge,
@@ -16,9 +17,10 @@ import {
 } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePersistentFlag } from '@/shared/hooks/usePersistentFlag';
+import { layoutArch } from '@/features/workspace/autoLayout';
 import { tilesFor, type Tile } from '@/features/workspace/InstanceStrip';
 import { EDGE_COLOR, edgeLook } from '@/features/workspace/edgeStyle';
-import { attachedTo, edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
+import { attachedTo, defaultEdgeWeight, edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
 import { visualStatus } from '@/engine/analysis';
 import { canConnect, entryOf } from '@/engine/catalog';
 import type { Arch, ArchNode } from '@/engine/types';
@@ -70,6 +72,8 @@ function CanvasInner() {
   const tick = useGame((s) => s.tick);
   const running = useGame((s) => s.running);
   const selection = useGame((s) => s.selection);
+  // semantic zoom: 2 = close (everything), 1 = overview (no metric text), 0 = far (tiles and names only)
+  const detail = useStore((s) => (s.transform[2] >= 0.85 ? 2 : s.transform[2] >= 0.55 ? 1 : 0));
   const [showMap, toggleMap] = usePersistentFlag('eo-minimap', false);
   const [showRefs, setShowRefs] = useState(true);
   const rf = useReactFlow();
@@ -159,13 +163,16 @@ function CanvasInner() {
           em && tgt && ['compute', 'worker'].includes(tgt.role) && tgt.replicas > 1 && !em.blocked && rps >= 0.5
             ? ` · ${tgt.replicas}× ≈${rps / tgt.replicas >= 100 ? (rps / tgt.replicas).toFixed(0) : (rps / tgt.replicas).toFixed(1)}/s`
             : '';
-        label = em
-          ? em.blocked
-            ? '✕ blocked'
-            : rps >= 0.5
-              ? `${rps >= 100 ? rps.toFixed(0) : rps.toFixed(1)}/s${em.amplification > 1.25 ? ` ×${em.amplification.toFixed(1)}` : ''}${em.breakerOpen ? ' ⚡open' : ''}${per}`
-              : undefined
-          : undefined;
+        const notable = !!em && (em.blocked || em.errorRate > 0.05 || em.amplification > 1.25 || em.breakerOpen);
+        // rates on every connector turn a busy diagram into noise: show them up close, when selected, or when something is wrong
+        label =
+          em && (detail === 2 || sel || notable)
+            ? em.blocked
+              ? '✕ blocked'
+              : rps >= 0.5
+                ? `${rps >= 100 ? rps.toFixed(0) : rps.toFixed(1)}/s${em.amplification > 1.25 ? ` ×${em.amplification.toFixed(1)}` : ''}${em.breakerOpen ? ' ⚡open' : ''}${per}`
+                : undefined
+            : undefined;
       }
       const vertical = verticalPair(draft, e.source, e.target);
       out.push({
@@ -214,7 +221,7 @@ function CanvasInner() {
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, draft, snap, selection.type, selection.id, running, showRefs]);
+  }, [tick, draft, snap, selection.type, selection.id, running, showRefs, detail]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     const g = useGame.getState();
@@ -286,8 +293,7 @@ function CanvasInner() {
     const g = useGame.getState();
     const s = nodeById(g.session!.draft, c.source)!;
     const t = nodeById(g.session!.draft, c.target)!;
-    const role = entryOf(t.kind).role;
-    const weight = role === 'db' || role === 'kv' ? 2 : 1;
+    const weight = defaultEdgeWeight(t.kind);
     g.editDraft((a) => {
       a.edges.push(makeEdge(c.source!, c.target!, { weight }));
     });
@@ -337,11 +343,24 @@ function CanvasInner() {
     g.select(null);
   }, []);
 
+  const arrange = useCallback(() => {
+    const g = useGame.getState();
+    const s = g.session;
+    if (!s) return;
+    const pos = layoutArch(s.draft);
+    g.editDraft((a) => {
+      for (const n of a.nodes) if (pos[n.id]) n.position = pos[n.id];
+    });
+    g.toast('Components arranged left to right along the request path.', 'info');
+    window.setTimeout(() => window.dispatchEvent(new Event('eo-fit')), 80);
+  }, []);
+
   const hasNetwork = draft?.nodes.some((n) => entryOf(n.kind).role === 'network');
 
   return (
     <div
       className="canvas"
+      data-detail={detail}
       ref={wrap}
       onDragOver={(e) => {
         e.preventDefault();
@@ -401,6 +420,7 @@ function CanvasInner() {
           />
         )}
       </ReactFlow>
+      <ArchitectureOutline />
       <div className="canvas-legend" aria-hidden="true">
         <span>
           <i className="lg lg-req" /> request
@@ -421,6 +441,9 @@ function CanvasInner() {
       <div className="canvas-tools">
         <button className="btn btn-ghost btn-sm" onClick={() => window.dispatchEvent(new Event('eo-fit'))}>
           Fit view
+        </button>
+        <button className="btn btn-ghost btn-sm" onClick={arrange} title="Arrange components left to right along the request path">
+          Auto-layout
         </button>
         <button className={`btn btn-ghost btn-sm ${showMap ? 'is-on' : ''}`} aria-pressed={showMap} onClick={() => toggleMap()}>
           Minimap
@@ -445,6 +468,35 @@ function CanvasInner() {
         </div>
       )}
     </div>
+  );
+}
+
+/** The diagram as text: what exists, how it is doing, and what it calls. The canvas itself is a picture to a screen reader. */
+function ArchitectureOutline() {
+  const draft = useGame((s) => s.session?.draft);
+  const snap = useGame((s) => s.session?.history[s.session.history.length - 1]);
+  if (!draft) return null;
+  return (
+    <section className="sr-only" aria-label="Architecture outline">
+      <h2>Architecture outline</h2>
+      <p>
+        {draft.nodes.length} components, {draft.edges.length} connections. Select a component with the keyboard to edit its settings and
+        connections in the panel on the right.
+      </p>
+      <ul>
+        {draft.nodes.map((n) => {
+          const to = draft.edges.filter((e) => e.source === n.id).map((e) => nodeById(draft, e.target)?.label ?? e.target);
+          const status = snap?.nodes[n.id]?.status;
+          return (
+            <li key={n.id}>
+              {n.label}, {entryOf(n.kind).name}
+              {status ? `, ${status}` : ''}
+              {to.length ? `, connects to ${to.join(', ')}` : ', no outgoing connections'}.
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

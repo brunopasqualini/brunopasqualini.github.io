@@ -33,6 +33,12 @@ export function makeEdge(source: string, target: string, config: Partial<EdgeCon
   return { id: id ?? `e-${source}-${target}`, source, target, config: { ...DEFAULT_EDGE, ...config } };
 }
 
+/** Call weight a new connection starts with: data stores are hit more than once per request. */
+export function defaultEdgeWeight(targetKind: string): number {
+  const role = entryOf(targetKind).role;
+  return role === 'db' || role === 'kv' ? 2 : 1;
+}
+
 export function nodeById(arch: Arch, id: string): ArchNode | undefined {
   return arch.nodes.find((n) => n.id === id);
 }
