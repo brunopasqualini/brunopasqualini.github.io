@@ -9,7 +9,8 @@ import { upsert, type Feedback } from '@/game/feedback';
  */
 interface FeedbackStore {
   entries: Feedback[];
-  save: (entry: Feedback) => void;
+  /** Saves or updates a response; the store stamps the time. */
+  save: (entry: Omit<Feedback, 'at'>) => void;
   clear: () => void;
 }
 
@@ -17,7 +18,7 @@ export const useFeedback = create<FeedbackStore>()(
   persist(
     (set) => ({
       entries: [],
-      save: (entry) => set((s) => ({ entries: upsert(s.entries, entry) })),
+      save: (entry) => set((s) => ({ entries: upsert(s.entries, { ...entry, at: Date.now() }) })),
       clear: () => set({ entries: [] }),
     }),
     {
