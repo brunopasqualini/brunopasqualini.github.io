@@ -1,3 +1,4 @@
+import { evidenceProgress } from '@/game/diagnosis';
 import { ArrowLeft, BookOpen, CheckCircle2, ClipboardList, Lightbulb, Siren, Target, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { evalRequirement } from '@/game/scoring';
@@ -179,6 +180,11 @@ export function MissionPanel() {
                   />
                   <span>{c.label}</span>
                 </label>
+                {session.chosenCauses.includes(c.id) && (
+                  <small className="muted">
+                    Evidence checked: {evidenceProgress(c, session.panelsSeen).seen}/{evidenceProgress(c, session.panelsSeen).total} panels
+                  </small>
+                )}
                 {mode === 'beginner' && (
                   <small className="muted">
                     Evidence:{' '}
