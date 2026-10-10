@@ -26,8 +26,8 @@ export const JOURNEY: JourneyStage[] = [
     level: 2,
     title: 'System Designer',
     tagline: 'Design databases, caches, queues, service boundaries, and architectures that handle growth.',
-    focus: ['Modularity and service boundaries', 'Queues and idempotency', 'Caching and freshness'],
-    missionIds: ['m1-monolith', 'm5-queue'],
+    focus: ['Modularity and service boundaries', 'Queues and idempotency', 'Replication, lag and freshness'],
+    missionIds: ['m1-monolith', 'm5-queue', 'm10-stale-receipt'],
   },
   {
     level: 3,

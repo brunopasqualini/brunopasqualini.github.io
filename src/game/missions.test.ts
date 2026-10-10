@@ -588,6 +588,75 @@ describe('Mission 9 — The Merger (capstone)', () => {
   });
 });
 
+describe('Mission 10 — The Stale Receipt', () => {
+  const PM = PM_OK;
+  const finish = (s: Session) => {
+    s.postmortem = PM;
+    s.chosenCauses = ['replica-lag'];
+    s.panelsSeen = ['database', 'logs', 'deployments'];
+    return verify(s, true);
+  };
+  const failing = (v: ReturnType<typeof verify>) => v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id);
+  const db = (s: Session) => s.draft.nodes.find((n) => n.id === 'db')!;
+
+  it('starts looking healthy while customers read old data', () => {
+    const s = createSession('m10-stale-receipt', 'intermediate');
+    const v = finish(s);
+    expect(v.report.metrics.availability).toBeGreaterThan(99);
+    expect(v.report.metrics.staleReadPct).toBeGreaterThan(30);
+    expect(failing(v)).toEqual(['stale']);
+  });
+
+  it('routing reads that follow a write to the primary passes, and the primary copes', () => {
+    const s = createSession('m10-stale-receipt', 'intermediate');
+    expect(applyAction(s, 'pin-reads').ok).toBe(true);
+    advance(s, 5);
+    const v = finish(s);
+    expect(v.report.metrics.staleReadPct).toBe(0);
+    expect(failing(v)).toEqual([]);
+    expect(v.outcome.passed).toBe(true);
+  });
+
+  it('a much bigger primary lowers the staleness but never removes it, and blows the budget', () => {
+    const s = createSession('m10-stale-receipt', 'intermediate');
+    const before = createSession('m10-stale-receipt', 'intermediate');
+    cfg(s.draft, 'db', { size: 'xlarge' });
+    ship(s, 5);
+    const v = finish(s);
+    const v0 = finish(before);
+    expect(v.report.metrics.staleReadPct).toBeLessThan(v0.report.metrics.staleReadPct);
+    expect(v.report.metrics.staleReadPct).toBeGreaterThan(1);
+    expect(failing(v)).toEqual(expect.arrayContaining(['stale', 'budget']));
+    expect(v.outcome.passed).toBe(false);
+  });
+
+  it('more replicas and a Multi-AZ standby do not help', () => {
+    const s = createSession('m10-stale-receipt', 'intermediate');
+    cfg(s.draft, 'db', { readReplicas: 4, multiAZ: true });
+    ship(s, 5);
+    const v = finish(s);
+    expect(v.report.metrics.staleReadPct).toBeGreaterThan(20);
+    expect(v.outcome.passed).toBe(false);
+  });
+
+  it('removing the replicas “fixes” staleness but breaks what the product pages need', () => {
+    const s = createSession('m10-stale-receipt', 'intermediate');
+    cfg(s.draft, 'db', { readReplicas: 0 });
+    ship(s, 5);
+    const v = finish(s);
+    expect(v.report.metrics.staleReadPct).toBe(0);
+    expect(failing(v)).toContain('replicas');
+    expect(v.outcome.passed).toBe(false);
+  });
+
+  it('pinning reads is recorded as a decision for later missions', () => {
+    const s = createSession('m10-stale-receipt', 'intermediate');
+    applyAction(s, 'pin-reads');
+    advance(s, 5);
+    expect(finish(s).outcome.decisions?.map((d) => d.tag)).toContain('m10-stale-receipt:read-your-writes');
+  });
+});
+
 describe('persistence by replay', () => {
   it('replaying logged ops reproduces the same state', async () => {
     const { replay } = await import('@/game/session');

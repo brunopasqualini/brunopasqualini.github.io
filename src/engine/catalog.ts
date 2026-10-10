@@ -57,6 +57,15 @@ const dbFields: Field[] = [
   num('storageGB', 'Storage', 20, 20000, { unit: 'GB' }),
   bool('multiAZ', 'Multi-AZ standby', 'Synchronous standby in a second AZ. Survives an AZ outage; does not fix slow queries.'),
   num('readReplicas', 'Read replicas', 0, 5, { help: 'Spread reads. Replicas lag behind the writer.' }),
+  sel(
+    'readYourWrites',
+    'Reads that follow a write',
+    [
+      ['replica', 'Served by a replica (may be stale)'],
+      ['primary', 'Pinned to the primary (fresh)'],
+    ],
+    { help: 'Reads that must show the user’s own write can be routed to the primary for a few seconds after it. They load the primary.' },
+  ),
   bool(
     'connectionPooler',
     'Connection pooler / proxy',
@@ -302,6 +311,7 @@ E(
       storageGB: 100,
       multiAZ: false,
       readReplicas: 0,
+      readYourWrites: 'replica',
       connectionPooler: false,
       indexed: true,
       backupRetentionDays: 7,
@@ -714,6 +724,7 @@ E(
       storageGB: 100,
       multiAZ: false,
       readReplicas: 0,
+      readYourWrites: 'replica',
       connectionPooler: false,
       indexed: true,
       backupRetentionDays: 7,

@@ -131,6 +131,8 @@ export interface Workload {
   avgProcessMs: number;
   /** Maximum tolerated staleness for cached reads (seconds). */
   freshnessSeconds: number;
+  /** Share of reads issued right after the same user's own write (read-your-writes), e.g. an order confirmation page. */
+  readAfterWriteShare?: number;
   /** Customers' data volume growth (GB/day) used by storage cost. */
   logGBPerMillionReq: number;
 }
@@ -169,6 +171,8 @@ export interface NodeMetrics {
   queueDelaySec?: number;
   dupRate?: number;
   replicaLagSec?: number;
+  /** Percent of read-after-write reads that return data from before the write (replica lag). */
+  staleReadPct?: number;
   blocked?: string;
 }
 
