@@ -80,6 +80,18 @@ describe('primary navigation renders every section', () => {
   });
 });
 
+describe('home', () => {
+  it('presents the product promise, the five-stage journey, pillars and audiences', async () => {
+    await mount('#/');
+    await waitFor('.stages');
+    expect(host!.querySelector('h1')!.textContent).toMatch(/Think like an engineer/);
+    expect(host!.querySelectorAll('.stages .stage').length).toBe(5);
+    expect(host!.querySelectorAll('.pillar').length).toBe(4);
+    expect(host!.querySelectorAll('.audience').length).toBe(3);
+    expect(host!.querySelector('.stage-soon')?.textContent).toMatch(/Principal/);
+  });
+});
+
 describe('workspace', () => {
   it('renders a mission workspace with status bar, library, inspector tabs and dock', async () => {
     await mount('#/play/m2-db-meltdown');
@@ -87,6 +99,7 @@ describe('workspace', () => {
     expect(host!.querySelector('.canvas-head')).toBeTruthy();
     expect(host!.querySelector('.library')).toBeTruthy();
     expect(host!.querySelector('.dock')).toBeTruthy();
+    expect(host!.querySelector('.events')).toBeTruthy();
     expect(host!.textContent).toMatch(/The Database Meltdown/);
     expect(document.querySelector('.modal')).toBeTruthy();
     await act(async () => {
