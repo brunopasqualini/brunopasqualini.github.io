@@ -6,11 +6,11 @@
 //    but a cached copy still works offline.
 // Bump CACHE_VERSION whenever the app shell files change, so old caches get cleared.
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const SHELL_CACHE = "exam-sim-shell-" + CACHE_VERSION;
 const DATA_CACHE = "exam-sim-data-" + CACHE_VERSION;
 
-const SHELL_FILES = ["./", "./index.html", "./manifest.json", "./banks.json"];
+const SHELL_FILES = ["./", "./index.html", "./manifest.json", "./banks.json", "./favicon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

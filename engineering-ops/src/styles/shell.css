@@ -1,0 +1,199 @@
+@layer layout {
+  .app {
+    display: grid;
+    grid-template-rows: var(--nav-h) minmax(0, 1fr);
+    height: 100%;
+  }
+  .skip {
+    position: absolute;
+    left: -999px;
+    top: 6px;
+    z-index: 100;
+    background: var(--cyan);
+    color: #00222b;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+  }
+  .skip:focus {
+    left: 8px;
+  }
+
+  /* ---- top navigation ---- */
+  .topnav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding: 0 22px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(10, 19, 37, 0.96), rgba(7, 14, 28, 0.96));
+    backdrop-filter: blur(8px);
+    position: relative;
+    z-index: 20;
+    min-width: 0;
+  }
+  .brand {
+    display: flex;
+    gap: 11px;
+    align-items: center;
+    color: var(--text);
+    flex: none;
+  }
+  .brandmark {
+    filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.45));
+  }
+  .brand-text b {
+    display: block;
+    font-size: 17px;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+  }
+  .brand-text small {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .navtabs {
+    display: flex;
+    align-items: stretch;
+    align-self: stretch;
+    gap: 4px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .navtabs::-webkit-scrollbar {
+    display: none;
+  }
+  .navtab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    color: var(--muted);
+    font-weight: 500;
+    position: relative;
+    white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .navtab:hover {
+    color: var(--text);
+  }
+  .navtab.on {
+    color: var(--cyan);
+  }
+  .navtab.on::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: -1px;
+    height: 2px;
+    background: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan);
+    border-radius: 2px;
+  }
+  .top-right {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex: none;
+  }
+  .modechip {
+    padding: 3px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--line2);
+    background: var(--panel);
+    font-size: 12px;
+    text-transform: capitalize;
+    color: var(--cyan);
+  }
+
+  .player {
+    display: grid;
+    grid-template-columns: auto minmax(140px, 190px) auto;
+    align-items: center;
+    gap: 10px;
+    padding-right: 6px;
+  }
+  .player-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #04222b;
+    background: conic-gradient(from 210deg, var(--cyan), var(--blue), var(--purple), var(--cyan));
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 16px rgba(34, 211, 238, 0.35);
+  }
+  .player-text b {
+    display: block;
+    font-size: 12.5px;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+  .player-text small {
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .player-bar {
+    height: 5px;
+    border-radius: 99px;
+    background: #12203d;
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .player-bar i {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+    transition: width 0.5s var(--ease);
+  }
+  .player-xp {
+    font: 11.5px var(--mono);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ---- content ---- */
+  .content {
+    min-height: 0;
+    overflow: auto;
+  }
+  .app-ws .content {
+    overflow: hidden;
+  }
+  .page {
+    padding: 28px 32px 56px;
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+  .hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .hero p {
+    max-width: 720px;
+    margin-top: 6px;
+  }
+  .hero-crit h1 {
+    color: #fecaca;
+  }
+  .section-title {
+    margin: 28px 0 12px;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+}

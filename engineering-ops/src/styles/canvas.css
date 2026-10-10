@@ -1,0 +1,661 @@
+@layer features {
+  /* canvas */
+  .canvas {
+    position: relative;
+    flex: 1;
+    min-height: 240px;
+    background: radial-gradient(70% 80% at 50% 40%, #0a1730 0%, var(--bg2) 100%);
+  }
+  .canvas .react-flow {
+    --xy-background-color: transparent;
+    --xy-edge-label-background-color: #0a1224;
+  }
+  .react-flow__controls {
+    box-shadow: none !important;
+    border: 1px solid var(--line2);
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(10, 19, 37, 0.92);
+    backdrop-filter: blur(4px);
+  }
+  .react-flow__controls button {
+    background: transparent;
+    color: #9fb2d3;
+    border-color: var(--line);
+    width: 30px;
+    height: 30px;
+  }
+  .react-flow__controls button:hover {
+    background: var(--panel3);
+    color: var(--cyan);
+  }
+  .react-flow__controls button svg {
+    fill: currentColor;
+  }
+  .react-flow__minimap {
+    background: rgba(10, 19, 37, 0.92) !important;
+    border: 1px solid var(--line2);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .react-flow__edge.selected .react-flow__edge-path {
+    filter: drop-shadow(0 0 4px #22d3ee);
+  }
+  .canvas-legend {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    display: flex;
+    gap: 12px;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(9, 17, 34, 0.9);
+    font-size: 11px;
+    color: var(--muted);
+    pointer-events: none;
+    z-index: 5;
+  }
+  .lg {
+    display: inline-block;
+    width: 18px;
+    height: 0;
+    border-top: 2px solid;
+    vertical-align: middle;
+    margin-right: 5px;
+  }
+  .lg-crit {
+    border-color: var(--red);
+  }
+  .lg-dep {
+    border-color: var(--cyan);
+  }
+  .lg-async {
+    border-color: var(--purple);
+    border-top-style: dashed;
+  }
+  .lg-attach {
+    border-color: #64748b;
+    border-top-style: dotted;
+  }
+  .canvas-tools {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    display: flex;
+    gap: 6px;
+    z-index: 5;
+  }
+  .canvas-empty {
+    position: absolute;
+    left: 64px;
+    top: 14px;
+    max-width: 440px;
+    text-align: left;
+    padding: 10px 14px;
+    border: 1px dashed var(--line2);
+    border-radius: 12px;
+    background: rgba(9, 17, 34, 0.85);
+    color: var(--muted);
+    font-size: 12.5px;
+    pointer-events: none;
+  }
+  .canvas-empty p {
+    margin: 4px 0 0;
+  }
+  .canvas-empty strong {
+    color: var(--text);
+  }
+  /* ---- nodes: a gradient icon tile with its label beneath, like a service in an architecture diagram ---- */
+  .anode {
+    position: relative;
+    width: 156px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 6px 4px 8px;
+    border-radius: 14px;
+    --ring: transparent;
+  }
+  .anode-tile {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: linear-gradient(145deg, var(--t1, var(--cyan)), var(--t2, var(--blue)));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 6px 16px rgba(0, 0, 0, 0.45),
+      0 0 0 2px var(--ring);
+    transition:
+      box-shadow 0.3s,
+      filter 0.3s;
+  }
+  .anode-title {
+    margin-top: 7px;
+    font-weight: 600;
+    font-size: 12.5px;
+    line-height: 1.2;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 6px #000;
+  }
+  .anode-sub {
+    font-size: 10.5px;
+    color: var(--muted);
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .anode-stats {
+    width: 100%;
+    margin-top: 6px;
+    padding: 5px 8px 6px;
+    border-radius: 10px;
+    background: rgba(8, 15, 30, 0.82);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(2px);
+  }
+  .anode-bar {
+    height: 3px;
+    background: #14223f;
+    border-radius: 99px;
+    margin: 1px 0 5px;
+    overflow: hidden;
+  }
+  .anode-bar div {
+    height: 100%;
+    background: var(--cyan);
+    transition: width 0.4s;
+  }
+  .anode-mini {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    font: 10.5px var(--mono);
+    color: var(--muted);
+  }
+  .anode-alert {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--red-strong);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    border: 2px solid var(--bg);
+  }
+  .anode-flag {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 9.5px;
+    background: #0e7490;
+    color: #ecfeff;
+    padding: 0 8px;
+    border-radius: 99px;
+    z-index: 2;
+  }
+  .anode-tag {
+    margin-top: 5px;
+    font-size: 9.5px;
+    padding: 0 8px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #1a2a4a;
+    color: var(--text);
+  }
+  .anode-lock {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .anode-healthy {
+    --ring: rgba(52, 211, 153, 0.55);
+  }
+  .anode-degraded {
+    --ring: rgba(245, 158, 11, 0.9);
+  }
+  .anode-degraded .anode-tile {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 0 22px rgba(245, 158, 11, 0.35),
+      0 0 0 2px var(--ring);
+  }
+  .tag-degraded {
+    background: #6b4a06;
+  }
+  .anode-overloaded {
+    --ring: rgba(249, 115, 22, 1);
+  }
+  .anode-overloaded .anode-tile {
+    animation: glow 1.6s infinite;
+  }
+  .tag-overloaded {
+    background: #7c2d12;
+  }
+  .anode-unavailable {
+    --ring: rgba(239, 68, 68, 1);
+  }
+  .anode-unavailable .anode-tile {
+    filter: saturate(0.35) brightness(0.8);
+    box-shadow:
+      0 0 26px rgba(239, 68, 68, 0.5),
+      0 0 0 2px var(--ring);
+  }
+  .tag-unavailable {
+    background: #7f1d1d;
+  }
+  .anode-insecure {
+    --ring: rgba(167, 139, 250, 1);
+  }
+  .anode-insecure .anode-tile {
+    box-shadow:
+      0 0 20px rgba(167, 139, 250, 0.4),
+      0 0 0 2px var(--ring);
+  }
+  .anode-insecure .anode-alert {
+    background: var(--purple);
+  }
+  .anode-misconfigured .anode-tile {
+    outline: 2px dashed rgba(245, 158, 11, 0.95);
+    outline-offset: 3px;
+  }
+  .anode-misconfigured .anode-alert {
+    background: var(--amber);
+    color: #1b1200;
+  }
+  .anode-idle .anode-tile {
+    --ring: rgba(143, 166, 204, 0.25);
+  }
+  .anode-pending {
+    outline: 2px dashed rgba(34, 211, 238, 0.7);
+    outline-offset: 2px;
+  }
+  .anode-selected .anode-tile {
+    --ring: var(--cyan);
+    box-shadow:
+      0 0 0 2px var(--cyan),
+      0 0 28px rgba(34, 211, 238, 0.5);
+  }
+  .anode-net {
+    width: 124px;
+  }
+  .anode-net .anode-tile {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    filter: saturate(0.7);
+    opacity: 0.95;
+    --ring: rgba(127, 166, 255, 0.35);
+  }
+  .anode-net .anode-title {
+    font-size: 11.5px;
+  }
+  .anode-net .anode-sub {
+    font-size: 9.5px;
+  }
+  .anode .h:not(.h-v) {
+    width: 9px;
+    height: 9px;
+    background: var(--cyan);
+    border: 2px solid #06101f;
+    top: 33px;
+  }
+  .anode-net .h:not(.h-v) {
+    opacity: 0;
+    width: 6px;
+    height: 6px;
+    top: 26px;
+  }
+  .tag-healthy,
+  .tag-idle {
+    display: none;
+  }
+  @keyframes glow {
+    50% {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 0 34px rgba(249, 115, 22, 0.75),
+        0 0 0 2px var(--ring);
+    }
+  }
+  @keyframes pulse {
+    50% {
+      opacity: 0.4;
+    }
+  }
+
+  /* ---- instance strips: show the fleet behind a node ---- */
+  .istrip {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    margin: 7px 0 2px;
+    flex-wrap: wrap;
+  }
+  .istrip em {
+    font: 10px var(--mono);
+    color: var(--muted);
+    margin-left: auto;
+    font-style: normal;
+    align-self: center;
+  }
+  .itile {
+    position: relative;
+    width: 11px;
+    height: 16px;
+    border-radius: 3px;
+    background: #0b1730;
+    border: 1px solid #29487c;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: flex-end;
+    animation: tilein 0.45s ease-out;
+  }
+  .itile i {
+    display: block;
+    width: 100%;
+    background: var(--cyan);
+    transition:
+      height 0.5s ease,
+      background 0.3s;
+    opacity: 0.9;
+  }
+  .itile b {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font: 700 8px var(--mono);
+    color: #dff6ff;
+    text-shadow: 0 0 2px #000;
+  }
+  .itile.it-warm i {
+    background: #f59e0b;
+  }
+  .itile.it-hot i {
+    background: #ef4444;
+  }
+  .itile.it-ghost {
+    border-style: dashed;
+    border-color: #26395f;
+    background: transparent;
+    opacity: 0.45;
+    animation: none;
+  }
+  .itile.it-down {
+    border-color: #ef4444;
+    background: #3a1020;
+  }
+  .itile.it-down i {
+    display: none;
+  }
+  .itile.it-primary {
+    width: 15px;
+    border-color: #22d3ee;
+  }
+  .itile.it-standby {
+    width: 15px;
+    border-style: dashed;
+    border-color: #4f78c4;
+  }
+  .itile.it-standby i {
+    background: #4f78c4;
+  }
+  .itile.it-replica i {
+    background: #a78bfa;
+  }
+  .itile.it-replica.it-warm i {
+    background: #f59e0b;
+  }
+  .itile.it-replica.it-hot i {
+    background: #ef4444;
+  }
+  @keyframes tilein {
+    from {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  .qdots {
+    display: flex;
+    gap: 2px;
+    margin: 6px 0 2px;
+    flex-wrap: wrap;
+  }
+  .qdots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #0b1730;
+    border: 1px solid #29487c;
+  }
+  .qdots span.on {
+    background: #a78bfa;
+    border-color: #a78bfa;
+  }
+  .qdots span.dead {
+    background: #ef4444;
+    border-color: #ef4444;
+    margin-left: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .itile {
+      animation: none;
+    }
+    .itile i {
+      transition: none;
+    }
+  }
+}
+
+@layer features {
+  /* ---- reference-style refinements ---- */
+  .anode-tile {
+    border: 1px solid rgba(255, 255, 255, 0.28);
+  }
+  .anode-idle .anode-tile {
+    --ring: rgba(255, 255, 255, 0.14);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 6px 18px rgba(0, 0, 0, 0.5),
+      0 0 22px color-mix(in srgb, var(--t1) 30%, transparent),
+      0 0 0 2px var(--ring);
+  }
+  .anode-conf {
+    font: 10.5px var(--mono);
+    color: var(--muted);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .anode-stats:has(.anode-conf:only-child) {
+    background: transparent;
+    border-color: transparent;
+    padding-top: 0;
+    padding-bottom: 0;
+    backdrop-filter: none;
+  }
+  .anode-stats .anode-conf {
+    margin-bottom: 4px;
+  }
+  .anode-stats .anode-conf:only-child {
+    margin: 0;
+  }
+
+  /* data stores: a card with the icon on the left and the label on the right */
+  .anode-card {
+    width: 196px;
+    align-items: stretch;
+    text-align: left;
+  }
+  .anode-cardbox {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 12px 7px 8px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(18, 32, 62, 0.95), rgba(9, 18, 36, 0.95));
+    border: 1px solid #2b4673;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  }
+  .anode-card .anode-tile {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    flex: none;
+  }
+  .anode-cardtext {
+    min-width: 0;
+  }
+  .anode-card .anode-title {
+    margin: 0;
+    text-align: left;
+    font-size: 13px;
+  }
+  .anode-card .anode-sub {
+    text-align: left;
+  }
+  .anode-card .anode-stats {
+    margin-top: 6px;
+  }
+  .anode-card.anode-selected .anode-cardbox {
+    border-color: var(--cyan);
+    box-shadow:
+      0 0 0 1px var(--cyan),
+      0 0 26px rgba(34, 211, 238, 0.35);
+  }
+  .anode-card .h:not(.h-v) {
+    top: 30px;
+  }
+
+  /* several instances behind one node: stacked tile edges */
+  .anode-stacked::before,
+  .anode-stacked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(145deg, var(--t1), var(--t2));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0.55;
+    z-index: -1;
+  }
+  .anode-stacked::before {
+    transform: translate(5px, -5px);
+  }
+  .anode-stacked::after {
+    transform: translate(10px, -10px);
+    opacity: 0.3;
+  }
+
+  /* Auto Scaling group: dashed frame around the fleet, like the reference */
+  .anode-asg {
+    padding: 22px 12px 12px;
+    margin: -16px -12px -6px;
+    border: 1.5px dashed rgba(251, 146, 60, 0.7);
+    border-radius: 22px;
+    background: rgba(251, 146, 60, 0.05);
+  }
+  .anode-asg > .asg-label {
+    position: absolute;
+    top: -10px;
+    left: 14px;
+    font-size: 10.5px;
+    color: #fdba74;
+    background: var(--bg2);
+    padding: 0 8px;
+    border-radius: 99px;
+    border: 1px solid rgba(251, 146, 60, 0.6);
+    white-space: nowrap;
+  }
+  .anode-asg .h:not(.h-v) {
+    top: calc(22px + 27px);
+  }
+  .anode-asg.anode-selected {
+    border-color: var(--cyan);
+  }
+  .anode-asg .anode-flag {
+    top: -22px;
+  }
+
+  /* legend swatches follow the connector language */
+  .lg {
+    border-top-width: 2px;
+  }
+  .lg-req {
+    border-color: #3b9eff;
+  }
+  .lg-async {
+    border-color: #fb923c;
+    border-top-style: dashed;
+  }
+  .lg-mon {
+    border-color: #f472b6;
+    border-top-style: dashed;
+  }
+  .lg-store {
+    border-color: #4ade80;
+    border-top-style: dashed;
+  }
+  .lg-crit {
+    border-color: var(--red);
+  }
+  .react-flow__edge-path {
+    stroke-linecap: round;
+  }
+}
+
+@layer features {
+  .anode .h-v {
+    opacity: 0;
+    width: 7px;
+    height: 7px;
+  }
+}
+
+@layer features {
+  .anode-stats {
+    background: #0a1426;
+    backdrop-filter: none;
+  }
+}
+
+@layer features {
+  /* semantic zoom: far away show shapes and names; hovering or selecting a node always reveals everything */
+  .canvas[data-detail='1'] .anode:not(:hover):not(.anode-selected) .anode-mini {
+    display: none;
+  }
+  .canvas[data-detail='0'] .anode:not(:hover):not(.anode-selected) .anode-stats,
+  .canvas[data-detail='0'] .anode:not(:hover):not(.anode-selected) .anode-sub {
+    display: none;
+  }
+  .canvas[data-detail='0'] .anode-title {
+    font-size: 14px;
+  }
+  .react-flow__node:hover {
+    z-index: 20 !important;
+  }
+}
