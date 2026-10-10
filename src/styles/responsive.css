@@ -43,3 +43,9 @@
   @media (max-width: 1380px) { .overview { grid-template-columns: 1fr 1fr; overflow: auto; } .overview > :nth-child(2) { display: none; } }
   @media (max-width: 760px) { .overview { grid-template-columns: 1fr; } .overview > :nth-child(n + 2) { display: none; } .ov-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 }
+
+@layer responsive {
+  @media (max-width: 1280px) { .stages { grid-template-columns: repeat(3, minmax(0, 1fr)); } .pillars { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 980px) { .home-hero { grid-template-columns: 1fr; padding: 26px 22px 40px; } .heroart { height: 230px; order: -1; } .audiences { grid-template-columns: 1fr; } .scrollcue { left: 22px; } }
+  @media (max-width: 680px) { .stages, .pillars { grid-template-columns: 1fr; } .home-hero-cta .btn-lg { width: 100%; justify-content: center; } }
+}
