@@ -49,6 +49,10 @@ Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings 
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
+Multi-Region: in the Lab, **Users and Regions** shows latency by user geography, how DNS routes (single Region, latency-routed or split
+active/active), what losing the primary Region costs in minutes (automatic, manual or nowhere to go), replica lag and cross-Region transfer
+cost. See [`docs/MULTI_REGION.md`](docs/MULTI_REGION.md).
+
 ## The missions
 
 | #   | Mission                     | Kind     | Teaches                                                                                                                                  |
