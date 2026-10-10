@@ -136,6 +136,12 @@ export interface Decision {
   label: string;
   /** How it will follow them into later missions (shown in the debrief). */
   carries: string;
+  /** True when this trades a lasting cost for speed. Whether it is debt or a justified trade-off is judged from context. */
+  shortcut?: boolean;
+  /** Set by the game: investment, justified trade-off, or debt. Authors only set it for non-shortcuts. */
+  kind?: 'investment' | 'tradeoff' | 'debt';
+  /** Set by the game: why it was judged that way (shown in the debrief). */
+  judgement?: string;
 }
 
 /** A debt or benefit inherited from an earlier decision, applied when this mission starts. */
@@ -149,6 +155,8 @@ export interface Consequence {
   apply?: (arch: Arch) => Arch;
   /** Change to the starting workload. */
   workload?: Partial<Workload>;
+  /** A softer version applied instead when the shortcut was taken knowingly and documented: a known cost is cheaper to carry. */
+  documented?: { text: string; apply?: (arch: Arch) => Arch; workload?: Partial<Workload> };
 }
 
 export interface Mission {
