@@ -186,7 +186,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: var(--red);
+    background: var(--red-strong);
     color: #fff;
     display: grid;
     place-items: center;
@@ -308,14 +308,14 @@
   .anode-net .anode-sub {
     font-size: 9.5px;
   }
-  .anode .h {
+  .anode .h:not(.h-v) {
     width: 9px;
     height: 9px;
     background: var(--cyan);
     border: 2px solid #06101f;
     top: 33px;
   }
-  .anode-net .h {
+  .anode-net .h:not(.h-v) {
     opacity: 0;
     width: 6px;
     height: 6px;
@@ -544,7 +544,7 @@
       0 0 0 1px var(--cyan),
       0 0 26px rgba(34, 211, 238, 0.35);
   }
-  .anode-card .h {
+  .anode-card .h:not(.h-v) {
     top: 30px;
   }
 
@@ -588,7 +588,7 @@
     border: 1px solid rgba(251, 146, 60, 0.6);
     white-space: nowrap;
   }
-  .anode-asg .h {
+  .anode-asg .h:not(.h-v) {
     top: calc(22px + 27px);
   }
   .anode-asg.anode-selected {

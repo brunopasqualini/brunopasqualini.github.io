@@ -15,6 +15,7 @@ import {
   type OnConnectEnd,
 } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { usePersistentFlag } from '@/shared/hooks/usePersistentFlag';
 import { tilesFor, type Tile } from '@/features/workspace/InstanceStrip';
 import { EDGE_COLOR, edgeLook } from '@/features/workspace/edgeStyle';
 import { attachedTo, edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
@@ -61,7 +62,7 @@ function freeSpot(arch: Arch, from: { x: number; y: number }): { x: number; y: n
   return { x: cx, y: cy };
 }
 
-const FIT = { padding: { top: '40px', right: '24px', bottom: '36px', left: '56px' }, maxZoom: 1.2 } as const;
+const FIT = { padding: { top: '40px', right: '24px', bottom: '60px', left: '56px' }, maxZoom: 1.2 } as const;
 const REF_KEYS = ['subnet', 'sg', 'iamRole', 'nat', 'vpc', 'nacl'];
 
 function CanvasInner() {
@@ -69,6 +70,7 @@ function CanvasInner() {
   const tick = useGame((s) => s.tick);
   const running = useGame((s) => s.running);
   const selection = useGame((s) => s.selection);
+  const [showMap, toggleMap] = usePersistentFlag('eo-minimap', false);
   const [showRefs, setShowRefs] = useState(true);
   const rf = useReactFlow();
   const wrap = useRef<HTMLDivElement>(null);
@@ -376,26 +378,28 @@ function CanvasInner() {
       >
         <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="#1c2b4a" />
         <Controls position="top-left" showInteractive={false} aria-label="Canvas zoom controls" />
-        <MiniMap
-          pannable
-          zoomable
-          position="bottom-right"
-          style={{ width: 132, height: 88 }}
-          nodeColor={(n) =>
-            (
-              ({
-                healthy: '#34d399',
-                degraded: '#f59e0b',
-                overloaded: '#f97316',
-                unavailable: '#ef4444',
-                insecure: '#a78bfa',
-                misconfigured: '#f59e0b',
-                idle: '#475569',
-              }) as Record<string, string>
-            )[(n.data as ArchNodeData).status] ?? '#475569'
-          }
-          maskColor="rgba(7,12,24,0.7)"
-        />
+        {showMap && (
+          <MiniMap
+            pannable
+            zoomable
+            position="bottom-right"
+            style={{ width: 132, height: 88 }}
+            nodeColor={(n) =>
+              (
+                ({
+                  healthy: '#34d399',
+                  degraded: '#f59e0b',
+                  overloaded: '#f97316',
+                  unavailable: '#ef4444',
+                  insecure: '#a78bfa',
+                  misconfigured: '#f59e0b',
+                  idle: '#475569',
+                }) as Record<string, string>
+              )[(n.data as ArchNodeData).status] ?? '#475569'
+            }
+            maskColor="rgba(7,12,24,0.7)"
+          />
+        )}
       </ReactFlow>
       <div className="canvas-legend" aria-hidden="true">
         <span>
@@ -417,6 +421,9 @@ function CanvasInner() {
       <div className="canvas-tools">
         <button className="btn btn-ghost btn-sm" onClick={() => window.dispatchEvent(new Event('eo-fit'))}>
           Fit view
+        </button>
+        <button className={`btn btn-ghost btn-sm ${showMap ? 'is-on' : ''}`} aria-pressed={showMap} onClick={() => toggleMap()}>
+          Minimap
         </button>
         {hasNetwork && (
           <button
