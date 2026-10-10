@@ -46,6 +46,38 @@ const serverless: Arch = {
   edges: [E('users', 'gw'), E('gw', 'fn'), E('fn', 'ddb', { weight: 2 })],
 };
 
+/** A scaled web platform: CDN, load balancer, autoscaled web tier, cache-aside, async jobs and object storage. */
+const scaledPlatform: Arch = {
+  nodes: [
+    N('users', 'users', 20, 170),
+    N('cloudfront', 'cdn', 150, 170, {}, 'CDN'),
+    N('alb', 'lb', 280, 170, {}, 'Load Balancer'),
+    N('ecs', 'web', 440, 40, { replicas: 2, maxReplicas: 8, autoscale: true, dbPoolSize: 8 }, 'Web App'),
+    N('ecs', 'jobs', 440, 300, { replicas: 2, dbPoolSize: 4 }, 'Background Jobs'),
+    N('elasticache', 'cache', 640, 0, {}, 'Cache'),
+    N('rds', 'db', 640, 170, { size: 'medium', multiAZ: true, readReplicas: 1 }, 'Database'),
+    N('sqs', 'queue', 640, 340, {}, 'Message Queue'),
+    N('worker', 'worker', 800, 340, { replicas: 2, concurrency: 10, idempotent: true }, 'Worker'),
+    N('s3', 's3', 930, 340, {}, 'Storage'),
+    N('cloudwatch', 'cw', 280, 340, {}, 'Monitoring'),
+  ],
+  edges: [
+    E('users', 'cdn'),
+    E('cdn', 'lb'),
+    E('lb', 'web'),
+    E('lb', 'jobs'),
+    E('web', 'cache'),
+    E('web', 'db', { weight: 2 }),
+    E('cache', 'db'),
+    E('jobs', 'queue'),
+    E('queue', 'worker'),
+    E('worker', 'db', { weight: 2 }),
+    E('worker', 's3'),
+    E('cw', 'web'),
+    E('cw', 'jobs'),
+  ],
+};
+
 export const TEMPLATES: LabTemplate[] = [
   { id: 'blank', name: 'Blank canvas', blurb: 'Start from nothing but a traffic source.', arch: blank },
   { id: 'three-tier', name: 'Classic 3-tier web app', blurb: 'ALB → containers → relational database.', arch: threeTier },
@@ -55,6 +87,13 @@ export const TEMPLATES: LabTemplate[] = [
     blurb: 'API enqueues; workers process asynchronously.',
     arch: queuePipeline,
     workload: { avgProcessMs: 400 },
+  },
+  {
+    id: 'scaled-platform',
+    name: 'Scaled web platform',
+    blurb: 'CDN, load balancer, autoscaled web tier, cache, queue + worker and object storage.',
+    arch: scaledPlatform,
+    workload: { baseRps: 400 },
   },
   { id: 'serverless', name: 'Serverless API', blurb: 'API Gateway → Lambda → DynamoDB.', arch: serverless },
   {

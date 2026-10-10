@@ -182,7 +182,8 @@ function RegionCard() {
         <div className="zones" style={{ gridTemplateColumns: `repeat(${zones.length}, minmax(0, 1fr))` }}>
           {zones.map((z) => {
             const here = comps.filter((n) => zoneOf(n) === z);
-            const standby = comps.filter((n) => !zoneOf(n) && n.config.multiAZ && roleOf(n) === 'db');
+            // a Multi-AZ database keeps its synchronous standby in the second zone
+            const standby = z === zones[1] ? comps.filter((n) => !zoneOf(n) && n.config.multiAZ && roleOf(n) === 'db') : [];
             return (
               <div key={z} className={`zone ${outage.has(z) ? 'zone-out' : ''}`}>
                 <header>
