@@ -19,7 +19,9 @@ export const SKILL_TITLES = ['Unranked', 'Apprentice', 'Practitioner', 'Proficie
 
 export function skillLevel(xp: number): number {
   let lv = 0;
-  SKILL_THRESHOLDS.forEach((t, i) => { if (xp >= t && i > 0) lv = i; });
+  SKILL_THRESHOLDS.forEach((t, i) => {
+    if (xp >= t && i > 0) lv = i;
+  });
   return lv;
 }
 
@@ -57,13 +59,44 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'first-blood', title: 'First Resolution', desc: 'Complete your first mission.', test: (o) => o.passed },
   { id: 'perfectionist', title: 'Principal Material', desc: 'Score 90+ overall on a mission.', test: (o) => o.passed && o.overall >= 90 },
   { id: 'unaided', title: 'Unaided', desc: 'Pass a mission without using any hints.', test: (o) => o.passed && o.hintsUsed === 0 },
-  { id: 'budget-hawk', title: 'Budget Hawk', desc: 'Pass Cloud Bill Shock under 85% of its budget.', test: (o) => o.missionId === 'm6-bill-shock' && o.passed && o.metrics.cost <= 0.85 * 2500 },
-  { id: 'least-privilege', title: 'Least Privilege', desc: 'Pass the networking mission with a perfect security score.', test: (o) => o.missionId === 'm4-network' && o.passed && o.metrics.securityScore >= 98 },
-  { id: 'postmortem-pro', title: 'Blameless & Thorough', desc: 'Write a postmortem scoring 80+ for rationale.', test: (o) => (o.dims.find((d) => d.id === 'rationale')?.score ?? 0) >= 80 },
-  { id: 'learn-from-failure', title: 'Learned the Hard Way', desc: 'Pass a mission on a retry after a failed attempt.', test: (o) => o.passed && o.attempt > 1 },
+  {
+    id: 'budget-hawk',
+    title: 'Budget Hawk',
+    desc: 'Pass Cloud Bill Shock under 85% of its budget.',
+    test: (o) => o.missionId === 'm6-bill-shock' && o.passed && o.metrics.cost <= 0.85 * 2500,
+  },
+  {
+    id: 'least-privilege',
+    title: 'Least Privilege',
+    desc: 'Pass the networking mission with a perfect security score.',
+    test: (o) => o.missionId === 'm4-network' && o.passed && o.metrics.securityScore >= 98,
+  },
+  {
+    id: 'postmortem-pro',
+    title: 'Blameless & Thorough',
+    desc: 'Write a postmortem scoring 80+ for rationale.',
+    test: (o) => (o.dims.find((d) => d.id === 'rationale')?.score ?? 0) >= 80,
+  },
+  {
+    id: 'learn-from-failure',
+    title: 'Learned the Hard Way',
+    desc: 'Pass a mission on a retry after a failed attempt.',
+    test: (o) => o.passed && o.attempt > 1,
+  },
   { id: 'architect', title: 'Decision Maker', desc: 'Record three Architecture Decision Records.', test: (_o, p) => p.adrCount >= 3 },
-  { id: 'sre', title: 'On-Call Hero', desc: 'Pass all three incident missions.', test: (_o, p) => ['m2-db-meltdown', 'm3-deployment', 'm5-queue'].every((id) => p.completed[id]?.passed) },
-  { id: 'campaign', title: 'Campaign Complete', desc: 'Pass all six campaign missions.', test: (_o, p) => ['m1-monolith', 'm2-db-meltdown', 'm3-deployment', 'm4-network', 'm5-queue', 'm6-bill-shock'].every((id) => p.completed[id]?.passed) },
+  {
+    id: 'sre',
+    title: 'On-Call Hero',
+    desc: 'Pass all three incident missions.',
+    test: (_o, p) => ['m2-db-meltdown', 'm3-deployment', 'm5-queue'].every((id) => p.completed[id]?.passed),
+  },
+  {
+    id: 'campaign',
+    title: 'Campaign Complete',
+    desc: 'Pass all six campaign missions.',
+    test: (_o, p) =>
+      ['m1-monolith', 'm2-db-meltdown', 'm3-deployment', 'm4-network', 'm5-queue', 'm6-bill-shock'].every((id) => p.completed[id]?.passed),
+  },
 ];
 
 export const LEVEL_UNLOCKS: Record<number, string> = {

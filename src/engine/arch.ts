@@ -13,7 +13,11 @@ export function clone<T>(v: T): T {
   return JSON.parse(JSON.stringify(v));
 }
 
-export function makeNode(kind: string, position: { x: number; y: number }, overrides: { id?: string; label?: string; config?: Config; faults?: Fault[] } = {}): ArchNode {
+export function makeNode(
+  kind: string,
+  position: { x: number; y: number },
+  overrides: { id?: string; label?: string; config?: Config; faults?: Fault[] } = {},
+): ArchNode {
   const entry = entryOf(kind);
   return {
     id: overrides.id ?? uid(kind),
@@ -134,49 +138,81 @@ export function validateArch(arch: Arch): ValidationIssue[] {
     const t = nodeById(arch, e.target)!;
     const verdict = canConnect(s.kind, t.kind);
     if (!verdict.ok) issues.push({ nodeId: e.source, severity: 'error', text: `${s.label} → ${t.label}: ${verdict.reason}` });
-    if (e.config.timeoutMs <= 0) issues.push({ nodeId: e.source, severity: 'error', text: `${s.label} → ${t.label}: timeout must be positive.` });
-    if (e.config.weight < 0) issues.push({ nodeId: e.source, severity: 'error', text: `${s.label} → ${t.label}: call weight cannot be negative.` });
+    if (e.config.timeoutMs <= 0)
+      issues.push({ nodeId: e.source, severity: 'error', text: `${s.label} → ${t.label}: timeout must be positive.` });
+    if (e.config.weight < 0)
+      issues.push({ nodeId: e.source, severity: 'error', text: `${s.label} → ${t.label}: call weight cannot be negative.` });
     incoming.set(e.target, (incoming.get(e.target) ?? 0) + 1);
     outgoing.set(e.source, (outgoing.get(e.source) ?? 0) + 1);
   }
   for (const n of arch.nodes) {
     const entry = CATALOG_BY_KIND[n.kind];
-    if (!entry) { issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: unknown component type "${n.kind}".` }); continue; }
+    if (!entry) {
+      issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: unknown component type "${n.kind}".` });
+      continue;
+    }
     const role = entry.role;
     const c = n.config;
     for (const f of entry.fields) {
       if (f.type === 'number') {
         const v = c[f.key];
-        if (typeof v !== 'number' || Number.isNaN(v)) issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: "${f.label}" needs a numeric value.` });
-        else if ((f.min != null && v < f.min) || (f.max != null && v > f.max)) issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: "${f.label}" must be between ${f.min} and ${f.max}.` });
+        if (typeof v !== 'number' || Number.isNaN(v))
+          issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: "${f.label}" needs a numeric value.` });
+        else if ((f.min != null && v < f.min) || (f.max != null && v > f.max))
+          issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: "${f.label}" must be between ${f.min} and ${f.max}.` });
       }
       if (f.type === 'ref' && c[f.key]) {
         const target = nodeById(arch, c[f.key]);
-        if (!target) issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: "${f.label}" references a component that does not exist.` });
-        else if (f.refKinds && !f.refKinds.includes(target.kind)) issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: "${f.label}" must reference a ${f.refKinds.join('/')}.` });
+        if (!target)
+          issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: "${f.label}" references a component that does not exist.` });
+        else if (f.refKinds && !f.refKinds.includes(target.kind))
+          issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: "${f.label}" must reference a ${f.refKinds.join('/')}.` });
       }
     }
     if (role === 'compute' || role === 'worker') {
-      if (c.autoscale && c.maxReplicas < c.replicas) issues.push({ nodeId: n.id, severity: 'error', text: `${n.label}: max replicas (${c.maxReplicas}) is below the configured replicas (${c.replicas}).` });
+      if (c.autoscale && c.maxReplicas < c.replicas)
+        issues.push({
+          nodeId: n.id,
+          severity: 'error',
+          text: `${n.label}: max replicas (${c.maxReplicas}) is below the configured replicas (${c.replicas}).`,
+        });
     }
     if (role === 'worker' && !arch.edges.some((e) => e.target === n.id && edgeClass(arch, e) === 'async')) {
       issues.push({ nodeId: n.id, severity: 'warn', text: `${n.label}: no queue feeds this worker, so it will never receive work.` });
     }
-    if (role === 'queue' && !c.isDlq && !arch.edges.some((e) => e.source === n.id && edgeClass(arch, e) === 'async' && roleOf(nodeById(arch, e.target)!) !== 'queue')) {
-      issues.push({ nodeId: n.id, severity: 'warn', text: `${n.label}: no consumer is connected — messages will accumulate until they expire.` });
+    if (
+      role === 'queue' &&
+      !c.isDlq &&
+      !arch.edges.some((e) => e.source === n.id && edgeClass(arch, e) === 'async' && roleOf(nodeById(arch, e.target)!) !== 'queue')
+    ) {
+      issues.push({
+        nodeId: n.id,
+        severity: 'warn',
+        text: `${n.label}: no consumer is connected — messages will accumulate until they expire.`,
+      });
     }
     if (['db', 'kv', 'cache', 'storage', 'search', 'external'].includes(role) && !incoming.get(n.id)) {
-      issues.push({ nodeId: n.id, severity: 'warn', text: `${n.label}: nothing connects to it, so it receives no traffic (but still costs money).` });
+      issues.push({
+        nodeId: n.id,
+        severity: 'warn',
+        text: `${n.label}: nothing connects to it, so it receives no traffic (but still costs money).`,
+      });
     }
     if (role === 'lb' && !outgoing.get(n.id)) {
       issues.push({ nodeId: n.id, severity: 'warn', text: `${n.label}: no targets are registered behind this load balancer.` });
     }
-    if (['compute', 'lb', 'gateway', 'waf', 'cdn', 'edge'].includes(role) && !incoming.get(n.id) && !arch.edges.some((e) => e.source === n.id && e.target !== n.id)) {
+    if (
+      ['compute', 'lb', 'gateway', 'waf', 'cdn', 'edge'].includes(role) &&
+      !incoming.get(n.id) &&
+      !arch.edges.some((e) => e.source === n.id && e.target !== n.id)
+    ) {
       issues.push({ nodeId: n.id, severity: 'warn', text: `${n.label}: this component is not connected to anything.` });
     }
   }
-  if (!arch.nodes.some((n) => roleOf(n) === 'source')) issues.push({ severity: 'warn', text: 'No traffic source on the canvas — add "Users / Traffic" so the simulation has a workload.' });
-  if (hasCycle(arch)) issues.push({ severity: 'warn', text: 'The synchronous call graph contains a cycle — requests can loop and amplify load.' });
+  if (!arch.nodes.some((n) => roleOf(n) === 'source'))
+    issues.push({ severity: 'warn', text: 'No traffic source on the canvas — add "Users / Traffic" so the simulation has a workload.' });
+  if (hasCycle(arch))
+    issues.push({ severity: 'warn', text: 'The synchronous call graph contains a cycle — requests can loop and amplify load.' });
   return issues;
 }
 
@@ -199,7 +235,10 @@ export function diffArch(before: Arch, after: Arch): ArchDiffItem[] {
   const a = new Map(after.nodes.map((n) => [n.id, n]));
   for (const n of after.nodes) {
     const o = b.get(n.id);
-    if (!o) { out.push({ type: 'add', nodeId: n.id, text: `Add ${n.label}` }); continue; }
+    if (!o) {
+      out.push({ type: 'add', nodeId: n.id, text: `Add ${n.label}` });
+      continue;
+    }
     for (const k of new Set([...Object.keys(o.config), ...Object.keys(n.config)])) {
       if (JSON.stringify(o.config[k]) !== JSON.stringify(n.config[k])) {
         out.push({ type: 'change', nodeId: n.id, text: `${n.label}: ${k} ${fmt(o.config[k])} → ${fmt(n.config[k])}` });
@@ -214,9 +253,11 @@ export function diffArch(before: Arch, after: Arch): ArchDiffItem[] {
   for (const e of after.edges) {
     const o = be.get(e.id);
     if (!o) out.push({ type: 'connect', text: `Connect ${nm(e.source)} → ${nm(e.target)}` });
-    else for (const k of Object.keys(e.config) as (keyof EdgeConfig)[]) {
-      if (o.config[k] !== e.config[k]) out.push({ type: 'change', text: `${nm(e.source)} → ${nm(e.target)}: ${k} ${fmt(o.config[k])} → ${fmt(e.config[k])}` });
-    }
+    else
+      for (const k of Object.keys(e.config) as (keyof EdgeConfig)[]) {
+        if (o.config[k] !== e.config[k])
+          out.push({ type: 'change', text: `${nm(e.source)} → ${nm(e.target)}: ${k} ${fmt(o.config[k])} → ${fmt(e.config[k])}` });
+      }
   }
   for (const e of before.edges) if (!ae.has(e.id)) out.push({ type: 'disconnect', text: `Disconnect ${nm(e.source)} → ${nm(e.target)}` });
   return out;

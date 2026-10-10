@@ -66,10 +66,37 @@ export const LAB_WORKLOAD: Workload = { ...DEFAULT_WORKLOAD, baseRps: 120, profi
 
 export function labMission(): Mission {
   return {
-    id: LAB_ID, number: 0, title: 'Architecture Lab', tagline: 'Sandbox', difficulty: 'Beginner', kind: 'project', estMinutes: 0, prerequisites: [], skills: {}, learning: [],
-    story: '', business: { context: '', impact: '' }, constraints: { notes: [] }, workload: LAB_WORKLOAD, initial: { nodes: [], edges: [] }, components: [], startMinute: 0,
-    verifyMinutes: 5, verifyAt: 0, deployments: [], notes: [], rootCauses: [], actions: [], requirements: [], weights: {}, hints: [],
-    debrief: { concepts: [], rootCause: '', alternatives: [], mistakes: [], aws: [], experiments: [] }, seed: 7, guidance: [], needsPostmortem: false, needsADR: false,
+    id: LAB_ID,
+    number: 0,
+    title: 'Architecture Lab',
+    tagline: 'Sandbox',
+    difficulty: 'Beginner',
+    kind: 'project',
+    estMinutes: 0,
+    prerequisites: [],
+    skills: {},
+    learning: [],
+    story: '',
+    business: { context: '', impact: '' },
+    constraints: { notes: [] },
+    workload: LAB_WORKLOAD,
+    initial: { nodes: [], edges: [] },
+    components: [],
+    startMinute: 0,
+    verifyMinutes: 5,
+    verifyAt: 0,
+    deployments: [],
+    notes: [],
+    rootCauses: [],
+    actions: [],
+    requirements: [],
+    weights: {},
+    hints: [],
+    debrief: { concepts: [], rootCause: '', alternatives: [], mistakes: [], aws: [], experiments: [] },
+    seed: 7,
+    guidance: [],
+    needsPostmortem: false,
+    needsADR: false,
   };
 }
 
@@ -94,13 +121,37 @@ export function createSession(missionId: string, mode: Mode, attempt = 1, initia
   const mission = missionOf(missionId);
   const arch = clone(initialArch ?? mission.initial);
   const s: Session = {
-    missionId, mode, attempt, ops: [], live: arch, draft: clone(arch), liveStack: [], minute: 0, sim: emptyState(), history: [], flags: {},
-    workload: clone(mission.workload), chaos: [], events: [], deployLog: [...mission.deployments].map((d) => ({ ...d })), failedRequests: 0, failed: false,
-    actionsTaken: [], panelsSeen: [], chosenCauses: [], hintsUsed: 0, adrs: [], seed: mission.seed,
+    missionId,
+    mode,
+    attempt,
+    ops: [],
+    live: arch,
+    draft: clone(arch),
+    liveStack: [],
+    minute: 0,
+    sim: emptyState(),
+    history: [],
+    flags: {},
+    workload: clone(mission.workload),
+    chaos: [],
+    events: [],
+    deployLog: [...mission.deployments].map((d) => ({ ...d })),
+    failedRequests: 0,
+    failed: false,
+    actionsTaken: [],
+    panelsSeen: [],
+    chosenCauses: [],
+    hintsUsed: 0,
+    adrs: [],
+    seed: mission.seed,
   };
   // Pre-roll: simulate the lead-up so the player starts with real telemetry.
   for (let i = 0; i < mission.startMinute; i++) stepMinute(s, mission, true);
-  s.events.push({ minute: s.minute, kind: 'note', text: missionId === LAB_ID ? 'Sandbox ready. Build a system, then press Deploy.' : `Mission started: ${mission.title}.` });
+  s.events.push({
+    minute: s.minute,
+    kind: 'note',
+    text: missionId === LAB_ID ? 'Sandbox ready. Build a system, then press Deploy.' : `Mission started: ${mission.title}.`,
+  });
   return s;
 }
 
@@ -116,7 +167,10 @@ function stepMinute(s: Session, mission: Mission, preroll = false) {
   s.failedRequests += r.snapshot.system.failedRequests;
   if (!preroll && !s.failed && mission.failure) {
     const f = mission.failure;
-    if ((f.maxFailedRequests && s.failedRequests > f.maxFailedRequests) || (f.maxQueueDelaySec && r.snapshot.system.queueDelaySec > f.maxQueueDelaySec)) {
+    if (
+      (f.maxFailedRequests && s.failedRequests > f.maxFailedRequests) ||
+      (f.maxQueueDelaySec && r.snapshot.system.queueDelaySec > f.maxQueueDelaySec)
+    ) {
       s.failed = true;
       s.events.push({ minute: s.minute, kind: 'incident', text: f.text });
     }
@@ -133,7 +187,8 @@ export function advance(s: Session, n: number, log = true): Session {
   for (let i = 0; i < n; i++) stepMinute(s, mission);
   if (log && n > 0) {
     const last = s.ops[s.ops.length - 1];
-    if (last && last.op === 'advance') last.n += n; else s.ops.push({ op: 'advance', n });
+    if (last && last.op === 'advance') last.n += n;
+    else s.ops.push({ op: 'advance', n });
   }
   return s;
 }
@@ -155,9 +210,35 @@ export function deployDraft(s: Session, strategy = 'all-at-once', log = true): D
   // Immediate feedback: first solve with the new architecture and current load.
   const r = solve(s.live, s.workload, Math.max(0, s.minute - 1), s.sim, s.chaos);
   const changes = beforeSnap ? explainChanges(beforeSnap, r.snapshot, s.live) : [];
-  s.explain = { deployedAt: s.minute, settled: false, diff, changes, title: diff.slice(0, 2).map((d) => d.text).join('; ') + (diff.length > 2 ? ` (+${diff.length - 2} more)` : '') };
-  s.events.push({ minute: s.minute, kind: 'deploy', text: `Deployed (${strategy}): ${diff.length} change${diff.length === 1 ? '' : 's'} — ${diff.slice(0, 3).map((d) => d.text).join('; ')}${diff.length > 3 ? '…' : ''}` });
-  s.deployLog.push({ minute: s.minute, kind: 'infra', title: `Infrastructure change (${diff.length})`, detail: diff.slice(0, 4).map((d) => d.text).join(' · '), by: 'you' });
+  s.explain = {
+    deployedAt: s.minute,
+    settled: false,
+    diff,
+    changes,
+    title:
+      diff
+        .slice(0, 2)
+        .map((d) => d.text)
+        .join('; ') + (diff.length > 2 ? ` (+${diff.length - 2} more)` : ''),
+  };
+  s.events.push({
+    minute: s.minute,
+    kind: 'deploy',
+    text: `Deployed (${strategy}): ${diff.length} change${diff.length === 1 ? '' : 's'} — ${diff
+      .slice(0, 3)
+      .map((d) => d.text)
+      .join('; ')}${diff.length > 3 ? '…' : ''}`,
+  });
+  s.deployLog.push({
+    minute: s.minute,
+    kind: 'infra',
+    title: `Infrastructure change (${diff.length})`,
+    detail: diff
+      .slice(0, 4)
+      .map((d) => d.text)
+      .join(' · '),
+    by: 'you',
+  });
   if (log) s.ops.push({ op: 'deploy', arch: clone(s.live), strategy });
   return { ok: true };
 }
@@ -187,7 +268,11 @@ export function applyAction(s: Session, id: string, log = true): { ok: boolean; 
   const res = action.apply(s.live, s.flags, s.minute);
   const touched = res.arch;
   s.live = touched;
-  try { s.draft = action.apply(s.draft, s.flags, s.minute).arch; } catch { s.draft = clone(touched); }
+  try {
+    s.draft = action.apply(s.draft, s.flags, s.minute).arch;
+  } catch {
+    s.draft = clone(touched);
+  }
   Object.assign(s.flags, res.flags ?? {});
   s.actionsTaken.push(id);
   if (s.draft.nodes.length === 0) s.draft = clone(touched);
@@ -199,16 +284,24 @@ export function applyAction(s: Session, id: string, log = true): { ok: boolean; 
 
 export function setChaos(s: Session, chaos: Chaos[], log = true) {
   s.chaos = chaos;
-  s.events.push({ minute: s.minute, kind: 'chaos', text: chaos.length ? `Chaos injected: ${chaos.map(describeChaos).join(', ')}` : 'Chaos cleared.' });
+  s.events.push({
+    minute: s.minute,
+    kind: 'chaos',
+    text: chaos.length ? `Chaos injected: ${chaos.map(describeChaos).join(', ')}` : 'Chaos cleared.',
+  });
   if (log) s.ops.push({ op: 'chaos', chaos: clone(chaos) });
 }
 
 export function describeChaos(c: Chaos): string {
   switch (c.type) {
-    case 'az-outage': return `AZ ${c.az} outage`;
-    case 'node-down': return `component ${c.nodeId} down`;
-    case 'slow': return `${c.nodeId} ×${c.mult} slower`;
-    case 'spike': return `traffic ×${c.mult}`;
+    case 'az-outage':
+      return `AZ ${c.az} outage`;
+    case 'node-down':
+      return `component ${c.nodeId} down`;
+    case 'slow':
+      return `${c.nodeId} ×${c.mult} slower`;
+    case 'spike':
+      return `traffic ×${c.mult}`;
   }
 }
 
@@ -222,12 +315,25 @@ export function replay(missionId: string, mode: Mode, attempt: number, ops: Op[]
   const s = createSession(missionId, mode, attempt, initialArch);
   for (const o of ops) {
     switch (o.op) {
-      case 'advance': advance(s, o.n, true); break;
-      case 'deploy': s.draft = clone(o.arch); deployDraft(s, o.strategy, true); break;
-      case 'action': applyAction(s, o.id, true); break;
-      case 'chaos': setChaos(s, o.chaos, true); break;
-      case 'revert': revertLast(s, true); break;
-      case 'workload': patchWorkload(s, o.patch, true); break;
+      case 'advance':
+        advance(s, o.n, true);
+        break;
+      case 'deploy':
+        s.draft = clone(o.arch);
+        deployDraft(s, o.strategy, true);
+        break;
+      case 'action':
+        applyAction(s, o.id, true);
+        break;
+      case 'chaos':
+        setChaos(s, o.chaos, true);
+        break;
+      case 'revert':
+        revertLast(s, true);
+        break;
+      case 'workload':
+        patchWorkload(s, o.patch, true);
+        break;
     }
   }
   return s;
@@ -245,7 +351,7 @@ export function verify(s: Session, firstCompletion: boolean): { outcome: Outcome
   const arch = clone(s.live);
   const base = Math.max(s.minute, mission.verifyAt);
   const window: Snapshot[] = [];
-  let a = arch;
+  const a = arch;
   for (let i = 0; i < mission.verifyMinutes; i++) {
     const r = solve(a, s.workload, base + i, sim, s.chaos);
     sim = r.next;
@@ -254,9 +360,22 @@ export function verify(s: Session, firstCompletion: boolean): { outcome: Outcome
   const last5 = window.slice(-5);
   const report = buildReport(a, last5, s.workload, { squads: mission.squads });
   const outcome = scoreMission({
-    mission, arch: a, window: last5, report, workload: s.workload, flags, actionsTaken: s.actionsTaken, adrs: s.adrs, postmortem: s.postmortem,
-    chosenCauses: s.chosenCauses, panelsSeen: s.panelsSeen, hintsUsed: s.hintsUsed, minutes: s.minute - mission.startMinute, attempt: s.attempt,
-    failedIncident: s.failed, firstCompletion,
+    mission,
+    arch: a,
+    window: last5,
+    report,
+    workload: s.workload,
+    flags,
+    actionsTaken: s.actionsTaken,
+    adrs: s.adrs,
+    postmortem: s.postmortem,
+    chosenCauses: s.chosenCauses,
+    panelsSeen: s.panelsSeen,
+    hintsUsed: s.hintsUsed,
+    minutes: s.minute - mission.startMinute,
+    attempt: s.attempt,
+    failedIncident: s.failed,
+    firstCompletion,
   });
   return { outcome, report, window: last5 };
 }

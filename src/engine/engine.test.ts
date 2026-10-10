@@ -21,7 +21,13 @@ const run = (a: Arch, w: Workload, minute = 0) => solve(a, w, minute, emptyState
 
 describe('workload', () => {
   it('interpolates the traffic profile', () => {
-    const w = W({ baseRps: 100, profile: [{ t: 0, mult: 1 }, { t: 10, mult: 3 }] });
+    const w = W({
+      baseRps: 100,
+      profile: [
+        { t: 0, mult: 1 },
+        { t: 10, mult: 3 },
+      ],
+    });
     expect(rpsAt(w, 0)).toBe(100);
     expect(rpsAt(w, 5)).toBeCloseTo(200);
     expect(rpsAt(w, 99)).toBe(300);
@@ -126,13 +132,20 @@ describe('queue dynamics', () => {
       makeNode('worker', { x: 0, y: 0 }, { id: 'w', config: worker }),
     ];
     const edges = [makeEdge('u', 'api'), makeEdge('api', 'q'), makeEdge('q', 'w')];
-    if (dlq) { nodes.push(makeNode('dlq', { x: 0, y: 0 }, { id: 'dlq' })); edges.push(makeEdge('q', 'dlq')); }
+    if (dlq) {
+      nodes.push(makeNode('dlq', { x: 0, y: 0 }, { id: 'dlq' }));
+      edges.push(makeEdge('q', 'dlq'));
+    }
     return { nodes, edges };
   };
   const drive = (a: Arch, w: Workload, minutes: number) => {
     let st = emptyState();
     let snap = solve(a, w, 0, st).snapshot;
-    for (let m = 0; m < minutes; m++) { const r = solve(a, w, m, st); st = r.next; snap = r.snapshot; }
+    for (let m = 0; m < minutes; m++) {
+      const r = solve(a, w, m, st);
+      st = r.next;
+      snap = r.snapshot;
+    }
     return snap;
   };
   it('backlog grows when consumers are slower than producers and drains after scaling', () => {
@@ -163,10 +176,20 @@ describe('queue dynamics', () => {
 describe('autoscaling', () => {
   it('lags behind demand rather than fixing it instantly', () => {
     const a = webStack({ replicas: 2, autoscale: true, maxReplicas: 20 }, { size: 'xlarge' });
-    const w = W({ baseRps: 100, profile: [{ t: 0, mult: 1 }, { t: 1, mult: 5 }] });
+    const w = W({
+      baseRps: 100,
+      profile: [
+        { t: 0, mult: 1 },
+        { t: 1, mult: 5 },
+      ],
+    });
     let st = emptyState();
     const hist: number[] = [];
-    for (let m = 0; m < 8; m++) { const r = solve(a, w, m, st); st = r.next; hist.push(r.snapshot.system.successRate); }
+    for (let m = 0; m < 8; m++) {
+      const r = solve(a, w, m, st);
+      st = r.next;
+      hist.push(r.snapshot.system.successRate);
+    }
     expect(hist[1]).toBeLessThan(0.9);
     expect(hist[7]).toBeGreaterThan(hist[1]);
     expect(hist[7]).toBeGreaterThan(0.99);

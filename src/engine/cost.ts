@@ -33,7 +33,9 @@ export function costLines(n: ArchNode, m: Pick<NodeMetrics, 'replicas' | 'offere
   const role = roleOf(n);
   const lines: CostLine[] = [];
   const reqPerMonth = (ctx.offered[n.id] ?? 0) * S;
-  const add = (label: string, usd: number, category: CostLine['category']) => { if (usd > 0.005) lines.push({ label, usd, category }); };
+  const add = (label: string, usd: number, category: CostLine['category']) => {
+    if (usd > 0.005) lines.push({ label, usd, category });
+  };
 
   const size = P.SIZE_MULT[c.instanceSize ?? c.size ?? 'small'] ?? 1;
   if (role === 'compute' || role === 'worker') {
@@ -41,7 +43,11 @@ export function costLines(n: ArchNode, m: Pick<NodeMetrics, 'replicas' | 'offere
     if (n.kind === 'lambda') {
       add(`Invocations (${(reqPerMonth / 1e6).toFixed(1)}M/mo)`, (reqPerMonth / 1e6) * (p.perMillionReq ?? 2.2), 'compute');
     } else {
-      add(`${m.replicas} × ${c.instanceSize ?? 'small'} instance${m.replicas === 1 ? '' : 's'}`, m.replicas * p.hourly * size * P.HOURS_PER_MONTH, 'compute');
+      add(
+        `${m.replicas} × ${c.instanceSize ?? 'small'} instance${m.replicas === 1 ? '' : 's'}`,
+        m.replicas * p.hourly * size * P.HOURS_PER_MONTH,
+        'compute',
+      );
     }
     if (p.fixed) add('Control plane', p.fixed, 'compute');
     const served = ctx.served[n.id] ?? 0;
@@ -55,11 +61,18 @@ export function costLines(n: ArchNode, m: Pick<NodeMetrics, 'replicas' | 'offere
     if (c.readReplicas > 0) add(`${c.readReplicas} read replica(s)`, d.hourly * P.HOURS_PER_MONTH * c.readReplicas, 'data');
     if (c.crossRegionReplica) add('Cross-region replica + transfer', d.hourly * P.HOURS_PER_MONTH * 1.15, 'data');
     add(`Storage ${c.storageGB} GB`, c.storageGB * P.DB_STORAGE_PER_GB * az, 'storage');
-    if (c.backupRetentionDays > 7) add(`Backups (${c.backupRetentionDays}d)`, c.storageGB * 0.095 * ((c.backupRetentionDays - 7) / 30), 'storage');
+    if (c.backupRetentionDays > 7)
+      add(`Backups (${c.backupRetentionDays}d)`, c.storageGB * 0.095 * ((c.backupRetentionDays - 7) / 30), 'storage');
     if (c.connectionPooler) add('Connection pooler / proxy', 15 * (c.size === 'small' ? 1 : P.SIZE_MULT[c.size] / 2), 'data');
   } else if (role === 'kv') {
-    if (c.capacityMode === 'provisioned') add('Provisioned capacity', (c.rcu * P.DDB_RCU_HOURLY + c.wcu * P.DDB_WCU_HOURLY) * P.HOURS_PER_MONTH, 'data');
-    else add('On-demand requests', (reqPerMonth * w.readRatio / 1e6) * P.DDB_READ_PER_MILLION + (reqPerMonth * (1 - w.readRatio) / 1e6) * P.DDB_WRITE_PER_MILLION, 'data');
+    if (c.capacityMode === 'provisioned')
+      add('Provisioned capacity', (c.rcu * P.DDB_RCU_HOURLY + c.wcu * P.DDB_WCU_HOURLY) * P.HOURS_PER_MONTH, 'data');
+    else
+      add(
+        'On-demand requests',
+        ((reqPerMonth * w.readRatio) / 1e6) * P.DDB_READ_PER_MILLION + ((reqPerMonth * (1 - w.readRatio)) / 1e6) * P.DDB_WRITE_PER_MILLION,
+        'data',
+      );
   } else if (role === 'cache') {
     add(`${c.nodes} × ${c.size} node(s)`, c.nodes * P.CACHE_NODE_HOURLY * (P.SIZE_MULT[c.size] ?? 1) * P.HOURS_PER_MONTH, 'data');
   } else if (role === 'search') {
@@ -82,7 +95,9 @@ export function costLines(n: ArchNode, m: Pick<NodeMetrics, 'replicas' | 'offere
       const t = nodeById(arch, e.target);
       if (!s || !t) continue;
       const sub = s.config.subnet ? nodeById(arch, s.config.subnet) : undefined;
-      const viaThisNat = sub ? sub.config.routeInternet === 'nat' && sub.config.nat === n.id : ofKind(arch, 'nat')[0]?.id === n.id && ['compute', 'worker'].includes(roleOf(s));
+      const viaThisNat = sub
+        ? sub.config.routeInternet === 'nat' && sub.config.nat === n.id
+        : ofKind(arch, 'nat')[0]?.id === n.id && ['compute', 'worker'].includes(roleOf(s));
       if (!viaThisNat) continue;
       const tr = roleOf(t);
       if (tr === 'external') gbThrough += GB(ctx.edgeRps[e.id] ?? 0, w.payloadKB, S);

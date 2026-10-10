@@ -5,7 +5,9 @@ import { advance, applyAction, createSession, deployDraft, verify, type Session 
 import type { ADR, Postmortem } from '@/content/missions/types';
 
 const ADR_OK: ADR = {
-  id: 'a1', title: 'Decision', minute: 0,
+  id: 'a1',
+  title: 'Decision',
+  minute: 0,
   context: 'Fourteen engineers in three squads share one deployable and release rarely because changes collide.',
   problem: 'Cross-module regressions and slow releases are hurting delivery; we need independent change with a small platform team.',
   options: 'Modular monolith with enforced boundaries; extract one service; full microservices. Alternative: do nothing.',
@@ -20,25 +22,39 @@ const PM_OK: Postmortem = {
   evidence: 'The error rate stepped at the deploy time, logs named the release, and the database metrics were normal.',
   restored: 'We rolled back to the previous release; then added integration tests, canary with automatic abort and monitoring.',
   worsened: 'Restarting instances masked the leak and wasted time; scaling is not a fix for a code defect.',
-  prevent: 'Integration test coverage, canary rollout with auto rollback, a feature flag kill switch and an error-rate alert to reduce detection time.',
+  prevent:
+    'Integration test coverage, canary rollout with auto rollback, a feature flag kill switch and an error-rate alert to reduce detection time.',
 };
 
-const add = (a: Arch, ...nodes: ReturnType<typeof makeNode>[]) => { a.nodes.push(...nodes); };
-const connect = (a: Arch, s: string, t: string, cfg = {}) => { a.edges.push(makeEdge(s, t, cfg)); };
-const cfg = (a: Arch, id: string, c: Record<string, any>) => { Object.assign(a.nodes.find((n) => n.id === id)!.config, c); };
+const add = (a: Arch, ...nodes: ReturnType<typeof makeNode>[]) => {
+  a.nodes.push(...nodes);
+};
+const connect = (a: Arch, s: string, t: string, cfg = {}) => {
+  a.edges.push(makeEdge(s, t, cfg));
+};
+const cfg = (a: Arch, id: string, c: Record<string, any>) => {
+  Object.assign(a.nodes.find((n) => n.id === id)!.config, c);
+};
 const N = (kind: string, id: string, config: Record<string, any> = {}) => makeNode(kind, { x: 0, y: 0 }, { id, config });
-const ship = (s: Session, minutes = 4) => { const r = deployDraft(s); expect(r.blocked ?? []).toEqual([]); advance(s, minutes); };
+const ship = (s: Session, minutes = 4) => {
+  const r = deployDraft(s);
+  expect(r.blocked ?? []).toEqual([]);
+  advance(s, minutes);
+};
 
 describe('Mission 1 — The Growing Monolith', () => {
   const pipeline = (a: Arch, target = 'mono') => {
     add(a, N('source-repo', 'repo'), N('ci-pipeline', 'ci'), N('test-suite', 'ts', { unitCoverage: 70, integrationCoverage: 40 }));
-    connect(a, 'repo', 'ci'); connect(a, 'ci', 'ts'); connect(a, 'ts', target);
+    connect(a, 'repo', 'ci');
+    connect(a, 'ci', 'ts');
+    connect(a, 'ts', target);
   };
   it('modular monolith + CI passes', () => {
     const s = createSession('m1-monolith', 'beginner');
     cfg(s.draft, 'mono', { moduleBoundaries: 'enforced' });
     pipeline(s.draft);
-    ship(s); s.adrs = [ADR_OK];
+    ship(s);
+    s.adrs = [ADR_OK];
     const v = verify(s, true);
     expect(v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id)).toEqual([]);
     expect(v.outcome.passed).toBe(true);
@@ -47,13 +63,20 @@ describe('Mission 1 — The Growing Monolith', () => {
   it('extracting one service with its own database also passes (alternative valid solution)', () => {
     const s = createSession('m1-monolith', 'beginner');
     cfg(s.draft, 'mono', { moduleBoundaries: 'enforced', modules: 4 });
-    add(s.draft, N('microservice', 'billing', { domain: 'billing', ownsData: true, replicas: 2 }), N('relational-db', 'billing-db', { size: 'small', storageGB: 50, multiAZ: false, costTag: 'team=payments' }));
+    add(
+      s.draft,
+      N('microservice', 'billing', { domain: 'billing', ownsData: true, replicas: 2 }),
+      N('relational-db', 'billing-db', { size: 'small', storageGB: 50, multiAZ: false, costTag: 'team=payments' }),
+    );
     s.draft.nodes.find((n) => n.id === 'billing')!.label = 'Billing service';
-    connect(s.draft, 'mono', 'billing'); connect(s.draft, 'billing', 'billing-db', { weight: 2 });
+    connect(s.draft, 'mono', 'billing');
+    connect(s.draft, 'billing', 'billing-db', { weight: 2 });
     pipeline(s.draft);
     add(s.draft, N('tracing', 'tr'), N('cd-pipeline', 'cd', { strategy: 'rolling', autoRollback: true }));
-    connect(s.draft, 'ts', 'cd'); connect(s.draft, 'cd', 'billing');
-    ship(s); s.adrs = [ADR_OK];
+    connect(s.draft, 'ts', 'cd');
+    connect(s.draft, 'cd', 'billing');
+    ship(s);
+    s.adrs = [ADR_OK];
     const v = verify(s, true);
     expect(v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id + ':' + r.detail)).toEqual([]);
     expect(v.outcome.passed).toBe(true);
@@ -61,8 +84,13 @@ describe('Mission 1 — The Growing Monolith', () => {
   it('six microservices sharing one database fails on complexity, coupling and cost', () => {
     const s = createSession('m1-monolith', 'beginner');
     const kinds = ['billing', 'catalogue', 'orders', 'accounts', 'notifications', 'search'];
-    for (const k of kinds) { add(s.draft, N('microservice', k, { domain: k, ownsData: false, replicas: 2 })); connect(s.draft, 'mono', k); connect(s.draft, k, 'db', { weight: 2 }); }
-    ship(s); s.adrs = [ADR_OK];
+    for (const k of kinds) {
+      add(s.draft, N('microservice', k, { domain: k, ownsData: false, replicas: 2 }));
+      connect(s.draft, 'mono', k);
+      connect(s.draft, k, 'db', { weight: 2 });
+    }
+    ship(s);
+    s.adrs = [ADR_OK];
     const v = verify(s, true);
     const failed = v.outcome.reqs.filter((r) => !r.pass).map((r) => r.id);
     expect(v.outcome.passed).toBe(false);
@@ -72,7 +100,12 @@ describe('Mission 1 — The Growing Monolith', () => {
 });
 
 describe('Mission 2 — The Database Meltdown', () => {
-  const finish = (s: Session) => { s.postmortem = PM_OK; s.chosenCauses = ['unindexed']; s.panelsSeen = ['database', 'metrics', 'deployments']; return verify(s, true); };
+  const finish = (s: Session) => {
+    s.postmortem = PM_OK;
+    s.chosenCauses = ['unindexed'];
+    s.panelsSeen = ['database', 'metrics', 'deployments'];
+    return verify(s, true);
+  };
   it('starts in a meltdown', () => {
     const s = createSession('m2-db-meltdown', 'intermediate');
     expect(s.history[s.history.length - 1].system.successRate).toBeLessThan(0.5);
@@ -102,7 +135,9 @@ describe('Mission 2 — The Database Meltdown', () => {
     ship(s);
     const v = finish(s);
     const idx = createSession('m2-db-meltdown', 'intermediate');
-    applyAction(idx, 'add-index'); cfg(idx.draft, 'db', { connectionPooler: true }); ship(idx);
+    applyAction(idx, 'add-index');
+    cfg(idx.draft, 'db', { connectionPooler: true });
+    ship(idx);
     const vi = finish(idx);
     expect(v.report.metrics.cost).toBeGreaterThan(vi.report.metrics.cost);
     expect(v.outcome.reqs.find((r) => r.id === 'avail')!.pass).toBe(true);
@@ -110,7 +145,8 @@ describe('Mission 2 — The Database Meltdown', () => {
   it('a long-TTL cache without invalidation introduces a freshness violation', () => {
     const s = createSession('m2-db-meltdown', 'intermediate');
     applyAction(s, 'add-index');
-    add(s.draft, N('elasticache', 'ec', { ttlSeconds: 600, nodes: 2 })); connect(s.draft, 'api', 'ec');
+    add(s.draft, N('elasticache', 'ec', { ttlSeconds: 600, nodes: 2 }));
+    connect(s.draft, 'api', 'ec');
     cfg(s.draft, 'db', { connectionPooler: true });
     ship(s);
     const v = finish(s);
@@ -123,8 +159,17 @@ describe('Mission 3 — The Unreliable Deployment', () => {
   const safeDraft = (s: Session) => {
     cfg(s.draft, 'tests', { integrationCoverage: 60, unitCoverage: 70 });
     cfg(s.draft, 'cd', { strategy: 'canary', autoRollback: true });
-    add(s.draft, N('canary', 'can', { initialPercent: 5, autoAbort: true }), N('rollback', 'rb', { automated: true, maxMinutes: 3 }), N('feature-flag', 'ff', { killSwitch: true }), N('alert-rule', 'al', { metric: 'errorRate', threshold: 2, forMinutes: 2, actionable: true }));
-    connect(s.draft, 'can', 'api'); connect(s.draft, 'rb', 'api'); connect(s.draft, 'ff', 'api'); connect(s.draft, 'al', 'lb');
+    add(
+      s.draft,
+      N('canary', 'can', { initialPercent: 5, autoAbort: true }),
+      N('rollback', 'rb', { automated: true, maxMinutes: 3 }),
+      N('feature-flag', 'ff', { killSwitch: true }),
+      N('alert-rule', 'al', { metric: 'errorRate', threshold: 2, forMinutes: 2, actionable: true }),
+    );
+    connect(s.draft, 'can', 'api');
+    connect(s.draft, 'rb', 'api');
+    connect(s.draft, 'ff', 'api');
+    connect(s.draft, 'al', 'lb');
   };
   it('starts with ~22% errors after the release', () => {
     const s = createSession('m3-deployment', 'intermediate');
@@ -142,12 +187,15 @@ describe('Mission 3 — The Unreliable Deployment', () => {
   it('rollback + safer pipeline + shipping v2.5.0 passes; tests block the bad release first', () => {
     const s = createSession('m3-deployment', 'intermediate');
     applyAction(s, 'rollback');
-    safeDraft(s); ship(s);
+    safeDraft(s);
+    ship(s);
     expect(applyAction(s, 'ship-v25').ok).toBe(true);
     expect(s.flags.shipOutcome).toBe('blocked');
     applyAction(s, 'ship-v25');
     expect(s.flags.shipOutcome).toBe('clean');
-    s.postmortem = PM_OK; s.chosenCauses = ['bad-release']; s.panelsSeen = ['deployments', 'logs', 'metrics'];
+    s.postmortem = PM_OK;
+    s.chosenCauses = ['bad-release'];
+    s.panelsSeen = ['deployments', 'logs', 'metrics'];
     const v = verify(s, true);
     expect(v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id + ':' + r.detail)).toEqual([]);
     expect(v.outcome.passed).toBe(true);
@@ -155,7 +203,9 @@ describe('Mission 3 — The Unreliable Deployment', () => {
   it('without integration tests a canary with auto-abort still limits the damage', () => {
     const s = createSession('m3-deployment', 'intermediate');
     applyAction(s, 'rollback');
-    cfg(s.draft, 'cd', { strategy: 'canary' }); add(s.draft, N('canary', 'can', { autoAbort: true })); connect(s.draft, 'can', 'api');
+    cfg(s.draft, 'cd', { strategy: 'canary' });
+    add(s.draft, N('canary', 'can', { autoAbort: true }));
+    connect(s.draft, 'can', 'api');
     ship(s);
     applyAction(s, 'ship-v25');
     expect(s.flags.shipOutcome).toBe('caught');
@@ -185,7 +235,8 @@ describe('Mission 4 — The AWS Networking Puzzle', () => {
     cfg(d, 'db', { publicAccess: false });
     cfg(d, 'role-app', { policy: 'scoped' });
     cfg(d, 'uploads', { publicAccess: false, vpcEndpoint: true });
-    ship(s); s.adrs = [ADR_OK];
+    ship(s);
+    s.adrs = [ADR_OK];
     const v = verify(s, true);
     expect(v.outcome.reqs.filter((r) => r.hard && !r.pass).map((r) => r.id + ':' + r.detail)).toEqual([]);
     expect(v.outcome.passed).toBe(true);
@@ -202,13 +253,24 @@ describe('Mission 4 — The AWS Networking Puzzle', () => {
 
 describe('Mission 5 — The Queue That Never Drains', () => {
   const solved = (s: Session, over: { concurrency?: number; ledger?: string; vis?: number; idempotent?: boolean; dlq?: boolean } = {}) => {
-    if (over.dlq !== false) { add(s.draft, N('dlq', 'dlq')); connect(s.draft, 'q', 'dlq'); }
+    if (over.dlq !== false) {
+      add(s.draft, N('dlq', 'dlq'));
+      connect(s.draft, 'q', 'dlq');
+    }
     cfg(s.draft, 'q', { visibilityTimeoutSec: over.vis ?? 60 });
-    cfg(s.draft, 'w', { idempotent: over.idempotent ?? true, replicas: 6, concurrency: over.concurrency ?? 50, maxConcurrency: over.concurrency ? 500 : 300 });
+    cfg(s.draft, 'w', {
+      idempotent: over.idempotent ?? true,
+      replicas: 6,
+      concurrency: over.concurrency ?? 50,
+      maxConcurrency: over.concurrency ? 500 : 300,
+    });
     cfg(s.draft, 'ledger', { size: over.ledger ?? 'large', connectionPooler: true });
-    add(s.draft, N('alert-rule', 'al', { metric: 'queueAge', threshold: 120, forMinutes: 2, actionable: true })); connect(s.draft, 'al', 'q');
+    add(s.draft, N('alert-rule', 'al', { metric: 'queueAge', threshold: 120, forMinutes: 2, actionable: true }));
+    connect(s.draft, 'al', 'q');
     ship(s);
-    s.postmortem = PM_OK; s.chosenCauses = ['poison', 'vis', 'capacity']; s.panelsSeen = ['queues', 'logs', 'metrics'];
+    s.postmortem = PM_OK;
+    s.chosenCauses = ['poison', 'vis', 'capacity'];
+    s.panelsSeen = ['queues', 'logs', 'metrics'];
   };
   it('starts with a growing backlog', () => {
     const s = createSession('m5-queue', 'advanced');
@@ -239,7 +301,10 @@ describe('Mission 5 — The Queue That Never Drains', () => {
 });
 
 describe('Mission 6 — The Cloud Bill Shock', () => {
-  const optimise = (s: Session, o: { cache?: boolean; cdn?: boolean; replicas?: number; size?: string; db?: string; tags?: boolean; dropMultiAZ?: boolean } = {}) => {
+  const optimise = (
+    s: Session,
+    o: { cache?: boolean; cdn?: boolean; replicas?: number; size?: string; db?: string; tags?: boolean; dropMultiAZ?: boolean } = {},
+  ) => {
     const d = s.draft;
     const tag = o.tags === false ? '' : 'team=storefront';
     d.nodes = d.nodes.filter((n) => !['idle-cache', 'idle-search'].includes(n.id));
@@ -247,10 +312,20 @@ describe('Mission 6 — The Cloud Bill Shock', () => {
     cfg(d, 'cw', { retentionDays: 30 });
     cfg(d, 'db', { size: o.db ?? 'large', readReplicas: 0, backupRetentionDays: 14, multiAZ: !o.dropMultiAZ, costTag: tag });
     cfg(d, 'exports', { lifecycle: true, versioning: false, vpcEndpoint: true, costTag: tag });
-    cfg(d, 'lb', { costTag: tag }); cfg(d, 'nat1', { costTag: tag });
-    if (o.cache !== false) { add(d, N('elasticache', 'ec', { nodes: 2, size: 'medium', ttlSeconds: 90, invalidateOnWrite: true, costTag: tag })); connect(d, 'api', 'ec'); }
-    if (o.cdn) { add(d, N('cloudfront', 'cdn')); d.edges = d.edges.filter((e) => !(e.source === 'users')); connect(d, 'users', 'cdn'); connect(d, 'cdn', 'lb'); }
-    ship(s); s.adrs = [ADR_OK];
+    cfg(d, 'lb', { costTag: tag });
+    cfg(d, 'nat1', { costTag: tag });
+    if (o.cache !== false) {
+      add(d, N('elasticache', 'ec', { nodes: 2, size: 'medium', ttlSeconds: 90, invalidateOnWrite: true, costTag: tag }));
+      connect(d, 'api', 'ec');
+    }
+    if (o.cdn) {
+      add(d, N('cloudfront', 'cdn'));
+      d.edges = d.edges.filter((e) => !(e.source === 'users'));
+      connect(d, 'users', 'cdn');
+      connect(d, 'cdn', 'lb');
+    }
+    ship(s);
+    s.adrs = [ADR_OK];
   };
   it('the starting bill is far above budget', () => {
     const s = createSession('m6-bill-shock', 'advanced');

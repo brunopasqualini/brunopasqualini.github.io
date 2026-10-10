@@ -11,15 +11,67 @@ describe('component catalog', () => {
     expect(new Set(CATALOG.map((e) => e.kind)).size).toBe(CATALOG.length);
     for (const e of CATALOG) {
       for (const f of e.fields) {
-        if (f.type !== 'rules') expect(Object.prototype.hasOwnProperty.call(e.defaults, f.key), `${e.kind}.${f.key} has a default`).toBe(true);
+        if (f.type !== 'rules')
+          expect(Object.prototype.hasOwnProperty.call(e.defaults, f.key), `${e.kind}.${f.key} has a default`).toBe(true);
         if (f.type === 'ref') for (const k of f.refKinds!) expect(CATALOG_BY_KIND[k], `${e.kind}.${f.key} refs ${k}`).toBeDefined();
       }
     }
   });
   it('includes the AWS services and platform/reliability components from the brief', () => {
-    for (const k of ['route53', 'cloudfront', 'alb', 'apigw', 'vpc', 'subnet', 'igw', 'nat', 'sg', 'nacl', 'ec2', 'ecs', 'eks', 'lambda', 's3', 'rds', 'dynamodb', 'elasticache', 'sqs', 'sns', 'eventbridge', 'iam', 'kms', 'secrets-manager', 'cloudwatch', 'cloudtrail', 'waf',
-      'ci-pipeline', 'test-suite', 'cd-pipeline', 'canary', 'blue-green', 'rollback', 'feature-flag', 'iac', 'terraform', 'dev-portal', 'service-template', 'observability-stack',
-      'circuit-breaker', 'retry-policy', 'rate-limiter', 'bulkhead', 'dlq', 'backup', 'dr-config', 'slo', 'error-budget', 'tracing', 'alert-rule', 'synthetic-monitoring']) expect(CATALOG_BY_KIND[k], k).toBeDefined();
+    for (const k of [
+      'route53',
+      'cloudfront',
+      'alb',
+      'apigw',
+      'vpc',
+      'subnet',
+      'igw',
+      'nat',
+      'sg',
+      'nacl',
+      'ec2',
+      'ecs',
+      'eks',
+      'lambda',
+      's3',
+      'rds',
+      'dynamodb',
+      'elasticache',
+      'sqs',
+      'sns',
+      'eventbridge',
+      'iam',
+      'kms',
+      'secrets-manager',
+      'cloudwatch',
+      'cloudtrail',
+      'waf',
+      'ci-pipeline',
+      'test-suite',
+      'cd-pipeline',
+      'canary',
+      'blue-green',
+      'rollback',
+      'feature-flag',
+      'iac',
+      'terraform',
+      'dev-portal',
+      'service-template',
+      'observability-stack',
+      'circuit-breaker',
+      'retry-policy',
+      'rate-limiter',
+      'bulkhead',
+      'dlq',
+      'backup',
+      'dr-config',
+      'slo',
+      'error-budget',
+      'tracing',
+      'alert-rule',
+      'synthetic-monitoring',
+    ])
+      expect(CATALOG_BY_KIND[k], k).toBeDefined();
   });
 });
 
@@ -34,7 +86,14 @@ describe('connection validation', () => {
     expect(canConnect('cd-pipeline', 'ecs')).toMatchObject({ ok: true, cls: 'deploy' });
   });
   it('rejects meaningless connections with an explanation', () => {
-    for (const [a, b] of [['relational-db', 'backend-service'], ['external-api', 'backend-service'], ['backend-service', 'users'], ['sqs', 'relational-db'], ['subnet', 'ecs'], ['backup', 'backend-service']] as const) {
+    for (const [a, b] of [
+      ['relational-db', 'backend-service'],
+      ['external-api', 'backend-service'],
+      ['backend-service', 'users'],
+      ['sqs', 'relational-db'],
+      ['subnet', 'ecs'],
+      ['backup', 'backend-service'],
+    ] as const) {
       const v = canConnect(a, b);
       expect(v.ok, `${a} -> ${b}`).toBe(false);
       expect(v.reason!.length).toBeGreaterThan(20);
@@ -53,16 +112,22 @@ describe('architecture validation', () => {
   it('detects invalid configuration', () => {
     const a = base();
     a.nodes[2].config.replicas = 0;
-    a.nodes[2].config.autoscale = true; a.nodes[2].config.maxReplicas = 0; a.nodes[2].config.replicas = 1;
+    a.nodes[2].config.autoscale = true;
+    a.nodes[2].config.maxReplicas = 0;
+    a.nodes[2].config.replicas = 1;
     a.nodes[3].config.storageGB = NaN;
-    const errs = validateArch(a).filter((i) => i.severity === 'error').map((i) => i.text);
+    const errs = validateArch(a)
+      .filter((i) => i.severity === 'error')
+      .map((i) => i.text);
     expect(errs.some((e) => /max replicas/.test(e))).toBe(true);
     expect(errs.some((e) => /Storage.*numeric/.test(e))).toBe(true);
   });
   it('detects missing dependencies and orphans', () => {
     const a = base();
     a.nodes.push(N('worker', 'w'), N('message-queue', 'q'), N('elasticache', 'cache'));
-    const warns = validateArch(a).filter((i) => i.severity === 'warn').map((i) => i.text);
+    const warns = validateArch(a)
+      .filter((i) => i.severity === 'warn')
+      .map((i) => i.text);
     expect(warns.some((w) => /no queue feeds this worker/.test(w))).toBe(true);
     expect(warns.some((w) => /no consumer is connected/.test(w))).toBe(true);
     expect(warns.some((w) => /nothing connects to it/.test(w))).toBe(true);
@@ -71,7 +136,9 @@ describe('architecture validation', () => {
     const a = base();
     a.edges.push(makeEdge('db', 'app'));
     a.nodes.push(N('ec2', 'vm', { subnet: 'missing-subnet' }));
-    const errs = validateArch(a).filter((i) => i.severity === 'error').map((i) => i.text);
+    const errs = validateArch(a)
+      .filter((i) => i.severity === 'error')
+      .map((i) => i.text);
     expect(errs.some((e) => /leaf in the request path/.test(e))).toBe(true);
     expect(errs.some((e) => /does not exist/.test(e))).toBe(true);
   });

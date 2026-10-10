@@ -12,7 +12,9 @@ async function waitFor(sel: string, ms = 3000) {
   const t0 = Date.now();
   while (Date.now() - t0 < ms) {
     if (host!.querySelector(sel)) return;
-    await act(async () => { await new Promise((r) => setTimeout(r, 25)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 25));
+    });
   }
 }
 
@@ -21,15 +23,25 @@ async function mount(hash: string) {
   host = document.createElement('div');
   document.body.appendChild(host);
   root = createRoot(host);
-  await act(async () => { root!.render(<App />); });
-  await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
+  await act(async () => {
+    root!.render(<App />);
+  });
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 30));
+  });
 }
 
 beforeEach(() => {
   useGame.getState().resetAll();
   useGame.setState({ settings: { mode: 'beginner', onboarded: true, showAllComponents: false } });
 });
-afterEach(async () => { if (root) await act(async () => root!.unmount()); host?.remove(); root = undefined; host = undefined; window.location.hash = ''; });
+afterEach(async () => {
+  if (root) await act(async () => root!.unmount());
+  host?.remove();
+  root = undefined;
+  host = undefined;
+  window.location.hash = '';
+});
 
 describe('router', () => {
   it('parses hashes', () => {
@@ -41,7 +53,11 @@ describe('router', () => {
 
 describe('primary navigation renders every section', () => {
   const cases: [string, RegExp][] = [
-    ['#/', /Command Center/], ['#/missions', /Mission Control/], ['#/incidents', /Incident Response/], ['#/academy', /Engineering Academy/], ['#/journal', /Engineering Journal/],
+    ['#/', /Command Center/],
+    ['#/missions', /Mission Control/],
+    ['#/incidents', /Incident Response/],
+    ['#/academy', /Engineering Academy/],
+    ['#/journal', /Engineering Journal/],
   ];
   for (const [hash, re] of cases) {
     it(hash, async () => {
@@ -66,7 +82,9 @@ describe('workspace', () => {
     expect(host!.querySelector('.dock')).toBeTruthy();
     expect(host!.textContent).toMatch(/The Database Meltdown/);
     expect(host!.querySelector('.modal')).toBeTruthy();
-    await act(async () => { (host!.querySelector('.modal-foot .btn-primary') as HTMLButtonElement).click(); });
+    await act(async () => {
+      (host!.querySelector('.modal-foot .btn-primary') as HTMLButtonElement).click();
+    });
     expect(host!.querySelector('.modal')).toBeNull();
     expect(useGame.getState().running).toBe(true);
   });

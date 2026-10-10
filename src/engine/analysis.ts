@@ -1,4 +1,15 @@
-import { attachedTo, deliveryOf, edgeClass, flowEdges, nodeById, ofKind, ofRole, roleOf, validateArch, type ValidationIssue } from '@/engine/arch';
+import {
+  attachedTo,
+  deliveryOf,
+  edgeClass,
+  flowEdges,
+  nodeById,
+  ofKind,
+  ofRole,
+  roleOf,
+  validateArch,
+  type ValidationIssue,
+} from '@/engine/arch';
 import { emptyState, solve, type Chaos } from '@/engine/engine';
 import { securityFindings, type Finding } from '@/engine/net';
 import type { Arch, ArchNode, MetricChange, NodeStatus, Snapshot, Workload } from '@/engine/types';
@@ -31,45 +42,81 @@ export function analyzeDesign(arch: Arch, pipeline: PipelineReport, obs: ObsRepo
   let domainsTotal = 0;
   for (const m of monos) {
     const mods = Math.max(1, m.config.modules ?? 1);
-    wSum += mods; qSum += mods * (BOUNDARY_Q[m.config.moduleBoundaries] ?? 0.15); domainsTotal += mods;
-    if (mods > 1 && m.config.moduleBoundaries === 'none') notes.push(`${m.label}: ${mods} domains share one code base with no enforced boundaries — any change can break anything (low cohesion, high coupling).`);
-    if (mods > 1 && m.config.moduleBoundaries === 'enforced') notes.push(`${m.label}: modules interact only through public interfaces — a modular monolith keeps coupling low without network overhead.`);
+    wSum += mods;
+    qSum += mods * (BOUNDARY_Q[m.config.moduleBoundaries] ?? 0.15);
+    domainsTotal += mods;
+    if (mods > 1 && m.config.moduleBoundaries === 'none')
+      notes.push(
+        `${m.label}: ${mods} domains share one code base with no enforced boundaries — any change can break anything (low cohesion, high coupling).`,
+      );
+    if (mods > 1 && m.config.moduleBoundaries === 'enforced')
+      notes.push(
+        `${m.label}: modules interact only through public interfaces — a modular monolith keeps coupling low without network overhead.`,
+      );
   }
   for (const s of micro) {
-    wSum += 1; domainsTotal += 1;
+    wSum += 1;
+    domainsTotal += 1;
     const q = s.config.domain ? (s.config.ownsData ? 0.9 : 0.5) : 0.4;
     qSum += q;
-    if (!s.config.domain) notes.push(`${s.label}: no domain assigned — splitting without a domain boundary creates a distributed monolith.`);
+    if (!s.config.domain)
+      notes.push(`${s.label}: no domain assigned — splitting without a domain boundary creates a distributed monolith.`);
   }
-  for (const s of units.filter((u) => !['monolith', 'microservice'].includes(u.kind))) { wSum += 1; qSum += 0.6; domainsTotal += 1; }
+  for (const _u of units.filter((u) => !['monolith', 'microservice'].includes(u.kind))) {
+    wSum += 1;
+    qSum += 0.6;
+    domainsTotal += 1;
+  }
   const cohesion = wSum ? qSum / wSum : 0.8;
 
   // Coupling through shared data stores owned by different services.
   const sharedDbs: DesignReport['sharedDbs'] = [];
   for (const db of arch.nodes.filter((n) => ['db', 'kv'].includes(roleOf(n)))) {
-    const callers = flowEdges(arch).filter((e) => e.target === db.id).map((e) => nodeById(arch, e.source)!).filter((s) => s && ['microservice', 'backend-service', 'monolith'].includes(s.kind));
+    const callers = flowEdges(arch)
+      .filter((e) => e.target === db.id)
+      .map((e) => nodeById(arch, e.source)!)
+      .filter((s) => s && ['microservice', 'backend-service', 'monolith'].includes(s.kind));
     if (callers.length >= 2) {
       sharedDbs.push({ dbId: db.id, callers: callers.map((c) => c.label) });
-      notes.push(`${db.label} is shared by ${callers.map((c) => c.label).join(', ')} — they are coupled through its schema, so they cannot evolve or deploy independently.`);
+      notes.push(
+        `${db.label} is shared by ${callers.map((c) => c.label).join(', ')} — they are coupled through its schema, so they cannot evolve or deploy independently.`,
+      );
     }
   }
-  const couplingPenalty = Math.min(45, sharedDbs.reduce((s, d) => s + 15 * (d.callers.length - 1), 0));
+  const couplingPenalty = Math.min(
+    45,
+    sharedDbs.reduce((s, d) => s + 15 * (d.callers.length - 1), 0),
+  );
   const singleDomain = domainsTotal <= 1;
   const maintainability = singleDomain ? 85 : clamp(100 * cohesion - couplingPenalty - (units.length > domainsTotal + 1 ? 8 : 0), 0, 100);
 
   // Operational complexity: every deployable unit adds pipelines, dashboards, failure modes.
   const k8s = arch.nodes.filter((n) => ['eks', 'k8s-cluster'].includes(n.kind)).length;
   let op = 10 + 7 * Math.max(0, units.length - 1) + 5 * micro.length + 10 * k8s;
-  if (units.length > 2 && !obs.traces) { op += 10; notes.push('Several services but no distributed tracing — diagnosing a slow request means guessing across logs.'); }
-  if (units.length > 2 && !pipeline.cd) { op += 8; notes.push('Many deployable units without a CD pipeline multiplies manual release work.'); }
+  if (units.length > 2 && !obs.traces) {
+    op += 10;
+    notes.push('Several services but no distributed tracing — diagnosing a slow request means guessing across logs.');
+  }
+  if (units.length > 2 && !pipeline.cd) {
+    op += 8;
+    notes.push('Many deployable units without a CD pipeline multiplies manual release work.');
+  }
   if (pipeline.iac) op -= 4;
   if (pipeline.template) op -= 8;
   const opComplexity = clamp(op, 0, 100);
-  if (micro.length >= 6) notes.push(`${micro.length} microservices is a lot for a small team: deployment, monitoring and on-call overhead grow with every service.`);
+  if (micro.length >= 6)
+    notes.push(
+      `${micro.length} microservices is a lot for a small team: deployment, monitoring and on-call overhead grow with every service.`,
+    );
 
   // Developer productivity: independent deployability + automation, minus cognitive load.
-  const independent = micro.length ? Math.min(micro.filter((m) => m.config.domain).length, squads) / squads * 25
-    : monos.some((m) => m.config.moduleBoundaries === 'enforced') ? 17 : monos.some((m) => m.config.moduleBoundaries === 'packages') ? 8 : 0;
+  const independent = micro.length
+    ? (Math.min(micro.filter((m) => m.config.domain).length, squads) / squads) * 25
+    : monos.some((m) => m.config.moduleBoundaries === 'enforced')
+      ? 17
+      : monos.some((m) => m.config.moduleBoundaries === 'packages')
+        ? 8
+        : 0;
   const devProductivity = clamp(35 + independent + pipeline.productivityBonus - opComplexity * 0.25 + (maintainability - 50) * 0.2, 0, 100);
 
   return { units: units.length, microservices: micro.length, sharedDbs, cohesion, maintainability, opComplexity, devProductivity, notes };
@@ -109,7 +156,13 @@ export function analyzePipeline(arch: Arch): PipelineReport {
   const tests = ofKind(arch, 'test-suite')[0];
   const rb = ofKind(arch, 'rollback')[0];
   const flag = ofKind(arch, 'feature-flag')[0];
-  const strategy: PipelineReport['strategy'] = !cd ? 'none' : bg ? 'blue-green' : canary ? 'canary' : (cd.config.strategy as PipelineReport['strategy']) ?? 'all-at-once';
+  const strategy: PipelineReport['strategy'] = !cd
+    ? 'none'
+    : bg
+      ? 'blue-green'
+      : canary
+        ? 'canary'
+        : ((cd.config.strategy as PipelineReport['strategy']) ?? 'all-at-once');
   const strat = canary || strategy === 'canary' ? 'canary' : strategy;
   const autoRollback = !!(cd?.config.autoRollback || rb?.config.automated || (canary && canary.config.autoAbort));
   const unitCov = tests?.config.unitCoverage ?? 0;
@@ -129,16 +182,38 @@ export function analyzePipeline(arch: Arch): PipelineReport {
   if (!cd) notes.push('No CD pipeline: releases are manual and unrepeatable.');
   if (cd && strat === 'all-at-once') notes.push('All-at-once rollout exposes 100% of users to a defective release immediately.');
   if (!tests) notes.push('No automated test suite gates releases.');
-  else if (intCov < 40) notes.push('Integration coverage is low — regressions that only appear with real dependencies will pass the pipeline.');
+  else if (intCov < 40)
+    notes.push('Integration coverage is low — regressions that only appear with real dependencies will pass the pipeline.');
   if (canary && !canary.config.autoAbort) notes.push('A canary without automatic abort relies on a human noticing the error rate in time.');
   const productivityBonus =
-    (has('ci-pipeline') ? 8 : 0) + (tests ? 6 : 0) + (cd ? 8 : 0) + (has('iac', 'terraform') ? 5 : 0) +
-    (has('service-template') ? 9 : 0) + (has('dev-portal') ? 6 : 0) + (flag ? 3 : 0) - (has('approval-gate') && ofKind(arch, 'approval-gate')[0].config.approvers > 2 ? 6 : 0);
+    (has('ci-pipeline') ? 8 : 0) +
+    (tests ? 6 : 0) +
+    (cd ? 8 : 0) +
+    (has('iac', 'terraform') ? 5 : 0) +
+    (has('service-template') ? 9 : 0) +
+    (has('dev-portal') ? 6 : 0) +
+    (flag ? 3 : 0) -
+    (has('approval-gate') && ofKind(arch, 'approval-gate')[0].config.approvers > 2 ? 6 : 0);
   return {
-    ci: has('ci-pipeline'), tests: !!tests, unitCov, intCov, e2e: !!tests?.config.e2e, cd: !!cd, strategy: strat as PipelineReport['strategy'],
-    autoRollback, rollback: !!rb || autoRollback, featureFlag: !!flag, approval: has('approval-gate'),
-    iac: has('iac', 'terraform'), drift: !!ofKind(arch, 'iac')[0]?.config.driftDetection, template: has('service-template'), portal: has('dev-portal'),
-    safeRollout, releaseSafety: clamp(safety, 0, 100), productivityBonus, notes,
+    ci: has('ci-pipeline'),
+    tests: !!tests,
+    unitCov,
+    intCov,
+    e2e: !!tests?.config.e2e,
+    cd: !!cd,
+    strategy: strat as PipelineReport['strategy'],
+    autoRollback,
+    rollback: !!rb || autoRollback,
+    featureFlag: !!flag,
+    approval: has('approval-gate'),
+    iac: has('iac', 'terraform'),
+    drift: !!ofKind(arch, 'iac')[0]?.config.driftDetection,
+    template: has('service-template'),
+    portal: has('dev-portal'),
+    safeRollout,
+    releaseSafety: clamp(safety, 0, 100),
+    productivityBonus,
+    notes,
   };
 }
 
@@ -171,10 +246,30 @@ export function analyzeObservability(arch: Arch): ObsReport {
   const slo = ofKind(arch, 'slo').length > 0;
   const notes: string[] = [];
   if (!alerts.length) notes.push('No alert rules: you will learn about outages from customers.');
-  if (alerts.length && !actionable.length) notes.push('Alerts exist but none link to a runbook — pages without actions create alert fatigue.');
-  const coverage = (metrics ? 20 : 0) + (logs ? 20 : 0) + (traces ? 20 : 0) + (actionable.length ? 20 : alerts.length ? 8 : 0) + (synthetic ? 10 : 0) + (dashboard ? 5 : 0) + (slo ? 5 : 0);
+  if (alerts.length && !actionable.length)
+    notes.push('Alerts exist but none link to a runbook — pages without actions create alert fatigue.');
+  const coverage =
+    (metrics ? 20 : 0) +
+    (logs ? 20 : 0) +
+    (traces ? 20 : 0) +
+    (actionable.length ? 20 : alerts.length ? 8 : 0) +
+    (synthetic ? 10 : 0) +
+    (dashboard ? 5 : 0) +
+    (slo ? 5 : 0);
   const mttd = alerts.length ? Math.min(...alerts.map((a) => a.config.forMinutes ?? 2)) + (actionable.length ? 0 : 3) : synthetic ? 4 : 15;
-  return { metrics, logs, traces, alerts: alerts.length, actionableAlerts: actionable.length, synthetic, dashboard, slo, coverage, mttdMinutes: mttd, notes };
+  return {
+    metrics,
+    logs,
+    traces,
+    alerts: alerts.length,
+    actionableAlerts: actionable.length,
+    synthetic,
+    dashboard,
+    slo,
+    coverage,
+    mttdMinutes: mttd,
+    notes,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -208,16 +303,27 @@ export function analyzeRecovery(arch: Arch): RecoveryReport {
   if (rpo === Infinity) rpo = 10080;
   const dr = ofKind(arch, 'dr-config')[0];
   const restoreTested = backupNodes.some((b) => b.config.restoreTested);
-  const crossRegion = dbs.some((d) => d.config.crossRegionReplica) || backupNodes.some((b) => b.config.crossRegion) || (!!dr && dr.config.strategy !== 'backup-restore');
+  const crossRegion =
+    dbs.some((d) => d.config.crossRegionReplica) ||
+    backupNodes.some((b) => b.config.crossRegion) ||
+    (!!dr && dr.config.strategy !== 'backup-restore');
   const rtoByStrategy: Record<string, number> = { 'backup-restore': 240, 'pilot-light': 60, 'warm-standby': 15, 'active-active': 2 };
-  let rto = dr ? rtoByStrategy[dr.config.strategy] ?? 240 : 480;
+  let rto = dr ? (rtoByStrategy[dr.config.strategy] ?? 240) : 480;
   if (!dr || dr.config.strategy === 'backup-restore') rto += restoreTested ? -60 : 120;
   const multiAZ = dbs.every((d) => d.config.multiAZ || roleOf(d) === 'kv');
   const singlePoints: string[] = [];
   for (const d of dbs.filter((x) => roleOf(x) === 'db' && !x.config.multiAZ)) singlePoints.push(`${d.label} runs in a single AZ`);
   for (const c of ofRole(arch, 'cache').filter((x) => (x.config.nodes ?? 1) < 2)) singlePoints.push(`${c.label} is a single node`);
-  for (const n of ofKind(arch, 'nat')) if (ofKind(arch, 'nat').length < 2) { singlePoints.push(`${n.label} is zonal and a single NAT gateway`); break; }
-  const score = clamp(100 - Math.min(50, rpo / 60 * 2) - Math.min(40, rto / 12) + (restoreTested ? 8 : 0) + (multiAZ ? 6 : 0) + (crossRegion ? 6 : 0), 0, 100);
+  for (const n of ofKind(arch, 'nat'))
+    if (ofKind(arch, 'nat').length < 2) {
+      singlePoints.push(`${n.label} is zonal and a single NAT gateway`);
+      break;
+    }
+  const score = clamp(
+    100 - Math.min(50, (rpo / 60) * 2) - Math.min(40, rto / 12) + (restoreTested ? 8 : 0) + (multiAZ ? 6 : 0) + (crossRegion ? 6 : 0),
+    0,
+    100,
+  );
   return { rpoMinutes: rpo, rtoMinutes: rto, backups: backupNodes.length, restoreTested, multiAZ, crossRegion, singlePoints, score };
 }
 
@@ -259,7 +365,11 @@ export function azSurvival(arch: Arch, workload: Workload, minute: number): numb
   const chaos: Chaos[] = [{ type: 'az-outage', az: 'a' }];
   let st = emptyState();
   let rate = 1;
-  for (let i = 0; i < 3; i++) { const r = solve(arch, workload, minute, st, chaos); st = r.next; rate = r.snapshot.system.successRate; }
+  for (let i = 0; i < 3; i++) {
+    const r = solve(arch, workload, minute, st, chaos);
+    st = r.next;
+    rate = r.snapshot.system.successRate;
+  }
   return rate * 100;
 }
 
@@ -272,17 +382,21 @@ export function buildReport(arch: Arch, window: Snapshot[], workload: Workload, 
   const design = analyzeDesign(arch, pipeline, obs, opts.squads ?? 1);
   const findings = securityFindings(arch);
   const counts = { critical: 0, high: 0, medium: 0, low: 0 };
-  findings.forEach((f) => { counts[f.severity] += 1; });
+  findings.forEach((f) => {
+    counts[f.severity] += 1;
+  });
   const securityScore = clamp(100 - counts.critical * 40 - counts.high * 20 - counts.medium * 8 - counts.low * 2, 0, 100);
   const validation = validateArch(arch);
   const flags: Report['flags'] = {};
-  for (const f of findings) if (f.nodeId && (f.severity === 'critical' || f.severity === 'high')) flags[f.nodeId] = { ...flags[f.nodeId], insecure: f.title };
+  for (const f of findings)
+    if (f.nodeId && (f.severity === 'critical' || f.severity === 'high')) flags[f.nodeId] = { ...flags[f.nodeId], insecure: f.title };
   for (const v of validation) if (v.nodeId && v.severity === 'error') flags[v.nodeId] = { ...flags[v.nodeId], misconfigured: v.text };
-  if (snap) for (const n of arch.nodes) {
-    const m = snap.nodes[n.id];
-    const bad = m?.reasons.find((r) => r.code === 'health' || r.code === 'blocked' || r.code === 'noconsumer');
-    if (bad) flags[n.id] = { ...flags[n.id], misconfigured: bad.text };
-  }
+  if (snap)
+    for (const n of arch.nodes) {
+      const m = snap.nodes[n.id];
+      const bad = m?.reasons.find((r) => r.code === 'health' || r.code === 'blocked' || r.code === 'noconsumer');
+      if (bad) flags[n.id] = { ...flags[n.id], misconfigured: bad.text };
+    }
   const az = opts.skipAz || !snap ? 100 : azSurvival(arch, workload, snap.minute);
   const tagCov = snap ? costTagCoverage(arch, snap) : 100;
   const stale = snap ? Object.values(snap.nodes).some((m) => m.reasons.some((r) => r.code === 'stale')) : false;
@@ -318,7 +432,20 @@ export function buildReport(arch: Arch, window: Snapshot[], workload: Workload, 
     validationErrors: validation.filter((v) => v.severity === 'error').length,
     units: design.units,
   };
-  return { findings, validation, design, pipeline, obs, recovery, securityScore, counts, costTagCoverage: tagCov, azSurvival: az, flags, metrics };
+  return {
+    findings,
+    validation,
+    design,
+    pipeline,
+    obs,
+    recovery,
+    securityScore,
+    counts,
+    costTagCoverage: tagCov,
+    azSurvival: az,
+    flags,
+    metrics,
+  };
 }
 
 /** Overlay insecure / misconfigured states on node status for the canvas. */
@@ -332,7 +459,14 @@ export function visualStatus(status: NodeStatus, flag?: { insecure?: string; mis
 // ---------------------------------------------------------------------------
 // Causal explanations
 // ---------------------------------------------------------------------------
-interface MetricSpec { key: string; label: string; unit: string; get: (s: Snapshot) => number; betterWhen: 'up' | 'down'; threshold: number }
+interface MetricSpec {
+  key: string;
+  label: string;
+  unit: string;
+  get: (s: Snapshot) => number;
+  betterWhen: 'up' | 'down';
+  threshold: number;
+}
 const SPECS: MetricSpec[] = [
   { key: 'success', label: 'Success rate', unit: '%', get: (s) => s.system.successRate * 100, betterWhen: 'up', threshold: 0.3 },
   { key: 'p95', label: 'p95 latency', unit: 'ms', get: (s) => s.system.p95, betterWhen: 'down', threshold: 0.1 },
@@ -345,7 +479,13 @@ const SPECS: MetricSpec[] = [
 function biggest<T>(items: T[], score: (t: T) => number): T | undefined {
   let best: T | undefined;
   let bs = 0;
-  for (const i of items) { const s = Math.abs(score(i)); if (s > bs) { bs = s; best = i; } }
+  for (const i of items) {
+    const s = Math.abs(score(i));
+    if (s > bs) {
+      bs = s;
+      best = i;
+    }
+  }
   return best;
 }
 
@@ -362,35 +502,63 @@ export function explainChanges(before: Snapshot, after: Snapshot, arch: Arch): M
     const better = spec.betterWhen === 'up' ? up : !up;
     let because = '';
     if (spec.key === 'success') {
-      const delta = (id: string) => (after.nodes[id].errorRate - (before.nodes[id]?.errorRate ?? 0)) * (after.nodes[id].role === 'source' ? 0 : 1);
+      const delta = (id: string) =>
+        (after.nodes[id].errorRate - (before.nodes[id]?.errorRate ?? 0)) * (after.nodes[id].role === 'source' ? 0 : 1);
       if (!better) {
         // Blame the component with a critical diagnosis (the root), not merely the one that shows the symptom.
         const roots = ids.filter((id) => after.nodes[id].reasons.some((r) => r.severity === 'crit') && after.nodes[id].role !== 'source');
-        const n = biggest(roots.length ? roots : ids, (id) => (roots.length ? 1 + Math.abs(delta(id)) + after.nodes[id].util * 0.01 : delta(id)));
+        const n = biggest(roots.length ? roots : ids, (id) =>
+          roots.length ? 1 + Math.abs(delta(id)) + after.nodes[id].util * 0.01 : delta(id),
+        );
         const m = n ? after.nodes[n] : undefined;
         const crit = m?.reasons.find((r) => r.severity === 'crit');
-        because = n ? (crit ? `${label(n)}: ${crit.text}` : `${label(n)} error rate ${((before.nodes[n]?.errorRate ?? 0) * 100).toFixed(1)}% → ${(m!.errorRate * 100).toFixed(1)}%.`) : 'Request path changed.';
+        because = n
+          ? crit
+            ? `${label(n)}: ${crit.text}`
+            : `${label(n)} error rate ${((before.nodes[n]?.errorRate ?? 0) * 100).toFixed(1)}% → ${(m!.errorRate * 100).toFixed(1)}%.`
+          : 'Request path changed.';
       } else {
-        const fixed = ids.find((id) => before.nodes[id]?.reasons.some((r) => r.severity === 'crit') && !after.nodes[id].reasons.some((r) => r.severity === 'crit'));
+        const fixed = ids.find(
+          (id) =>
+            before.nodes[id]?.reasons.some((r) => r.severity === 'crit') && !after.nodes[id].reasons.some((r) => r.severity === 'crit'),
+        );
         const n = fixed ?? biggest(ids, (id) => -delta(id));
-        because = n ? (fixed ? `${label(n)} is no longer failing — before: “${before.nodes[n].reasons.find((r) => r.severity === 'crit')!.text}”` : `${label(n)} error rate ${((before.nodes[n]?.errorRate ?? 0) * 100).toFixed(1)}% → ${(after.nodes[n].errorRate * 100).toFixed(1)}%.`) : 'Request path changed.';
+        because = n
+          ? fixed
+            ? `${label(n)} is no longer failing — before: “${before.nodes[n].reasons.find((r) => r.severity === 'crit')!.text}”`
+            : `${label(n)} error rate ${((before.nodes[n]?.errorRate ?? 0) * 100).toFixed(1)}% → ${(after.nodes[n].errorRate * 100).toFixed(1)}%.`
+          : 'Request path changed.';
       }
     } else if (spec.key === 'p95') {
-      const n = biggest(ids, (id) => (after.nodes[id].util - (before.nodes[id]?.util ?? 0)) * (['source', 'edge', 'lb'].includes(after.nodes[id].role) ? 0 : 1));
+      const n = biggest(
+        ids,
+        (id) => (after.nodes[id].util - (before.nodes[id]?.util ?? 0)) * (['source', 'edge', 'lb'].includes(after.nodes[id].role) ? 0 : 1),
+      );
       const m = n ? after.nodes[n] : undefined;
-      because = n && m ? `${label(n)} utilisation ${(((before.nodes[n]?.util ?? 0)) * 100).toFixed(0)}% → ${(m.util * 100).toFixed(0)}% — latency scales as 1/(1-utilisation), so small utilisation changes near saturation have large effects.` : 'Request path length changed (more or fewer hops).';
+      because =
+        n && m
+          ? `${label(n)} utilisation ${((before.nodes[n]?.util ?? 0) * 100).toFixed(0)}% → ${(m.util * 100).toFixed(0)}% — latency scales as 1/(1-utilisation), so small utilisation changes near saturation have large effects.`
+          : 'Request path length changed (more or fewer hops).';
     } else if (spec.key === 'cost') {
       const n = biggest(ids, (id) => after.nodes[id].costMonthly - (before.nodes[id]?.costMonthly ?? 0));
-      because = n ? `${label(n)}: $${(before.nodes[n]?.costMonthly ?? 0).toFixed(0)} → $${after.nodes[n].costMonthly.toFixed(0)}/mo (simulated estimate).` : 'Pricing inputs changed.';
+      because = n
+        ? `${label(n)}: $${(before.nodes[n]?.costMonthly ?? 0).toFixed(0)} → $${after.nodes[n].costMonthly.toFixed(0)}/mo (simulated estimate).`
+        : 'Pricing inputs changed.';
     } else if (spec.key === 'dbconn') {
       const n = biggest(ids, (id) => (after.nodes[id].connUsed ?? 0) - (before.nodes[id]?.connUsed ?? 0));
-      because = n ? `${label(n)}: ${(before.nodes[n]?.connUsed ?? 0).toFixed(0)} → ${(after.nodes[n].connUsed ?? 0).toFixed(0)} of ${after.nodes[n].connMax} connections (clients × pool size, unless a pooler multiplexes them).` : 'Client replicas or pool sizes changed.';
+      because = n
+        ? `${label(n)}: ${(before.nodes[n]?.connUsed ?? 0).toFixed(0)} → ${(after.nodes[n].connUsed ?? 0).toFixed(0)} of ${after.nodes[n].connMax} connections (clients × pool size, unless a pooler multiplexes them).`
+        : 'Client replicas or pool sizes changed.';
     } else if (spec.key === 'util') {
       const n = biggest(ids, (id) => after.nodes[id].util - (before.nodes[id]?.util ?? 0));
-      because = n ? `${label(n)} utilisation ${((before.nodes[n]?.util ?? 0) * 100).toFixed(0)}% → ${(after.nodes[n].util * 100).toFixed(0)}%.` : 'Load distribution changed.';
+      because = n
+        ? `${label(n)} utilisation ${((before.nodes[n]?.util ?? 0) * 100).toFixed(0)}% → ${(after.nodes[n].util * 100).toFixed(0)}%.`
+        : 'Load distribution changed.';
     } else if (spec.key === 'backlog') {
       const n = biggest(ids, (id) => (after.nodes[id].queueDepth ?? 0) - (before.nodes[id]?.queueDepth ?? 0));
-      because = n ? `${label(n)}: arrivals ${(after.nodes[n].arrivalRate ?? 0).toFixed(0)}/s vs drain ${(after.nodes[n].drainRate ?? 0).toFixed(0)}/s.` : 'Consumption rate changed.';
+      because = n
+        ? `${label(n)}: arrivals ${(after.nodes[n].arrivalRate ?? 0).toFixed(0)}/s vs drain ${(after.nodes[n].drainRate ?? 0).toFixed(0)}/s.`
+        : 'Consumption rate changed.';
     }
     out.push({ key: spec.key, label: spec.label, before: a, after: b, unit: spec.unit, better, because });
   }

@@ -26,11 +26,21 @@ export function Library() {
       .map((e) => ({ e, locked: isLab && e.tier > tier }));
   }, [cat, q, isLab, tier, mission]);
 
-  const counts = useMemo(() => Object.fromEntries(CATEGORIES.map((c) => [c.id, CATALOG.filter((e) => e.category === c.id && (isLab || mission?.components.includes(e.kind))).length])), [isLab, mission]);
+  const counts = useMemo(
+    () =>
+      Object.fromEntries(
+        CATEGORIES.map((c) => [c.id, CATALOG.filter((e) => e.category === c.id && (isLab || mission?.components.includes(e.kind))).length]),
+      ),
+    [isLab, mission],
+  );
 
   const groups = useMemo(() => {
     const m = new Map<string, typeof items>();
-    for (const it of items) { const arr = m.get(it.e.group) ?? []; arr.push(it); m.set(it.e.group, arr); }
+    for (const it of items) {
+      const arr = m.get(it.e.group) ?? [];
+      arr.push(it);
+      m.set(it.e.group, arr);
+    }
     return Array.from(m.entries());
   }, [items]);
 
@@ -42,24 +52,49 @@ export function Library() {
       </div>
       <div className="lib-cats" role="tablist" aria-label="Component categories">
         {CATEGORIES.map((c) => (
-          <button key={c.id} role="tab" aria-selected={cat === c.id} className={`lib-cat ${cat === c.id ? 'on' : ''}`} onClick={() => setCat(c.id)} title={c.blurb} disabled={!counts[c.id]}>
-            {c.label.split(' & ')[0]}<span className="muted"> {counts[c.id]}</span>
+          <button
+            key={c.id}
+            role="tab"
+            aria-selected={cat === c.id}
+            className={`lib-cat ${cat === c.id ? 'on' : ''}`}
+            onClick={() => setCat(c.id)}
+            title={c.blurb}
+            disabled={!counts[c.id]}
+          >
+            {c.label.split(' & ')[0]}
+            <span className="muted"> {counts[c.id]}</span>
           </button>
         ))}
       </div>
       <div className="lib-list">
-        {mode === 'beginner' && <p className="lib-tip">Drag a component onto the canvas — or click it. Select it to see what it does and configure it.</p>}
+        {mode === 'beginner' && (
+          <p className="lib-tip">Drag a component onto the canvas — or click it. Select it to see what it does and configure it.</p>
+        )}
         {groups.map(([g, list]) => (
           <section key={g}>
             <h4>{g}</h4>
             {list.map(({ e, locked }) => (
               <button
-                key={e.kind} className={`lib-item ${locked ? 'locked' : ''}`} draggable={!locked} title={locked ? `Unlocks at level ${e.tier === 2 ? 2 : 4}` : e.desc}
-                onDragStart={(ev) => { ev.dataTransfer.setData('application/x-eo-kind', e.kind); ev.dataTransfer.effectAllowed = 'copy'; }}
-                onClick={() => { if (!locked) { window.dispatchEvent(new CustomEvent('eo-add', { detail: { kind: e.kind } })); useGame.getState().setMobilePane('canvas'); } }}
-                disabled={locked} aria-label={`${e.name}${locked ? ' (locked)' : ''}`}
+                key={e.kind}
+                className={`lib-item ${locked ? 'locked' : ''}`}
+                draggable={!locked}
+                title={locked ? `Unlocks at level ${e.tier === 2 ? 2 : 4}` : e.desc}
+                onDragStart={(ev) => {
+                  ev.dataTransfer.setData('application/x-eo-kind', e.kind);
+                  ev.dataTransfer.effectAllowed = 'copy';
+                }}
+                onClick={() => {
+                  if (!locked) {
+                    window.dispatchEvent(new CustomEvent('eo-add', { detail: { kind: e.kind } }));
+                    useGame.getState().setMobilePane('canvas');
+                  }
+                }}
+                disabled={locked}
+                aria-label={`${e.name}${locked ? ' (locked)' : ''}`}
               >
-                <span className="lib-ico"><NodeIcon name={e.icon} size={16} /></span>
+                <span className="lib-ico">
+                  <NodeIcon name={e.icon} size={16} />
+                </span>
                 <span className="lib-name">{e.name}</span>
                 {e.aws && <span className="lib-aws">AWS</span>}
                 {locked && <Lock size={12} className="lib-lock" />}
@@ -68,8 +103,17 @@ export function Library() {
           </section>
         ))}
         {items.length === 0 && <p className="muted pad">No components match.</p>}
-        {!isLab && <p className="lib-tip">Components are limited to those relevant to this mission. Unlock the full catalog in the Architecture Lab.</p>}
-        {isLab && tier < 3 && <p className="lib-tip">Level {level}: more components unlock as you progress (level 2: caching & queues; level 4: platform tooling). Advanced players can unlock everything in Settings.</p>}
+        {!isLab && (
+          <p className="lib-tip">
+            Components are limited to those relevant to this mission. Unlock the full catalog in the Architecture Lab.
+          </p>
+        )}
+        {isLab && tier < 3 && (
+          <p className="lib-tip">
+            Level {level}: more components unlock as you progress (level 2: caching & queues; level 4: platform tooling). Advanced players
+            can unlock everything in Settings.
+          </p>
+        )}
       </div>
     </aside>
   );
