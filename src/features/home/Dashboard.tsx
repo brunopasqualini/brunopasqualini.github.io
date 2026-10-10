@@ -7,7 +7,7 @@ import { go } from '@/shared/lib/nav';
 import { MissionButtons, useMissionState } from '@/entities/mission/MissionButtons';
 
 export function Dashboard() {
-  const { progress, saved, status, unmet, recommended } = useMissionState();
+  const { progress, saved, status, unmet, recommended, recommendation } = useMissionState();
   const level = levelFromXp(progress.xp);
   const cur = xpForLevel(level);
   const nxt = xpForLevel(level + 1);
@@ -101,6 +101,11 @@ export function Dashboard() {
                 </Chip>
               </div>
               <h3>{recommended.title}</h3>
+              {recommendation && (
+                <p className="reco-why">
+                  <b>Why this one:</b> {recommendation.reason}
+                </p>
+              )}
               <p>{recommended.tagline}</p>
               <ul className="list">
                 {recommended.learning.slice(0, 3).map((l) => (

@@ -1,3 +1,4 @@
+import { recommend } from '@/game/recommend';
 import { Play as PlayIcon, RotateCcw } from 'lucide-react';
 import type { Mission } from '@/content/missions/types';
 import { journeyOrder } from '@/content/journey';
@@ -12,9 +13,9 @@ export function useMissionState() {
     progress.completed[m.id]?.passed ? 'completed' : saved[m.id] && saved[m.id].ops.length > 0 ? 'progress' : 'new';
   const unmet = (m: Mission) => m.prerequisites.filter((p) => !progress.completed[p]?.passed);
   const ordered = journeyOrder(MISSIONS);
-  const recommended =
-    ordered.find((m) => status(m) !== 'completed' && unmet(m).length === 0) ?? ordered.find((m) => status(m) !== 'completed');
-  return { progress, saved, status, unmet, recommended };
+  const recommendation = recommend(ordered, progress.outcomes, (id) => !!progress.completed[id]?.passed);
+  const recommended = recommendation?.mission;
+  return { progress, saved, status, unmet, recommended, recommendation };
 }
 
 export function MissionButtons({ m }: { m: Mission }) {

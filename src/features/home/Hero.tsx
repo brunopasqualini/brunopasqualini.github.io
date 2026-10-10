@@ -8,7 +8,7 @@ import { go } from '@/shared/lib/nav';
 import { HeroArt } from '@/features/home/HeroArt';
 
 export function Hero() {
-  const { progress, saved, status, unmet, recommended } = useMissionState();
+  const { progress, saved, status, unmet, recommended, recommendation } = useMissionState();
   const mode = useGame((s) => s.settings.mode);
   const setMode = useGame((s) => s.setMode);
   const stage = currentStage(progress.completed);
@@ -37,6 +37,7 @@ export function Hero() {
             </button>
           )}
         </div>
+        {recommendation && started && <p className="muted tiny reco-why">Why this one: {recommendation.reason}</p>}
         <div className="home-hero-meta">
           <span className="chip chip-info">
             Stage {stage.level}: {stage.title}
