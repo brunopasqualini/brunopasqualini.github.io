@@ -24,7 +24,7 @@ import { ArchNodeView, type ArchNodeData } from '@/features/workspace/ArchNodeVi
 
 const nodeTypes = { arch: ArchNodeView };
 /** Leave room for the overlay controls (toolbar top-right, zoom controls left, legend/minimap bottom). */
-const FIT = { padding: { top: '60px', right: '28px', bottom: '48px', left: '60px' }, maxZoom: 1.15 } as const;
+const FIT = { padding: { top: '40px', right: '24px', bottom: '36px', left: '56px' }, maxZoom: 1.2 } as const;
 const REF_KEYS = ['subnet', 'sg', 'iamRole', 'nat', 'vpc', 'nacl'];
 
 function CanvasInner() {
@@ -103,7 +103,7 @@ function CanvasInner() {
       if (cls === 'traffic' || cls === 'async') {
         const rps = em?.rps ?? 0;
         width = 1.4 + Math.min(3, Math.log10(1 + rps) * 0.9);
-        color = cls === 'async' ? '#a78bfa' : '#22d3ee';
+        color = cls === 'async' ? '#a78bfa' : '#38bdf8';
         if (em && em.errorRate > 0.3) color = '#ef4444';
         else if (em && em.errorRate > 0.05) color = '#f59e0b';
         if (em?.blocked) {
@@ -339,8 +339,8 @@ function CanvasInner() {
         <MiniMap
           pannable
           zoomable
-          position="bottom-left"
-          style={{ width: 128, height: 84 }}
+          position="bottom-right"
+          style={{ width: 132, height: 88 }}
           nodeColor={(n) =>
             (
               ({

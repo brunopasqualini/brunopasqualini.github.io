@@ -4,6 +4,7 @@ import { entryOf } from '@/engine/catalog';
 import type { ArchNode, NodeMetrics, NodeStatus } from '@/engine/types';
 import { NodeIcon } from '@/shared/ui/icons';
 import { num } from '@/shared/lib/fmt';
+import { toneOf } from '@/shared/ui/roleTone';
 import { QueueDots, Strip, tilesFor, type Tile } from '@/features/workspace/InstanceStrip';
 
 export interface ArchNodeData extends Record<string, unknown> {
@@ -111,28 +112,26 @@ export function ArchNodeView({ data, selected }: NodeProps) {
   const n = d.node;
   const e = entryOf(n.kind);
   const util = d.metrics ? Math.min(1, d.metrics.util) : 0;
+  const flagged = d.insecure || d.misconfigured || d.status === 'unavailable' || d.status === 'overloaded';
   return (
     <div
-      className={`anode anode-${d.status} ${selected ? 'anode-selected' : ''} ${d.pending ? 'anode-pending' : ''} ${d.isNetwork ? 'anode-net' : ''}`}
+      className={`anode anode-${d.status} tone-${toneOf(e.role)} ${selected ? 'anode-selected' : ''} ${d.pending ? 'anode-pending' : ''} ${d.isNetwork ? 'anode-net' : ''}`}
       aria-label={`${n.label}, ${d.status}`}
     >
       <Handle type="target" position={Position.Left} className="h" />
-      <div className="anode-row">
-        <div className="anode-icon">
-          <NodeIcon name={e.icon} size={18} />
-        </div>
-        <div className="anode-text">
-          <div className="anode-title">{n.label}</div>
-          <div className="anode-sub">{summaryOf(n)}</div>
-        </div>
-        {(d.insecure || d.misconfigured || d.status === 'unavailable' || d.status === 'overloaded') && (
-          <div className="anode-alert" title={d.insecure ?? d.misconfigured ?? d.status}>
-            {d.insecure ? <ShieldAlert size={14} /> : d.misconfigured ? <AlertTriangle size={14} /> : '!'}
-          </div>
+      <div className="anode-tile">
+        <NodeIcon name={e.icon} size={d.isNetwork ? 20 : 26} />
+        {flagged && (
+          <span className="anode-alert" title={d.insecure ?? d.misconfigured ?? d.status}>
+            {d.insecure ? <ShieldAlert size={12} /> : d.misconfigured ? <AlertTriangle size={12} /> : '!'}
+          </span>
         )}
+        {n.kind === 'sg' && <Lock className="anode-lock" size={11} />}
       </div>
+      <div className="anode-title">{n.label}</div>
+      <div className="anode-sub">{summaryOf(n)}</div>
       {!d.isNetwork && d.metrics && (
-        <>
+        <div className="anode-stats">
           {['compute', 'worker', 'db', 'kv', 'search', 'cache'].includes(e.role) && (
             <div className="anode-bar">
               <div style={{ width: `${util * 100}%` }} />
@@ -145,7 +144,7 @@ export function ArchNodeView({ data, selected }: NodeProps) {
           )}
           {e.role === 'queue' && !n.config.isDlq && <QueueDots depth={d.metrics.queueDepth ?? 0} dlq={d.metrics.dlqDepth ?? 0} />}
           <div className="anode-mini">{mini(d.metrics)}</div>
-        </>
+        </div>
       )}
       {d.pending && <div className="anode-flag">pending deploy</div>}
       {!d.pending && d.changed && (
@@ -157,7 +156,6 @@ export function ArchNodeView({ data, selected }: NodeProps) {
         </div>
       )}
       {d.status !== 'healthy' && d.status !== 'idle' && !d.isNetwork && <div className={`anode-tag tag-${d.status}`}>{d.status}</div>}
-      {n.kind === 'sg' && <Lock className="anode-lock" size={12} />}
       <Handle type="source" position={Position.Right} className="h" />
     </div>
   );
