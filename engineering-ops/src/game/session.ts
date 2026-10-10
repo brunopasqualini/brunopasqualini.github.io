@@ -8,6 +8,8 @@ import { MISSION_BY_ID } from '@/content/missions';
 import type { ADR, Mission, Postmortem } from '@/content/missions/types';
 import { DOCUMENTED, resolveDecisions } from '@/game/decisions';
 import { scoreMission, type Outcome } from '@/game/scoring';
+import { GAME_DAY_BY_ID } from '@/content/gamedays';
+import { resolveFaults, stepAt, type GameDayRun } from '@/game/gameday';
 
 export type Mode = 'beginner' | 'intermediate' | 'advanced';
 
@@ -17,7 +19,8 @@ export type Op =
   | { op: 'action'; id: string }
   | { op: 'chaos'; chaos: Chaos[] }
   | { op: 'revert' }
-  | { op: 'workload'; patch: Partial<Workload> };
+  | { op: 'workload'; patch: Partial<Workload> }
+  | { op: 'gameday'; id: string };
 
 export interface TimelineEvent {
   minute: number;
@@ -66,6 +69,8 @@ export interface Session {
   consequences: { id: string; title: string; text: string }[];
   verified?: { outcome: Outcome; report: Report; window: Snapshot[]; at: number };
   seed: number;
+  /** A scripted multi-fault exercise in progress or finished (Lab only). */
+  gameday?: GameDayRun;
 }
 
 export const LAB_ID = 'lab';
@@ -180,6 +185,7 @@ function stepMinute(s: Session, mission: Mission, preroll = false) {
     const next = mission.onTick(s.live, s.minute, s.flags);
     if (next) s.live = next;
   }
+  if (!preroll && s.gameday) fireGameDay(s);
   const r = solve(s.live, s.workload, s.minute, s.sim, s.chaos);
   s.sim = r.next;
   pushHistory(s, r.snapshot);
@@ -203,6 +209,29 @@ function stepMinute(s: Session, mission: Mission, preroll = false) {
       s.explain = { ...s.explain, settled: true, changes, story: buildChangeStory(s.explain.diff, changes, after, s.live) };
     }
   }
+}
+
+/** Apply the scripted step due this minute. Keyed on the minute, so replaying the same ops gives the same run. */
+function fireGameDay(s: Session) {
+  const run = s.gameday;
+  const day = run && GAME_DAY_BY_ID[run.id];
+  if (!run || !day) return;
+  const step = stepAt(day, run, s.minute);
+  if (!step) return;
+  const { chaos, skipped } = resolveFaults(step.faults, s.live);
+  s.chaos = chaos;
+  s.events.push({ minute: s.minute, kind: 'incident', text: `Game day: ${step.announce}${skipped ? ' (a fault had no matching component in your design)' : ''}` });
+}
+
+/** Start a game day now: the script runs from the current minute. */
+export function startGameDay(s: Session, id: string, log = true): boolean {
+  const day = GAME_DAY_BY_ID[id];
+  if (!day) return false;
+  s.gameday = { id, start: s.minute };
+  s.chaos = [];
+  s.events.push({ minute: s.minute, kind: 'note', text: `Game day started: ${day.title} (${day.minutes} min).` });
+  if (log) s.ops.push({ op: 'gameday', id });
+  return true;
 }
 
 export function advance(s: Session, n: number, log = true): Session {
@@ -357,6 +386,9 @@ export function replay(missionId: string, mode: Mode, attempt: number, ops: Op[]
         break;
       case 'workload':
         patchWorkload(s, o.patch, true);
+        break;
+      case 'gameday':
+        startGameDay(s, o.id, true);
         break;
     }
   }
