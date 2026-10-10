@@ -19,6 +19,7 @@ export type DimensionId =
   | 'rationale';
 
 export type PanelId =
+  | 'overview'
   | 'logs'
   | 'metrics'
   | 'traces'

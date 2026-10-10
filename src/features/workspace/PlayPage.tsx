@@ -13,7 +13,9 @@ import { Library } from '@/features/workspace/Library';
 import { Debrief, MissionIntro } from '@/features/workspace/Modals';
 import { MissionPanel } from '@/features/workspace/MissionPanel';
 import { PlanPanel } from '@/features/workspace/PlanPanel';
-import { StatusBar } from '@/features/workspace/StatusBar';
+import { CanvasHeader } from '@/features/workspace/CanvasHeader';
+import { EventsCard } from '@/features/workspace/EventsCard';
+import { usePersistentFlag } from '@/shared/hooks/usePersistentFlag';
 
 export function Play({ missionId, template }: { missionId: string; template?: string }) {
   const session = useGame((s) => s.session);
@@ -24,6 +26,8 @@ export function Play({ missionId, template }: { missionId: string; template?: st
   const setPane = useGame((s) => s.setMobilePane);
   const setRunning = useGame((s) => s.setRunning);
   const closeSession = useGame((s) => s.closeSession);
+  const [leftOpen, toggleLeft] = usePersistentFlag('eo-ws-left', true);
+  const [rightOpen, toggleRight] = usePersistentFlag('eo-ws-right', true);
   useSimLoop();
   const { session: live } = useLive();
   const isLab = missionId === LAB_ID;
@@ -62,46 +66,48 @@ export function Play({ missionId, template }: { missionId: string; template?: st
     );
 
   return (
-    <div className="workspace" data-pane={pane}>
-      <StatusBar />
+    <div className="workspace" data-pane={pane} data-left={leftOpen ? 'open' : 'closed'} data-right={rightOpen ? 'open' : 'closed'}>
       <div className="ws-main">
-        <div className="ws-left">
-          <Library />
-        </div>
+        <aside className="ws-left" aria-label="Mission">
+          <div className="ws-scroll card-panel">{isLab ? <LabPanel /> : <MissionPanel />}</div>
+          <EventsCard />
+        </aside>
         <div className="ws-center">
+          <CanvasHeader leftOpen={leftOpen} rightOpen={rightOpen} onToggleLeft={toggleLeft} onToggleRight={toggleRight} />
           <Canvas />
           <Dock />
         </div>
-        <div className="ws-right">
-          <Tabs
-            label="Side panel"
-            value={rightTab}
-            onChange={setRightTab}
-            tabs={[
-              { id: 'inspect', label: 'Inspector' },
-              { id: 'mission', label: isLab ? 'Lab' : 'Mission' },
-              { id: 'plan', label: 'Plan', badge: pending > 0 ? <span className="badge badge-warn">{pending}</span> : null },
-            ]}
-          />
-          <div className="ws-right-body">
-            {rightTab === 'inspect' && <Inspector />}
-            {rightTab === 'mission' && (isLab ? <LabPanel /> : <MissionPanel />)}
-            {rightTab === 'plan' && <PlanPanel />}
-          </div>
-        </div>
+        <aside className="ws-right" aria-label="Components and inspector">
+          <Library />
+          <section className="card-panel ws-side">
+            <Tabs
+              label="Side panel"
+              value={rightTab}
+              onChange={setRightTab}
+              tabs={[
+                { id: 'inspect', label: 'Selected' },
+                { id: 'plan', label: 'Plan & deploy', badge: pending > 0 ? <span className="badge badge-warn">{pending}</span> : null },
+              ]}
+            />
+            <div className="ws-right-body">
+              {rightTab === 'inspect' && <Inspector />}
+              {rightTab === 'plan' && <PlanPanel />}
+            </div>
+          </section>
+        </aside>
       </div>
       <nav className="mobile-nav" aria-label="Workspace sections">
         {(
           [
-            ['library', 'Components'],
+            ['mission', 'Mission'],
             ['canvas', 'Canvas'],
-            ['inspect', 'Inspect'],
+            ['build', 'Build'],
             ['evidence', 'Evidence'],
           ] as const
         ).map(([id, label]) => (
           <button key={id} className={pane === id ? 'on' : ''} aria-pressed={pane === id} onClick={() => setPane(id)}>
             {label}
-            {id === 'inspect' && pending > 0 ? <span className="badge badge-warn">{pending}</span> : null}
+            {id === 'build' && pending > 0 ? <span className="badge badge-warn">{pending}</span> : null}
           </button>
         ))}
       </nav>

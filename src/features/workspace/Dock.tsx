@@ -20,8 +20,10 @@ import {
   SecurityPanel,
   TracesPanel,
 } from '@/features/workspace/panels/panels';
+import { OverviewPanel } from '@/features/workspace/panels/overview';
 
 const LABELS: Record<PanelId, string> = {
+  overview: 'Overview',
   metrics: 'Metrics',
   logs: 'Logs',
   traces: 'Traces',
@@ -52,7 +54,7 @@ export function Dock() {
 
   if (!session) return null;
   const roles = new Set(session.live.nodes.map(roleOf));
-  const ids: PanelId[] = ['metrics', 'logs', 'traces', 'dependencies', 'deployments'];
+  const ids: PanelId[] = ['overview', 'metrics', 'logs', 'traces', 'dependencies', 'deployments'];
   if (roles.has('db') || roles.has('kv')) ids.push('database');
   if (roles.has('queue')) ids.push('queues');
   if (roles.has('network')) ids.push('network');
@@ -66,6 +68,8 @@ export function Dock() {
 
   const view = () => {
     switch (dock) {
+      case 'overview':
+        return <OverviewPanel />;
       case 'metrics':
         return <MetricsPanel />;
       case 'logs':
@@ -98,7 +102,7 @@ export function Dock() {
       <div className="dock-bar">
         <Tabs
           label="Investigation panels"
-          value={(ids.includes(dock) ? dock : 'metrics') as PanelId}
+          value={(ids.includes(dock) ? dock : 'overview') as PanelId}
           onChange={setDock}
           tabs={ids.map((id) => ({
             id,
