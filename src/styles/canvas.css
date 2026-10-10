@@ -88,17 +88,20 @@
   }
   .canvas-empty {
     position: absolute;
-    left: 50%;
-    top: 55%;
-    transform: translate(-50%, -50%);
-    max-width: 340px;
-    text-align: center;
-    padding: 14px 18px;
+    left: 64px;
+    top: 14px;
+    max-width: 440px;
+    text-align: left;
+    padding: 10px 14px;
     border: 1px dashed var(--line2);
     border-radius: 12px;
     background: rgba(9, 17, 34, 0.85);
     color: var(--muted);
+    font-size: 12.5px;
     pointer-events: none;
+  }
+  .canvas-empty p {
+    margin: 4px 0 0;
   }
   .canvas-empty strong {
     color: var(--text);
