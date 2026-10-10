@@ -26,13 +26,14 @@ src/
   content/        data-driven missions, academy, templates, journey stages
   game/           sessions, scoring, progression, zustand store
   features/
-    home/ missions/ incidents/ lab/ academy/ journal/ achievements/
-    workspace/    the playable canvas, panels, dock
+    home/ missions/ incidents/ academy/ journal/ achievements/
+    workspace/    the playable canvas (missions and the lab): header, library, inspector, dock
+  entities/       domain widgets used by several features (mission buttons)
   shared/
     ui/           design-system components (Panel, Chip, Meter, Tabs, Dialog…)
     lib/          formatting, small utilities
     hooks/
-  styles/         tokens, base, layout, components (CSS @layer)
+  styles/         tokens, base, layout, components, features, responsive (CSS @layer)
   test/
 ```
 
