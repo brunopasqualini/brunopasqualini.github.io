@@ -1,5 +1,7 @@
-import { X } from 'lucide-react';
-import { useEffect, useRef, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
+export { Modal } from './Dialog';
+export { Tabs } from './Tabs';
 
 export function Chip({
   kind = 'neutral',
@@ -63,83 +65,6 @@ export function Sparkline({
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
       <polyline points={pts} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
-  );
-}
-
-export function Modal({
-  title,
-  onClose,
-  children,
-  wide,
-  footer,
-}: {
-  title: string;
-  onClose: () => void;
-  children: ReactNode;
-  wide?: boolean;
-  footer?: ReactNode;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const prev = document.activeElement as HTMLElement | null;
-    ref.current?.focus();
-    const on = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', on);
-    return () => {
-      window.removeEventListener('keydown', on);
-      prev?.focus?.();
-    };
-  }, [onClose]);
-  return (
-    <div
-      className="modal-backdrop"
-      role="presentation"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className={`modal ${wide ? 'modal-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref}>
-        <header className="modal-head">
-          <h2>{title}</h2>
-          <button className="icon-btn" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
-        </header>
-        <div className="modal-body">{children}</div>
-        {footer && <footer className="modal-foot">{footer}</footer>}
-      </div>
-    </div>
-  );
-}
-
-export function Tabs<T extends string>({
-  tabs,
-  value,
-  onChange,
-  label,
-}: {
-  tabs: { id: T; label: ReactNode; badge?: ReactNode }[];
-  value: T;
-  onChange: (t: T) => void;
-  label: string;
-}) {
-  return (
-    <div className="tabs" role="tablist" aria-label={label}>
-      {tabs.map((t) => (
-        <button
-          key={t.id}
-          role="tab"
-          aria-selected={value === t.id}
-          className={`tab ${value === t.id ? 'tab-on' : ''}`}
-          onClick={() => onChange(t.id)}
-        >
-          {t.label}
-          {t.badge}
-        </button>
-      ))}
-    </div>
   );
 }
 
