@@ -21,7 +21,7 @@ import { usePersistentFlag } from '@/shared/hooks/usePersistentFlag';
 import { layoutArch } from '@/features/workspace/autoLayout';
 import { tilesFor, type Tile } from '@/features/workspace/InstanceStrip';
 import { EDGE_COLOR, edgeLook } from '@/features/workspace/edgeStyle';
-import { attachedTo, defaultEdgeWeight, edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
+import { CONFIG_REF_KEYS, attachedTo, defaultEdgeWeight, edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
 import { visualStatus } from '@/engine/analysis';
 import { canConnect, entryOf } from '@/engine/catalog';
 import type { Arch, ArchNode } from '@/engine/types';
@@ -67,7 +67,6 @@ function freeSpot(arch: Arch, from: { x: number; y: number }): { x: number; y: n
 }
 
 const FIT = { padding: { top: '40px', right: '24px', bottom: '60px', left: '56px' }, maxZoom: 1.2 } as const;
-const REF_KEYS = ['subnet', 'sg', 'iamRole', 'nat', 'vpc', 'nacl'];
 
 function CanvasInner() {
   const { session, snap, report } = useLive();
@@ -206,7 +205,7 @@ function CanvasInner() {
     }
     if (showRefs) {
       for (const n of draft.nodes) {
-        for (const k of REF_KEYS) {
+        for (const k of CONFIG_REF_KEYS) {
           const ref = n.config[k];
           if (typeof ref === 'string' && ref && nodeById(draft, ref)) {
             out.push({
@@ -332,7 +331,7 @@ function CanvasInner() {
       a.nodes = a.nodes.filter((n) => !ids.has(n.id));
       a.edges = a.edges.filter((e) => !ids.has(e.source) && !ids.has(e.target));
       a.nodes.forEach((n) => {
-        for (const k of REF_KEYS) if (ids.has(n.config[k])) n.config[k] = '';
+        for (const k of CONFIG_REF_KEYS) if (ids.has(n.config[k])) n.config[k] = '';
       });
     });
     g.select(null);
