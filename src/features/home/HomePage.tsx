@@ -4,7 +4,7 @@ import { ACHIEVEMENTS, levelFromXp, skillLevel, SKILLS, SKILL_THRESHOLDS, SKILL_
 import { useGame } from '@/game/store';
 import { Chip, Kpi, Meter, Empty } from '@/shared/ui/common';
 import { pct0, usd2, when } from '@/shared/lib/fmt';
-import { go } from '@/app/router';
+import { go } from '@/shared/lib/nav';
 import { MissionButtons, useMissionState } from '@/entities/mission/MissionButtons';
 
 export function HomePage() {
@@ -185,7 +185,7 @@ export function HomePage() {
               );
             })}
           </ul>
-          <button className="link" onClick={() => go('/academy')}>
+          <button className="link" onClick={() => go('/learning')}>
             Open Engineering Academy →
           </button>
         </section>

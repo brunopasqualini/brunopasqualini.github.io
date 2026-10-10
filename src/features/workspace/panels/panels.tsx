@@ -774,14 +774,12 @@ export function QueuesPanel() {
           .filter((e) => e.source === q.id)
           .map((e) => nodeById(session.live, e.target)!)
           .find((n) => n && roleOf(n) === 'queue');
-        const series = session.history
-          .slice(-60)
-          .map((h) => ({
-            t: h.minute,
-            depth: Math.round(h.nodes[q.id]?.queueDepth ?? 0),
-            arr: +(h.nodes[q.id]?.arrivalRate ?? 0).toFixed(1),
-            drain: +(h.nodes[q.id]?.drainRate ?? 0).toFixed(1),
-          }));
+        const series = session.history.slice(-60).map((h) => ({
+          t: h.minute,
+          depth: Math.round(h.nodes[q.id]?.queueDepth ?? 0),
+          arr: +(h.nodes[q.id]?.arrivalRate ?? 0).toFixed(1),
+          drain: +(h.nodes[q.id]?.drainRate ?? 0).toFixed(1),
+        }));
         void tick;
         return (
           <Section

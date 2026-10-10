@@ -3,7 +3,6 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App from '@/app/App';
 import { useGame } from '@/game/store';
-import { parseHash } from '@/app/router';
 
 let root: Root | undefined;
 let host: HTMLElement | undefined;
@@ -44,10 +43,15 @@ afterEach(async () => {
 });
 
 describe('router', () => {
-  it('parses hashes', () => {
-    expect(parseHash('#/play/m2-db-meltdown')).toMatchObject({ page: 'play', id: 'm2-db-meltdown' });
-    expect(parseHash('#/lab?template=blank').query.get('template')).toBe('blank');
-    expect(parseHash('').page).toBe('command');
+  it('redirects the legacy /academy path and renders a 404 page', async () => {
+    await mount('#/academy');
+    await waitFor('h1');
+    expect(window.location.hash).toBe('#/learning');
+    await act(async () => root!.unmount());
+    host!.remove();
+    await mount('#/nope');
+    await waitFor('h1');
+    expect(host!.querySelector('h1')!.textContent).toMatch(/Nothing here/);
   });
 });
 
@@ -56,18 +60,20 @@ describe('primary navigation renders every section', () => {
     ['#/', /Command Center/],
     ['#/missions', /Mission Control/],
     ['#/incidents', /Incident Response/],
-    ['#/academy', /Engineering Academy/],
+    ['#/learning', /Engineering Academy/],
     ['#/journal', /Engineering Journal/],
   ];
   for (const [hash, re] of cases) {
     it(hash, async () => {
       await mount(hash);
+      await waitFor('h1');
       expect(host!.querySelector('h1')!.textContent).toMatch(re);
       expect(host!.querySelectorAll('.sidenav li a').length).toBe(6);
     });
   }
   it('Mission Control lists all six missions with controls', async () => {
     await mount('#/missions');
+    await waitFor('.mission-card');
     expect(host!.querySelectorAll('.mission-card').length).toBe(6);
     expect(host!.querySelectorAll('.mission-card .btn-primary').length).toBe(6);
   });
@@ -81,11 +87,11 @@ describe('workspace', () => {
     expect(host!.querySelector('.library')).toBeTruthy();
     expect(host!.querySelector('.dock')).toBeTruthy();
     expect(host!.textContent).toMatch(/The Database Meltdown/);
-    expect(host!.querySelector('.modal')).toBeTruthy();
+    expect(document.querySelector('.modal')).toBeTruthy();
     await act(async () => {
-      (host!.querySelector('.modal-foot .btn-primary') as HTMLButtonElement).click();
+      (document.querySelector('.modal-foot .btn-primary') as HTMLButtonElement).click();
     });
-    expect(host!.querySelector('.modal')).toBeNull();
+    expect(document.querySelector('.modal')).toBeNull();
     expect(useGame.getState().running).toBe(true);
   });
   it('renders the sandbox', async () => {

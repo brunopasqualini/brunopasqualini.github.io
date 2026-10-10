@@ -2,7 +2,7 @@ import { Play as PlayIcon, Siren } from 'lucide-react';
 import { MISSIONS } from '@/content/missions';
 import { TEMPLATES } from '@/content/templates';
 import { Chip } from '@/shared/ui/common';
-import { go } from '@/app/router';
+import { go } from '@/shared/lib/nav';
 import { MissionButtons, useMissionState } from '@/entities/mission/MissionButtons';
 
 export function IncidentsPage() {
