@@ -13,7 +13,6 @@ import {
   type NodeChange,
   type OnConnectEnd,
 } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { tilesFor, type Tile } from '@/features/workspace/InstanceStrip';
 import { edgeClass, makeEdge, makeNode, nodeById } from '@/engine/arch';
