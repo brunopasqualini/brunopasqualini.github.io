@@ -6,7 +6,8 @@ import { levelFromXp } from '@/game/progression';
 import { missionOf, LAB_ID } from '@/game/session';
 import { unlockedTier, useGame } from '@/game/store';
 import { NodeIcon } from '@/shared/ui/icons';
-import { toneOf } from '@/shared/ui/roleTone';
+import { toneOfKind } from '@/shared/ui/roleTone';
+import { serviceName } from '@/shared/ui/serviceName';
 
 export function Library() {
   const session = useGame((s) => s.session);
@@ -85,6 +86,8 @@ export function Library() {
                   onDragStart={(ev) => {
                     ev.dataTransfer.setData('application/x-eo-kind', e.kind);
                     ev.dataTransfer.effectAllowed = 'copy';
+                    const ico = (ev.currentTarget as HTMLElement).querySelector('.lib-ico');
+                    if (ico) ev.dataTransfer.setDragImage(ico, 18, 18);
                   }}
                   onClick={() => {
                     if (!locked) {
@@ -95,10 +98,13 @@ export function Library() {
                   disabled={locked}
                   aria-label={`${e.name}${locked ? ' (locked)' : ''}`}
                 >
-                  <span className={`lib-ico tone-${toneOf(e.role)}`}>
+                  <span className={`lib-ico tone-${toneOfKind(e.kind, e.role)}`}>
                     <NodeIcon name={e.icon} size={17} />
                   </span>
-                  <span className="lib-name">{e.name}</span>
+                  <span className="lib-text">
+                    <span className="lib-name">{e.aws ? serviceName(e.kind) : e.name}</span>
+                    <span className="lib-cap">{e.group}</span>
+                  </span>
                   {e.aws && <span className="lib-aws">AWS</span>}
                   {locked && <Lock size={12} className="lib-lock" />}
                 </button>

@@ -3,6 +3,11 @@ import type { Role } from '@/engine/types';
 export type Tone =
   'source' | 'edge' | 'compute' | 'data' | 'messaging' | 'storage' | 'external' | 'network' | 'security' | 'delivery' | 'observe';
 
+/** Component kinds whose colour differs from their role's family. */
+const KIND_TONE: Record<string, Tone> = { autoscaling: 'compute' };
+
+export const toneOfKind = (kind: string, role: Role): Tone => KIND_TONE[kind] ?? toneOf(role);
+
 /** Maps a component role to its colour family (see --cat-* tokens): the same colour language everywhere. */
 export function toneOf(role: Role): Tone {
   switch (role) {
