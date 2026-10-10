@@ -2,7 +2,7 @@ import { Copy, Network, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { clone, edgeClass, nodeById, uid } from '@/engine/arch';
 import { visualStatus } from '@/engine/analysis';
-import { canConnect, entryOf } from '@/engine/catalog';
+import { entryOf } from '@/engine/catalog';
 import { costBreakdown } from '@/engine/telemetry';
 import { useGame } from '@/game/store';
 import { Chip, Meter } from '@/shared/ui/common';
@@ -214,8 +214,6 @@ export function Inspector() {
   const m = snap?.nodes[node.id];
   const flag = report?.flags[node.id];
   const status = m ? visualStatus(m.status, flag) : 'idle';
-  const incoming = session.draft.edges.filter((e) => e.target === node.id);
-  const outgoing = session.draft.edges.filter((e) => e.source === node.id);
   const cost = costs.find((c) => c.node.id === node.id);
   const setConfig = (k: string, v: any) =>
     editDraft((a) => {
