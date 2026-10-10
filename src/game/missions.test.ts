@@ -742,7 +742,7 @@ describe('Mission 12 — The Noisy Neighbour', () => {
     expect(v.outcome.passed).toBe(true);
   });
 
-  it('tripling the API changes nothing: the shared database is the bottleneck', () => {
+  it('tripling the API does not help: the shared database is the bottleneck', () => {
     const s = createSession('m12-noisy-neighbour', 'intermediate');
     applyAction(s, 'scale-api');
     advance(s, 4);
