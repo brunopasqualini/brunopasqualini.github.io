@@ -66,7 +66,7 @@ export function FeedbackSection() {
                 a.click();
               }}
             >
-              <Download size={14} /> Export
+              <Download size={14} /> Export feedback
             </button>
             <button
               className={`btn ${armed ? 'btn-danger' : 'btn-ghost'}`}
