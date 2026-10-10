@@ -49,6 +49,10 @@ Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings 
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
+Attack simulation: in the Lab, **Attack simulation** runs a leaked credential, an open data store or an HTTP flood against the deployed
+design and shows which defences held or failed, how far the damage spreads (marked on the canvas) and what to change. See
+[`docs/ATTACKS.md`](docs/ATTACKS.md).
+
 ## The missions
 
 | #   | Mission                     | Kind     | Teaches                                                                                                                                  |
