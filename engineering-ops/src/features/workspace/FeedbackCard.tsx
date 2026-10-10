@@ -26,7 +26,7 @@ export function FeedbackCard({ ctx }: { ctx: FeedbackContext }) {
   const current = find(entries, ctx.missionId, ctx.attempt);
   const [note, setNote] = useState(current?.note ?? '');
 
-  const write = (patch: Partial<Feedback>) => save({ ...ctx, at: Date.now(), simVersion: SIM_VERSION, ...current, ...patch });
+  const write = (patch: Partial<Feedback>) => save({ ...ctx, simVersion: SIM_VERSION, ...current, ...patch });
   const answered = !!(current?.difficulty || current?.clarity);
 
   return (
