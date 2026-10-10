@@ -123,7 +123,36 @@ export const m1: Mission = {
       body: 'Platform team = 2 engineers. There is no CD pipeline; releases are manual runbooks. Tracing and service templates do not exist.',
     },
   ],
-  rootCauses: [],
+  rootCauses: [
+    {
+      id: 'coupling',
+      label: 'Every domain shares one deployable, one schema and no enforced boundaries, so a change in one squad can break another',
+      correct: true,
+      evidencePanels: ['dependencies', 'notes'],
+      why: 'The dependency map shows catalogue, payments and fulfilment calling each other directly and sharing one database; that is why a catalogue change broke refunds and why releases collide.',
+    },
+    {
+      id: 'capacity',
+      label: 'The servers are too small for the traffic',
+      correct: false,
+      evidencePanels: ['metrics'],
+      why: 'Load is about 40 requests per second and utilisation is low. The pain is release coordination, not capacity.',
+    },
+    {
+      id: 'stack',
+      label: 'The framework or language is the problem and the app needs a rewrite',
+      correct: false,
+      evidencePanels: ['dependencies'],
+      why: 'The failures come from coupling between domains, which a rewrite would reproduce. Boundaries can be introduced without one.',
+    },
+    {
+      id: 'scale-need',
+      label: 'The product needs microservices to scale',
+      correct: false,
+      evidencePanels: ['metrics'],
+      why: 'Nothing here is limited by scale. Microservices would add operational load a two-person platform team cannot carry.',
+    },
+  ],
   actions: [],
   requirements: [
     {

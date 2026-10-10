@@ -124,7 +124,43 @@ export const m4: Mission = {
       body: 'A subnet is public if its route table sends 0.0.0.0/0 to an internet gateway. A NAT gateway lets private subnets reach out, must live in a public subnet, and is billed per hour and per GB. Security groups are stateful allow-lists; NACLs are stateless and need return-traffic rules.',
     },
   ],
-  rootCauses: [],
+  rootCauses: [
+    {
+      id: 'nat-routing',
+      label: 'The private subnet cannot reach the internet: the NAT gateway or its route is wrong, so payment calls time out',
+      correct: true,
+      evidencePanels: ['network'],
+      why: 'The reachability analysis stops at a specific layer on the path from the API to the payment provider; the first failing layer is the NAT or route, not the provider.',
+    },
+    {
+      id: 'exposed',
+      label: 'The database and SSH are open to the world and the bucket is public',
+      correct: true,
+      evidencePanels: ['security', 'network'],
+      why: 'The security findings list world-open database and SSH rules and a public bucket; these are what the scan flagged and what blocks go-live.',
+    },
+    {
+      id: 'iam',
+      label: 'The application role is a wildcard admin role',
+      correct: true,
+      evidencePanels: ['security'],
+      why: 'The finding names the role. Least privilege means only the actions this API needs.',
+    },
+    {
+      id: 'provider-down',
+      label: 'The payment provider is down',
+      correct: false,
+      evidencePanels: ['metrics', 'logs'],
+      why: 'The provider is healthy; requests never leave the private subnet, so the provider never sees them.',
+    },
+    {
+      id: 'undersized',
+      label: 'The checkout API is under-provisioned',
+      correct: false,
+      evidencePanels: ['metrics'],
+      why: 'Utilisation is low. The calls fail before reaching a dependency, so more replicas change nothing.',
+    },
+  ],
   actions: [],
   requirements: [
     {
@@ -230,7 +266,7 @@ export const m4: Mission = {
       },
       {
         name: 'PrivateLink to the provider',
-        when: 'The provider offers it.',
+        when: 'The provider offers a private endpoint and you want no internet egress at all.',
         tradeoffs: 'Removes internet egress entirely; needs provider support.',
       },
     ],

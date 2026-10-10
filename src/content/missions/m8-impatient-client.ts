@@ -278,7 +278,7 @@ export const m8: Mission = {
       },
       {
         name: 'Cache or batch provider lookups',
-        when: 'The same inputs repeat.',
+        when: 'The same inputs repeat often and slightly stale answers are acceptable.',
         tradeoffs: 'Adds freshness rules; not available for every call.',
       },
     ],
@@ -298,7 +298,7 @@ export const m8: Mission = {
     ],
   },
   seed: 108,
-  guidance: ['dependencies', 'traces'],
+  guidance: ['dependencies', 'traces', 'logs'],
   needsPostmortem: false,
   needsADR: false,
   baselineCost: 300,

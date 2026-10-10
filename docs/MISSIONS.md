@@ -76,3 +76,13 @@ Rules that keep this honest:
   resuming rebuilds the same starting state even if the player has since changed their history.
 * **Fingerprints.** New missions need a row in `game/simVersion.test.ts`; changing simulation behaviour for existing
   missions requires bumping `SIM_VERSION` (see that file).
+
+## The learning loop every mission must carry
+
+`content/missionQuality.test.ts` fails a mission that skips a step. Each one needs: at least three candidate root causes
+(one real, at least one red herring) with the evidence panels that show or refute each; beginner guidance that points at
+every panel holding the real cause's evidence; three escalating hints; a debrief with alternatives that say *when* each
+is the right call and what it costs, plus the mistakes to avoid and experiments to try; and a golden test block in
+`game/missions.test.ts` covering the intended fix and a tempting wrong one. Design projects get hypotheses too: the
+question is what is actually wrong with the starting design. Diagnosis only counts toward the score when the mission's
+`weights.diagnosis` is set, but the evidence review is always shown.
