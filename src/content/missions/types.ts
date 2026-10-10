@@ -185,6 +185,8 @@ export interface Mission {
   deployments: DeployEvent[];
   notes: { title: string; body: string; panel: PanelId }[];
   rootCauses: RootCause[];
+  /** Concrete first move for the guided first run: where to act, in plain words. */
+  firstMove?: string;
   actions: MissionAction[];
   requirements: Requirement[];
   weights: Partial<Record<DimensionId, number>>;

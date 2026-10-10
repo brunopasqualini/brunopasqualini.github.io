@@ -101,6 +101,8 @@ export const m7: Mission = {
       body: 'The query list is dominated by one cheap query executed very often. A cheap query is not a cheap workload when it runs a dozen times per page.',
     },
   ],
+  firstMove:
+    'Remove the extra round trips: run the “Batch the lookups” action, then open Plan and press Deploy. Compare it with what a bigger database would have cost.',
   rootCauses: [
     {
       id: 'n-plus-one',

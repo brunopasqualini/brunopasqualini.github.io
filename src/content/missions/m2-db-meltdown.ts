@@ -126,6 +126,8 @@ export const m2: Mission = {
     },
     { panel: 'notes', title: 'Support ticket #88213', body: '“Checkout spinner then 503 after 30 seconds. Worked fine yesterday.”' },
   ],
+  firstMove:
+    'Fix the cause, not the symptom: run the “Create index” action, or select the orders database and turn on its index in the inspector. Then open Plan and press Deploy.',
   rootCauses: [
     {
       id: 'unindexed',

@@ -1,3 +1,4 @@
+import { isFirstRun } from '@/game/guide';
 import { securityBreakdown } from '@/engine/analysis';
 import type { Finding } from '@/engine/net';
 import {
@@ -35,6 +36,7 @@ export function CanvasHeader({
   const setSpeed = useGame((s) => s.setSpeed);
   const step = useGame((s) => s.step);
   const submit = useGame((s) => s.submit);
+  const progress = useGame((s) => s.progress);
   if (!session) return null;
   const mission = missionOf(session.missionId);
   const isLab = session.missionId === LAB_ID;
@@ -42,6 +44,8 @@ export function CanvasHeader({
   const spark = session.history.slice(-40).map((h) => h.system.successRate * 100);
   const health = !sys ? 'idle' : sys.successRate > 0.99 && sys.maxUtil < 0.9 ? 'ok' : sys.successRate > 0.9 ? 'warn' : 'crit';
   const budget = mission.constraints.budget;
+  // A first-time player sees the four numbers that matter first; the rest appear after their first deploy.
+  const reveal = isLab || !isFirstRun(session, Object.keys(progress.completed).length, progress.outcomes.length) || !!session.explain;
 
   const errPct = sys ? (1 - sys.successRate) * 100 : 0;
   return (
@@ -121,7 +125,7 @@ export function CanvasHeader({
           {rightOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
         </button>
       </div>
-      <div className="ch-kpis" aria-label="System health">
+      <div className="ch-kpis" aria-label="System health" style={{ ['--kpis' as string]: reveal ? 8 : 5 }}>
         <div className="hk">
           <span>Traffic</span>
           <b>{sys ? `${sys.rps.toFixed(0)} rps` : '—'}</b>
@@ -153,27 +157,31 @@ export function CanvasHeader({
           <span>Cost{budget ? ` / ${usd2(budget)}` : ''}</span>
           <b>{sys ? `${usd2(sys.costMonthly)} / mo` : '—'}</b>
         </div>
-        <div
-          className={`hk ${report && report.azSurvival < 95 ? 'hk-warn' : ''}`}
-          title="Resilience: the share of traffic still served if one availability zone is lost. Measured by simulating the failure, not read from current health."
-        >
-          <span>Resilience</span>
-          <b>{report ? `${report.azSurvival.toFixed(0)}%` : '—'}</b>
-        </div>
-        <div
-          className={`hk ${report && report.recovery.rtoMinutes > 120 ? 'hk-warn' : ''}`}
-          title="Recovery time (RTO): how long restoring service would take and how much data could be lost (RPO), from your backup and disaster-recovery setup."
-        >
-          <span>Recovery</span>
-          <b>{report ? duration(report.recovery.rtoMinutes) : '—'}</b>
-        </div>
-        <div
-          className={`hk ${report && report.counts.critical > 0 ? 'hk-crit' : report && report.counts.high > 0 ? 'hk-warn' : ''}`}
-          title={securityTitle(report)}
-        >
-          <span>Security</span>
-          <b>{report ? report.securityScore : '—'}</b>
-        </div>
+        {reveal && (
+          <>
+            <div
+              className={`hk ${report && report.azSurvival < 95 ? 'hk-warn' : ''}`}
+              title="Resilience: the share of traffic still served if one availability zone is lost. Measured by simulating the failure, not read from current health."
+            >
+              <span>Resilience</span>
+              <b>{report ? `${report.azSurvival.toFixed(0)}%` : '—'}</b>
+            </div>
+            <div
+              className={`hk ${report && report.recovery.rtoMinutes > 120 ? 'hk-warn' : ''}`}
+              title="Recovery time (RTO): how long restoring service would take and how much data could be lost (RPO), from your backup and disaster-recovery setup."
+            >
+              <span>Recovery</span>
+              <b>{report ? duration(report.recovery.rtoMinutes) : '—'}</b>
+            </div>
+            <div
+              className={`hk ${report && report.counts.critical > 0 ? 'hk-crit' : report && report.counts.high > 0 ? 'hk-warn' : ''}`}
+              title={securityTitle(report)}
+            >
+              <span>Security</span>
+              <b>{report ? report.securityScore : '—'}</b>
+            </div>
+          </>
+        )}
       </div>
     </header>
   );

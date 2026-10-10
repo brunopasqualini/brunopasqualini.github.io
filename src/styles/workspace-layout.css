@@ -189,7 +189,7 @@
   }
   .ch-kpis {
     display: grid;
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--kpis, 8), minmax(0, 1fr));
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: #070e1d;

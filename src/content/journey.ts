@@ -11,6 +11,9 @@ export interface JourneyStage {
   missionIds: string[];
 }
 
+/** Where a new player starts: something is visibly failing, which teaches the whole loop fastest. */
+export const FIRST_MISSION = 'm2-db-meltdown';
+
 export const JOURNEY: JourneyStage[] = [
   {
     level: 1,
