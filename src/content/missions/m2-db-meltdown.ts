@@ -9,7 +9,7 @@ export const m2: Mission = {
   difficulty: 'Intermediate',
   kind: 'incident',
   estMinutes: 25,
-  prerequisites: ['m1-monolith'],
+  prerequisites: [],
   skills: { sd: 55, aws: 30, sre: 35, data: 30 },
   learning: [
     'Capacity analysis and bottleneck identification',
