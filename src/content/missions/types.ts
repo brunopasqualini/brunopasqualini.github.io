@@ -128,6 +128,29 @@ export interface Debrief {
   experiments: string[];
 }
 
+/** A choice the player made that later missions can react to. Recorded when a mission is passed. */
+export interface Decision {
+  /** Stable id other missions refer to, e.g. 'm7-n-plus-one:cached-the-symptom'. */
+  tag: string;
+  /** What the player did, in plain words (shown in the debrief). */
+  label: string;
+  /** How it will follow them into later missions (shown in the debrief). */
+  carries: string;
+}
+
+/** A debt or benefit inherited from an earlier decision, applied when this mission starts. */
+export interface Consequence {
+  id: string;
+  /** The Decision.tag that triggers it. */
+  tag: string;
+  title: string;
+  text: string;
+  /** Change to the starting architecture (pure: return a new Arch). */
+  apply?: (arch: Arch) => Arch;
+  /** Change to the starting workload. */
+  workload?: Partial<Workload>;
+}
+
 export interface Mission {
   id: string;
   number: number;
@@ -169,6 +192,10 @@ export interface Mission {
   needsADR: boolean;
   /** Optional baseline cost to compare to (for scoring cost efficiency without a budget). */
   baselineCost?: number;
+  /** Decisions to record, derived from the final design, when the mission is passed. */
+  decisions?: (arch: Arch, ctx: { adrs: ADR[]; flags: Record<string, any> }) => Decision[];
+  /** Debts and benefits inherited from decisions in earlier missions. */
+  consequences?: Consequence[];
 }
 
 export type FaultDef = Fault;
