@@ -1,4 +1,4 @@
-import { BookOpen, CheckCircle2, ClipboardList, Lightbulb, XCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, CheckCircle2, ClipboardList, Lightbulb, Siren, Target, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { evalRequirement } from '@/game/scoring';
 import { missionOf } from '@/game/session';
@@ -6,6 +6,7 @@ import { useGame } from '@/game/store';
 import { Chip } from '@/shared/ui/common';
 import { useLive } from '@/game/hooks';
 import { ADRModal, PostmortemModal } from '@/features/workspace/Modals';
+import { go } from '@/shared/lib/nav';
 
 export function MissionPanel() {
   const { session, snap, report } = useLive();
@@ -16,6 +17,7 @@ export function MissionPanel() {
   const setDock = useGame((s) => s.setDock);
   const [adr, setAdr] = useState(false);
   const [pm, setPm] = useState(false);
+  const closeSession = useGame((s) => s.closeSession);
   useGame((s) => s.tick);
 
   const mission = session ? missionOf(session.missionId) : undefined;
@@ -36,6 +38,10 @@ export function MissionPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, mission, report, snap, session?.adrs.length, session?.postmortem]);
   if (!session || !mission) return null;
+  const back = () => {
+    closeSession();
+    go(mission.kind === 'incident' ? '/incidents' : '/missions');
+  };
 
   const passing = reqs.filter((r) => r.pass).length;
   const hardOpen = reqs.filter((r) => r.hard && !r.pass).length;
@@ -44,18 +50,79 @@ export function MissionPanel() {
 
   return (
     <div className="mission-panel">
+      <button className="back-link" onClick={back}>
+        <ArrowLeft size={15} /> Back to {mission.kind === 'incident' ? 'Incidents' : 'Missions'}
+      </button>
       <header className="mp-head">
-        <div className="chips">
-          <Chip kind={mission.kind === 'incident' ? 'crit' : 'info'}>{mission.kind === 'incident' ? 'Incident' : 'Design project'}</Chip>
-          <Chip>{mission.difficulty}</Chip>
-          <Chip>~{mission.estMinutes}m</Chip>
+        <span className={`mp-icon ${mission.kind === 'incident' ? 'mp-icon-crit' : ''}`} aria-hidden="true">
+          {mission.kind === 'incident' ? <Siren size={22} /> : <Target size={22} />}
+        </span>
+        <div>
+          <small>Mission {mission.number}</small>
+          <h3>{mission.title}</h3>
         </div>
-        <h3>{mission.title}</h3>
-        <p className="muted">{mission.tagline}</p>
-        <button className="btn btn-ghost btn-sm" onClick={() => setIntro(true)}>
-          <BookOpen size={14} /> Re-read briefing
-        </button>
       </header>
+      <div className="chips">
+        <Chip kind={mission.kind === 'incident' ? 'crit' : 'info'}>{mission.kind === 'incident' ? 'Incident' : 'Design project'}</Chip>
+        <Chip>{mission.difficulty}</Chip>
+        <Chip>~{mission.estMinutes}m</Chip>
+        {session.failed && <Chip kind="crit">impact budget exceeded</Chip>}
+      </div>
+      <p className="mp-story">{mission.tagline}</p>
+      <button className="btn btn-ghost btn-sm" onClick={() => setIntro(true)}>
+        <BookOpen size={14} /> Re-read briefing
+      </button>
+
+      <section>
+        <div className="row-between">
+          <h4>Objectives</h4>
+          <span className="muted tiny">
+            {passing}/{reqs.length} met · {hardOpen} hard open
+          </span>
+        </div>
+        <ul className="reqs">
+          {reqs.map((r) => (
+            <li key={r.id} className={r.pass ? 'pass' : 'fail'}>
+              {r.pass ? (
+                <CheckCircle2 size={16} className="ok" aria-label="met" />
+              ) : (
+                <XCircle size={16} className={r.hard ? 'crit' : 'warn'} aria-label="not met" />
+              )}
+              <div>
+                <span>
+                  {r.label} {r.hard ? <Chip kind="neutral">hard</Chip> : <Chip kind="neutral">soft</Chip>}
+                </span>
+                <small>{r.detail}</small>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="muted tiny">
+          Live status of your <i>deployed</i> architecture at the current traffic level. “Verify &amp; submit” runs a full load test before
+          scoring.
+        </p>
+      </section>
+
+      <section>
+        <h4>Hints</h4>
+        <ul className="hints">
+          {mission.hints.slice(0, session.hintsUsed).map((h, i) => (
+            <li key={i}>
+              <Lightbulb size={14} /> <span>{h.text}</span>
+            </li>
+          ))}
+        </ul>
+        {session.hintsUsed < mission.hints.length ? (
+          <button className="btn btn-ghost btn-sm" onClick={nextHint}>
+            <Lightbulb size={14} /> Reveal {session.hintsUsed === 0 ? 'a hint' : 'another hint'}{' '}
+            <span className="muted">
+              ({session.hintsUsed}/{mission.hints.length}, small score effect)
+            </span>
+          </button>
+        ) : (
+          <p className="muted tiny">All hints revealed.</p>
+        )}
+      </section>
 
       {mode === 'beginner' && (
         <div className="callout callout-info">
@@ -90,36 +157,6 @@ export function MissionPanel() {
             <li key={i}>{n}</li>
           ))}
         </ul>
-      </section>
-
-      <section>
-        <div className="row-between">
-          <h4>Requirements</h4>
-          <span className="muted tiny">
-            {passing}/{reqs.length} met · {hardOpen} hard open
-          </span>
-        </div>
-        <ul className="reqs">
-          {reqs.map((r) => (
-            <li key={r.id} className={r.pass ? 'pass' : 'fail'}>
-              {r.pass ? (
-                <CheckCircle2 size={16} className="ok" aria-label="met" />
-              ) : (
-                <XCircle size={16} className={r.hard ? 'crit' : 'warn'} aria-label="not met" />
-              )}
-              <div>
-                <span>
-                  {r.label} {r.hard ? <Chip kind="neutral">hard</Chip> : <Chip kind="neutral">soft</Chip>}
-                </span>
-                <small>{r.detail}</small>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <p className="muted tiny">
-          Live status of your <i>deployed</i> architecture at the current traffic level. “Verify &amp; submit” runs a full load test before
-          scoring.
-        </p>
       </section>
 
       {mission.rootCauses.length > 0 && (
@@ -182,27 +219,6 @@ export function MissionPanel() {
           </p>
         </section>
       )}
-
-      <section>
-        <h4>Hints</h4>
-        <ul className="hints">
-          {mission.hints.slice(0, session.hintsUsed).map((h, i) => (
-            <li key={i}>
-              <Lightbulb size={14} /> <span>{h.text}</span>
-            </li>
-          ))}
-        </ul>
-        {session.hintsUsed < mission.hints.length ? (
-          <button className="btn btn-ghost btn-sm" onClick={nextHint}>
-            <Lightbulb size={14} /> Reveal {session.hintsUsed === 0 ? 'a hint' : 'another hint'}{' '}
-            <span className="muted">
-              ({session.hintsUsed}/{mission.hints.length}, small score effect)
-            </span>
-          </button>
-        ) : (
-          <p className="muted tiny">All hints revealed.</p>
-        )}
-      </section>
 
       <section>
         <h4>Engineering record</h4>
