@@ -8,7 +8,7 @@
 @import './base.css';
 @import './shell.css';
 @import './attack.css';
-@import './components.css';
+@import './components/index.css';
 @import './pages.css';
 @import './home.css';
 @import './timeline.css';

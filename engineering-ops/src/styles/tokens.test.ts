@@ -31,7 +31,7 @@ describe('colour tokens meet WCAG AA for text', () => {
   it('white on the solid red fill (badges, alerts) >= 4.5', () =>
     expect(contrast('#ffffff', token('--red-strong'))).toBeGreaterThanOrEqual(4.5));
   it('primary button text on both ends of its gradient >= 4.5', () => {
-    const css = read('components.css');
+    const css = read('components/buttons.css');
     const g = css.match(/\.btn-primary\s*\{[^}]*linear-gradient\(180deg,\s*(#[0-9a-f]{6}),\s*(#[0-9a-f]{6})\)/i)!;
     for (const end of [g[1], g[2]]) expect(contrast('#ecfeff', end)).toBeGreaterThanOrEqual(4.5);
   });

@@ -1,0 +1,79 @@
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 9px;
+    border: 1px solid var(--line2);
+    background: var(--panel2);
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.15s;
+  }
+  .btn:hover:not(:disabled) {
+    border-color: var(--cyan);
+  }
+  /* disabled stays legible: flat, dim surface and muted text instead of fading the whole control */
+  .btn:disabled,
+  .btn-primary:disabled,
+  .btn-accent:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+    background: #0f1b33;
+    border-color: var(--line);
+    color: var(--faint);
+    box-shadow: none;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #0b7694, #09627c);
+    border-color: #22d3ee80;
+    color: #ecfeff;
+    box-shadow: 0 0 18px rgba(34, 211, 238, 0.18);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #0d84a5, #0a6e8b);
+  }
+  .btn-accent {
+    background: linear-gradient(180deg, #2f6bdc, #1d4ed8);
+    border-color: #60a5fa66;
+    color: #fff;
+  }
+  .btn-ghost {
+    background: transparent;
+  }
+  .btn-danger {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fecaca;
+  }
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 12.5px;
+    border-radius: 8px;
+  }
+  .btn-icon {
+    padding: 7px 10px;
+  }
+  .btn-icon span {
+    font-size: 12.5px;
+  }
+  .btn.is-on {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(34, 211, 238, 0.1);
+  }
+  .icon-btn {
+    background: none;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 7px;
+    display: inline-flex;
+  }
+  .icon-btn:hover {
+    background: var(--panel2);
+    color: var(--text);
+  }
+}
