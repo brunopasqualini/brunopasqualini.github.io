@@ -37,7 +37,11 @@ export const GAME_DAYS: GameDay[] = [
     teaches: 'Compounding failures, rollback speed, and why timeouts and capacity headroom matter.',
     minutes: 40,
     steps: [
-      { at: 5, announce: 'Release 214 rolled out. Latency is creeping up.', faults: [{ type: 'slow', target: { roles: ['compute'] }, mult: 4 }] },
+      {
+        at: 5,
+        announce: 'Release 214 rolled out. Latency is creeping up.',
+        faults: [{ type: 'slow', target: { roles: ['compute'] }, mult: 4 }],
+      },
       {
         at: 14,
         announce: 'The database is now slow on top of the release regression.',
@@ -46,7 +50,11 @@ export const GAME_DAYS: GameDay[] = [
           { type: 'slow', target: { roles: ['db'] }, mult: 5 },
         ],
       },
-      { at: 24, announce: 'The release has been rolled back. The database is still recovering.', faults: [{ type: 'slow', target: { roles: ['db'] }, mult: 2 }] },
+      {
+        at: 24,
+        announce: 'The release has been rolled back. The database is still recovering.',
+        faults: [{ type: 'slow', target: { roles: ['db'] }, mult: 2 }],
+      },
       { at: 30, announce: 'Everything is back to normal.', faults: [] },
     ],
   },
@@ -58,7 +66,14 @@ export const GAME_DAYS: GameDay[] = [
     minutes: 35,
     steps: [
       { at: 4, announce: 'Traffic is climbing faster than forecast.', faults: [{ type: 'spike', mult: 2 }] },
-      { at: 10, announce: 'Zone A reports a power event.', faults: [{ type: 'spike', mult: 2 }, { type: 'az-outage', az: 'a' }] },
+      {
+        at: 10,
+        announce: 'Zone A reports a power event.',
+        faults: [
+          { type: 'spike', mult: 2 },
+          { type: 'az-outage', az: 'a' },
+        ],
+      },
       { at: 22, announce: 'Zone A is back; traffic is easing.', faults: [] },
     ],
   },
@@ -73,12 +88,18 @@ export const GAME_DAYS: GameDay[] = [
       {
         at: 12,
         announce: 'A campaign email just landed. Traffic is surging.',
-        faults: [{ type: 'node-down', target: { roles: ['compute'] } }, { type: 'spike', mult: 3 }],
+        faults: [
+          { type: 'node-down', target: { roles: ['compute'] } },
+          { type: 'spike', mult: 3 },
+        ],
       },
       {
         at: 20,
         announce: 'The datastore is struggling with the load.',
-        faults: [{ type: 'spike', mult: 3 }, { type: 'slow', target: { roles: ['db', 'kv'] }, mult: 4 }],
+        faults: [
+          { type: 'spike', mult: 3 },
+          { type: 'slow', target: { roles: ['db', 'kv'] }, mult: 4 },
+        ],
       },
       { at: 32, announce: 'The campaign is over and the node is replaced.', faults: [] },
     ],
