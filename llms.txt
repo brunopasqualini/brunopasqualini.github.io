@@ -1,0 +1,33 @@
+# Bruno Pasqualini: free learning tools
+
+> Two free, in-browser learning tools that need no signup: AWS certification practice exams (Solutions Architect Associate SAA-C03 and Developer Associate DVA-C02) and Engineering Ops, a software architecture and system design simulator with 14 cloud incident and design missions. Everything runs client-side; nothing is sent to a server. The practice questions are original AI-generated material, not official AWS exam content, and the site is not affiliated with AWS.
+
+## Free AWS practice exams
+
+- [AWS practice exams overview](https://brunopasqualini.github.io/aws-practice-exams/): free timed mock exams with an explanation for every answer, a score by exam domain and a retest of missed questions
+- [AWS Certified Developer - Associate (DVA-C02)](https://brunopasqualini.github.io/aws-practice-exams/developer-associate-dva-c02/): 390 free practice questions in 6 timed exams, with explanations
+- [AWS Certified Solutions Architect - Associate (SAA-C03)](https://brunopasqualini.github.io/aws-practice-exams/solutions-architect-associate-saa-c03/): 715 free practice questions in 11 timed exams, with explanations
+- [Open the exam simulator](https://brunopasqualini.github.io/exam-simulator/): the app itself (works offline, installable)
+
+## Software architecture and system design simulator
+
+- [Software architecture simulator overview](https://brunopasqualini.github.io/software-architecture-simulator/): how a mission works and what it teaches
+- [Open Engineering Ops](https://brunopasqualini.github.io/engineering-ops/dist/): the simulator itself
+- [The Database Meltdown](https://brunopasqualini.github.io/software-architecture-simulator/missions/database-meltdown/): Flash-sale traffic is 3× normal and checkout is timing out.
+- [The N+1 Endpoint](https://brunopasqualini.github.io/software-architecture-simulator/missions/n-plus-1-endpoint/): One product page, a dozen database round trips, and a database that cannot keep up.
+- [The Impatient Client](https://brunopasqualini.github.io/software-architecture-simulator/missions/impatient-client/): A timeout that is shorter than the real answer time, and a client that never gives up.
+- [The Growing Monolith](https://brunopasqualini.github.io/software-architecture-simulator/missions/growing-monolith/): Five domains, one deployable, three squads stepping on each other.
+- [The Queue That Never Drains](https://brunopasqualini.github.io/software-architecture-simulator/missions/queue-that-never-drains/): Fulfilment events pile up, some messages fail forever, and the ledger database spikes.
+- [The Stale Receipt](https://brunopasqualini.github.io/software-architecture-simulator/missions/stale-receipt/): Customers pay, land on their confirmation page and read “Order not found”.
+- [The AWS Networking Puzzle](https://brunopasqualini.github.io/software-architecture-simulator/missions/aws-networking-puzzle/): Payments time out, the public endpoint is unreachable, and the security scan is red.
+- [The Cloud Bill Shock](https://brunopasqualini.github.io/software-architecture-simulator/missions/cloud-bill-shock/): The invoice tripled; customers did not.
+- [The Hot Key](https://brunopasqualini.github.io/software-architecture-simulator/missions/hot-key/): The table has spare capacity and it is still throttling.
+- [The Unreliable Deployment](https://brunopasqualini.github.io/software-architecture-simulator/missions/unreliable-deployment/): A fresh release is throwing intermittent errors in production.
+- [The Noisy Neighbour](https://brunopasqualini.github.io/software-architecture-simulator/missions/noisy-neighbour/): One partner’s runaway sync job is using everyone’s capacity.
+- [The Regional Outage](https://brunopasqualini.github.io/software-architecture-simulator/missions/regional-outage/): The board asks one question: if our Region disappeared, how long until we are back and what do we lose?
+- [The Blank Page](https://brunopasqualini.github.io/software-architecture-simulator/missions/blank-page/): Design a ticketing platform from nothing, against requirements that pull in different directions.
+- [The Merger](https://brunopasqualini.github.io/software-architecture-simulator/missions/merger/): Two platforms, six squads, one audit, and a peak that is three times bigger than last year.
+
+## Optional
+
+- [Source code and documentation](https://github.com/brunopasqualini/brunopasqualini.github.io): the repository, including the simulator's architecture and simulation docs
