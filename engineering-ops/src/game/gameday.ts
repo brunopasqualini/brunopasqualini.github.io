@@ -2,6 +2,7 @@ import { roleOf } from '@/engine/arch';
 import { analyzeObservability } from '@/engine/analysis';
 import type { Chaos } from '@/engine/engine';
 import type { Arch, Snapshot } from '@/engine/types';
+import type { Session } from '@/game/session/types';
 import { GAME_DAY_BY_ID, type GameDay, type GameDayFault, type GameDayStep } from '@/content/gamedays';
 
 /** Success rate below this counts as customers being hurt. */
@@ -108,4 +109,31 @@ export function scoreGameDay(day: GameDay, window: Snapshot[], arch: Arch, finis
     finished,
     notes,
   };
+}
+
+/** Apply the scripted step due this minute. Keyed on the minute, so replaying the same ops gives the same run. */
+export function fireGameDay(s: Session) {
+  const run = s.gameday;
+  const day = run && GAME_DAY_BY_ID[run.id];
+  if (!run || !day) return;
+  const step = stepAt(day, run, s.minute);
+  if (!step) return;
+  const { chaos, skipped } = resolveFaults(step.faults, s.live);
+  s.chaos = chaos;
+  s.events.push({
+    minute: s.minute,
+    kind: 'incident',
+    text: `Game day: ${step.announce}${skipped ? ' (a fault had no matching component in your design)' : ''}`,
+  });
+}
+
+/** Start a game day now: the script runs from the current minute. */
+export function startGameDay(s: Session, id: string, log = true): boolean {
+  const day = GAME_DAY_BY_ID[id];
+  if (!day) return false;
+  s.gameday = { id, start: s.minute };
+  s.chaos = [];
+  s.events.push({ minute: s.minute, kind: 'note', text: `Game day started: ${day.title} (${day.minutes} min).` });
+  if (log) s.ops.push({ op: 'gameday', id });
+  return true;
 }
