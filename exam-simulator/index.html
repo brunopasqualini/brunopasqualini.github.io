@@ -3,14 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mock Exam Simulator</title>
-    <meta
-      name="description"
-      content="Offline-capable mock exam simulator for any certification test — bring your own question bank."
-    />
+    <title>Free AWS Practice Exam Simulator: SAA-C03 &amp; DVA-C02, Offline</title>
+    <meta name="description" content="Free AWS practice exam simulator for SAA-C03 and DVA-C02: 1,105 questions with explanations, timed mode, domain scores and retests. No signup, works offline." />
+    <link rel="canonical" href="https://brunopasqualini.github.io/exam-simulator/" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta property="og:site_name" content="Bruno Pasqualini: free learning tools" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Free AWS Practice Exam Simulator: SAA-C03 &amp; DVA-C02, Offline" />
+    <meta property="og:description" content="Free AWS practice exam simulator for SAA-C03 and DVA-C02: 1,105 questions with explanations, timed mode, domain scores and retests. No signup, works offline." />
+    <meta property="og:url" content="https://brunopasqualini.github.io/exam-simulator/" />
+    <meta property="og:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Free AWS practice exam simulator" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Free AWS Practice Exam Simulator: SAA-C03 &amp; DVA-C02, Offline" />
+    <meta name="twitter:description" content="Free AWS practice exam simulator for SAA-C03 and DVA-C02: 1,105 questions with explanations, timed mode, domain scores and retests. No signup, works offline." />
+    <meta name="twitter:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Mock Exam Simulator: free AWS practice exams","url":"https://brunopasqualini.github.io/exam-simulator/","applicationCategory":"EducationalApplication","operatingSystem":"Any (runs in a web browser)","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free, offline-capable practice exam simulator for the AWS Certified Solutions Architect Associate (SAA-C03) and Developer Associate (DVA-C02) with explanations and domain scores.","inLanguage":"en","featureList":["Timed and untimed practice exams","Explanations for every answer","Score breakdown by exam domain","Retest weak areas","Works offline","No signup"]}</script>
     <meta name="theme-color" content="#070c18" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
@@ -626,6 +641,25 @@
         margin-top: 10px;
       }
 
+      .seo-about {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 20px 24px;
+        color: var(--ink-soft);
+        line-height: 1.6;
+      }
+      .seo-about h2 {
+        font-size: 16px;
+        color: var(--ink);
+        margin: 22px 0 6px;
+      }
+      .seo-about a {
+        color: var(--accent);
+      }
+      .seo-about ul {
+        padding-left: 18px;
+      }
+
       .disclaimer {
         max-width: 760px;
         margin: 0 auto;
@@ -682,7 +716,7 @@
       <!-- START SCREEN -->
       <section id="startScreen">
         <div class="start-card">
-          <h1>Ready when you are.</h1>
+          <h1>Free AWS practice exam simulator</h1>
           <p>
             Pick a certification and a question bank, then work through it one
             question at a time. Your answers are saved as you go, and you'll get
@@ -829,6 +863,37 @@
         </div>
       </section>
     </main>
+
+    <section class="seo-about" aria-labelledby="about-h">
+      <h2 id="about-h">About this practice exam simulator</h2>
+      <p>
+        A free, offline-capable simulator for AWS certification practice exams.
+        There is no signup and nothing is sent to a server: your history and any
+        exam in progress stay in this browser.
+      </p>
+      <ul>
+        <li>
+          <a href="/aws-practice-exams/solutions-architect-associate-saa-c03/"
+            >AWS Certified Solutions Architect &ndash; Associate (SAA-C03)</a
+          >: 715 questions in 11 timed exams.
+        </li>
+        <li>
+          <a href="/aws-practice-exams/developer-associate-dva-c02/"
+            >AWS Certified Developer &ndash; Associate (DVA-C02)</a
+          >: 390 questions in 6 timed exams.
+        </li>
+      </ul>
+      <p>
+        Every question has an explanation, and your score is broken down by exam
+        domain. See the
+        <a href="/aws-practice-exams/">free AWS practice exams overview</a> or
+        practise design decisions in the
+        <a href="/software-architecture-simulator/">software architecture simulator</a>.
+      </p>
+      <noscript>
+        <p>This simulator needs JavaScript to run the exams.</p>
+      </noscript>
+    </section>
 
     <footer class="disclaimer">
       Independent study tool, not affiliated with, endorsed by, or associated
@@ -2021,6 +2086,19 @@
                   '". Choose another option below.';
               }
             }
+          }
+
+          // A link such as /exam-simulator/?cert=aws-saa-c03 opens that exam, overriding the remembered one.
+          var wanted = new URLSearchParams(window.location.search).get("cert");
+          if (
+            wanted &&
+            fullCertList().some(function (c) {
+              return c.id === wanted;
+            })
+          ) {
+            certToSelect = wanted;
+            bankToSelect = null;
+            notice = "";
           }
 
           el.certSelect.value = certToSelect;
