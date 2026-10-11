@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path';
 import { check } from './check.mjs';
 import { ROOT } from './data.mjs';
 import { buildPages } from './pages.mjs';
-import { SITE, layout } from './site.mjs';
+import { CONTRIBUTE, SITE, layout } from './site.mjs';
 
 /** Pages written by hand rather than generated. They are listed in the sitemap and held to the same checklist. */
 export const HANDWRITTEN = [
@@ -27,7 +27,7 @@ function llms({ exams, missions, helpers }) {
   const mission = (m) => `- [${m.title}](${SITE}${helpers.missionPath(m)}): ${m.tagline}`;
   return `# Bruno Pasqualini: free learning tools
 
-> Two free, in-browser learning tools that need no signup: AWS certification practice exams (Solutions Architect Associate SAA-C03 and Developer Associate DVA-C02) and Engineering Ops, a software architecture and system design simulator with 14 cloud incident and design missions. Everything runs client-side; nothing is sent to a server. The practice questions are original AI-generated material, not official AWS exam content, and the site is not affiliated with AWS.
+> Two free, in-browser learning tools that need no signup: AWS certification practice exams (Solutions Architect Associate SAA-C03 and Developer Associate DVA-C02) and Engineering Ops, a software architecture and system design simulator with 14 cloud incident and design missions. Everything runs client-side; nothing is sent to a server. The practice questions are AI-generated from official AWS documentation and are not official exam content; the site is not affiliated with, endorsed by or sponsored by AWS or any other cloud provider. Community question banks are welcome.
 
 ## Free AWS practice exams
 
@@ -44,6 +44,7 @@ ${missions.map(mission).join('\n')}
 ## Optional
 
 - [Source code and documentation](https://github.com/brunopasqualini/brunopasqualini.github.io): the repository, including the simulator's architecture and simulation docs
+- [Contribute a question bank](${CONTRIBUTE}): add practice questions for another exam or cloud provider (plain JSON, with a validator)
 `;
 }
 

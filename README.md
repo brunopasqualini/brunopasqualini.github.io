@@ -42,4 +42,8 @@ All three share one visual identity (dark navy surfaces, cyan primary, Inter / s
 
 The static pages, `sitemap.xml` and `llms.txt` are generated from the exam banks and the missions: run `node scripts/seo/generate.mjs` after changing either, and commit the result. The **SEO check** workflow fails a pull request if they are out of date. What was done, why, and what only the site owner can do (Search Console, links) is in [docs/SEO.md](docs/SEO.md).
 
+## Contributing question banks
+
+Anyone can add practice questions for another exam or cloud provider: the banks are plain JSON files. See [CONTRIBUTING.md](CONTRIBUTING.md) for the format and the rules, and check a bank with `node scripts/validate-banks.mjs`. A GitHub check runs the same validator on pull requests.
+
 Each project keeps its own README (`exam-simulator/README.md`, `engineering-ops/README.md`).

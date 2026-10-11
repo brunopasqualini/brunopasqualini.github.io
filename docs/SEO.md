@@ -66,8 +66,9 @@ Anthropic crawler documentation, and the general state of AI-search guidance.
 - **`llms.txt`**, a short Markdown guide to the site for AI agents. Support for it is not established among the major crawlers, so
   it is cheap insurance rather than a ranking lever.
 - **A custom `404.html`** (marked `noindex`) that links back to the main sections.
-- **Honesty about the content.** The practice questions are AI-generated and not official AWS material, and the pages say so, along
-  with a non-affiliation notice. That matches Google's "people-first, trustworthy content" guidance and avoids trademark and
+- **Honesty about the content.** The practice questions are AI-generated from official AWS documentation and are not official AWS
+  material. The exam app's start screen, its footer, every practice-exam page and the site footer say so, together with a
+  non-affiliation notice and a link to contribute question banks on GitHub. That matches Google's "people-first, trustworthy content" guidance and avoids trademark and
   "exam dump" problems.
 - **Also fixed:** the exam catalog said "Associated" instead of "Associate", and `/exam-simulator/?cert=aws-saa-c03` now opens
   the named exam so the landing pages can link straight to it.

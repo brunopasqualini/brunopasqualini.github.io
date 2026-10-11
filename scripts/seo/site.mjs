@@ -1,5 +1,7 @@
 // Shared building blocks for the generated pages: head metadata, structured data, header and footer.
 export const SITE = 'https://brunopasqualini.github.io';
+export const REPO = 'https://github.com/brunopasqualini/brunopasqualini.github.io';
+export const CONTRIBUTE = `${REPO}/blob/master/CONTRIBUTING.md`;
 export const OG_IMAGE = `${SITE}/assets/og-image.png`;
 export const SITE_NAME = 'Bruno Pasqualini: free learning tools';
 
@@ -18,6 +20,16 @@ export const slug = (s) =>
     .replace(/^-|-$/g, '');
 
 export const url = (path) => `${SITE}${path}`;
+
+/** The disclosure shown near the top of every page about the practice questions. */
+export function notice() {
+  return `<aside class="notice" role="note">
+        <strong>About these questions.</strong> The practice questions are AI-generated from official AWS documentation. They are
+        not official exam content. This website and its tools are not affiliated with, endorsed by or sponsored by AWS or any
+        other cloud provider.
+        <a href="${CONTRIBUTE}" rel="noopener">Add your own question bank on GitHub</a>.
+      </aside>`;
+}
 
 export function breadcrumbs(trail) {
   const items = trail.map(([name, path], i) => ({ '@type': 'ListItem', position: i + 1, name, item: url(path) }));
@@ -98,12 +110,14 @@ export function layout(page) {
     </main>
     <footer class="foot">
       <nav class="foot-links" aria-label="Footer">
-        <a href="/">Home</a>${nav}<a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/dist/">Open Engineering Ops</a>
+        <a href="/">Home</a>${nav}<a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/dist/">Open Engineering Ops</a><a href="${CONTRIBUTE}" rel="noopener">Contribute a question bank</a><a href="${REPO}" rel="noopener">GitHub</a>
       </nav>
       <p>
-        Independent study tools, not affiliated with, endorsed by or sponsored by Amazon Web Services, Inc. or any certification
-        provider. AWS and the AWS certification names are trademarks of their owners and are used here only to describe what the
-        practice material is about. Everything runs in your browser; nothing is sent to a server.
+        Independent study tools. This website and its tools are not affiliated with, endorsed by or sponsored by Amazon Web
+        Services, Inc., Google Cloud, Microsoft or any other cloud provider or certification body. AWS and the AWS certification
+        names are trademarks of their owners, used here only to describe what the practice material is about. The practice
+        questions are AI-generated from official AWS documentation and are not official exam content. Everything runs in your
+        browser; nothing is sent to a server.
       </p>
     </footer>
   </body>
