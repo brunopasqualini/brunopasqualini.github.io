@@ -4,11 +4,13 @@ import { buildReport } from '@/engine/analysis';
 import { emptyState, solve } from '@/engine/engine';
 import type { Arch, Workload } from '@/engine/types';
 import { TEMPLATES } from '@/content/templates';
+import { GameDayPanel } from './GameDayPanel';
+import { TRAFFIC_SHAPES, SHAPE_BY_ID, atPeak, matchShape, profilePeak, shapePatch } from '@/content/trafficShapes';
+import { ShapePreview } from '@/features/workspace/ShapePreview';
 import { useGame } from '@/game/store';
-import { Chip } from '@/shared/ui/common';
+import { Chip, useConfirm } from '@/shared/ui/common';
 import { ms, usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
-import { GameDayPanel } from './GameDayPanel';
 
 export function evaluateDesign(arch: Arch, workload: Workload) {
   let st = emptyState();
@@ -33,19 +35,21 @@ export function LabPanel() {
   const openMission = useGame((s) => s.openMission);
   const recordExperiment = useGame((s) => s.recordExperiment);
   const drill = useGame((s) => s.drill);
+  const { ask, dialog } = useConfirm();
   const [name, setName] = useState('');
   const [picked, setPicked] = useState<string[]>([]);
   const [note, setNote] = useState('');
   const w = session?.workload;
+  const shape = w ? matchShape(w) : undefined;
   const chaos = session?.chaos ?? [];
 
   const compare = useMemo(() => {
     if (!session || !w) return [];
     const rows: { id: string; name: string; m: Record<string, number> }[] = [
-      { id: 'draft', name: 'Current draft', m: evaluateDesign(session.draft, w) },
+      { id: 'draft', name: 'Current draft', m: evaluateDesign(session.draft, atPeak(w)) },
     ];
     for (const d of progress.designs.filter((x) => picked.includes(x.id)))
-      rows.push({ id: d.id, name: d.name, m: evaluateDesign(d.arch, w) });
+      rows.push({ id: d.id, name: d.name, m: evaluateDesign(d.arch, atPeak(w)) });
     return rows;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick, session?.draft, picked, w, progress.designs]);
@@ -57,6 +61,7 @@ export function LabPanel() {
 
   return (
     <div className="lab-panel">
+      {dialog}
       {drill && (
         <div className="callout callout-warn">
           <strong>Drill: {drill.title}</strong>
@@ -68,12 +73,18 @@ export function LabPanel() {
         <select
           aria-label="Template"
           onChange={(e) => {
-            if (
-              e.target.value &&
-              confirm('Replace the sandbox with this template? Your current sandbox is kept only if you saved a design.')
-            )
-              openMission('lab', { template: e.target.value, fresh: true });
+            const id = e.target.value;
+            const tpl = TEMPLATES.find((x) => x.id === id);
             e.target.value = '';
+            if (!tpl) return;
+            ask(
+              {
+                title: `Load “${tpl.name}”?`,
+                message: 'This replaces the sandbox. Your current sandbox is kept only if you saved it as a design.',
+                confirmLabel: 'Replace sandbox',
+              },
+              () => openMission('lab', { template: tpl.id, fresh: true }),
+            );
           }}
           defaultValue=""
         >
@@ -87,6 +98,38 @@ export function LabPanel() {
       </section>
       <section>
         <h4>Workload</h4>
+        <div className="shape-pick">
+          <label>
+            <span className="sr-only">Traffic shape</span>
+            <select
+              aria-label="Traffic shape"
+              value={shape?.id ?? 'custom'}
+              onChange={(e) => {
+                const s = SHAPE_BY_ID[e.target.value];
+                if (s) setWorkload(shapePatch(s));
+              }}
+            >
+              {!shape && (
+                <option value="custom" disabled>
+                  Custom (this scenario&rsquo;s own profile)
+                </option>
+              )}
+              {TRAFFIC_SHAPES.map((s) => (
+                <option key={s.id} value={s.id}>
+                  Traffic: {s.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <ShapePreview profile={w.profile} cycle={w.profileCycle} minute={session.minute} baseRps={w.baseRps} />
+          <div className="shape-meta">
+            <span>
+              Peak <b>{Math.round(w.baseRps * profilePeak(w))} rps</b>
+            </span>
+            <span>{w.profileCycle ? `repeats every ${cycleLabel(w.profileCycle)}` : 'plays once, then holds'}</span>
+          </div>
+          {shape && <p className="muted tiny">{shape.blurb}</p>}
+        </div>
         <label className="slider">
           <span>
             Base traffic <b>{w.baseRps} rps</b>
@@ -168,6 +211,7 @@ export function LabPanel() {
           />
         </label>
       </section>
+      <GameDayPanel />
       <section>
         <h4>Inject failure (chaos)</h4>
         <div className="row-gap">
@@ -200,7 +244,6 @@ export function LabPanel() {
         </div>
         {chaos.length > 0 && <p className="tiny warn">Active: {chaos.map((c) => c.type).join(', ')}</p>}
       </section>
-      <GameDayPanel />
       <section>
         <h4>Designs &amp; comparison</h4>
         <div className="row-gap">
@@ -266,6 +309,11 @@ export function LabPanel() {
                 ))}
               </tbody>
             </table>
+            {profilePeak(w) !== 1 && (
+              <p className="muted tiny">
+                Compared with traffic held at this shape&rsquo;s peak ({Math.round(w.baseRps * profilePeak(w))} rps), the hardest moment.
+              </p>
+            )}
             <div className="row-gap">
               <input
                 aria-label="Experiment note"
@@ -292,4 +340,11 @@ export function LabPanel() {
       </p>
     </div>
   );
+}
+
+/** "90 minutes", "24 hours" … for a cycle length in virtual minutes. */
+function cycleLabel(min: number): string {
+  if (min % 1440 === 0) return `${min / 1440} day${min === 1440 ? '' : 's'}`;
+  if (min >= 120 && min % 60 === 0) return `${min / 60} hours`;
+  return `${min} minutes`;
 }
