@@ -37,6 +37,10 @@ npm run preview
 
 Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings → Export/Import moves it between browsers.
 
+## Game days
+
+The Lab can run scripted multi-fault exercises and grade impact, recovery and detection. See [docs/GAME_DAYS.md](docs/GAME_DAYS.md).
+
 ## How to play
 
 1. **Home** — the product promise, the five-stage journey, your progress and the recommended next mission. Pick _Beginner / Intermediate / Advanced_.
