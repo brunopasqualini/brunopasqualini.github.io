@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Software Architecture &amp; System Design Simulator, Free</title>
+    <meta name="description" content="Practise software architecture and system design in your browser: 14 cloud incident and design missions on a live architecture canvas. Free, no signup." />
+    <link rel="canonical" href="https://brunopasqualini.github.io/software-architecture-simulator/" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="theme-color" content="#070c18" />
+    <meta property="og:site_name" content="Bruno Pasqualini: free learning tools" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Software Architecture &amp; System Design Simulator, Free" />
+    <meta property="og:description" content="Practise software architecture and system design in your browser: 14 cloud incident and design missions on a live architecture canvas. Free, no signup." />
+    <meta property="og:url" content="https://brunopasqualini.github.io/software-architecture-simulator/" />
+    <meta property="og:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Bruno Pasqualini: free learning tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Software Architecture &amp; System Design Simulator, Free" />
+    <meta name="twitter:description" content="Practise software architecture and system design in your browser: 14 cloud incident and design missions on a live architecture canvas. Free, no signup." />
+    <meta name="twitter:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Engineering Ops: software architecture and system design simulator","url":"https://brunopasqualini.github.io/software-architecture-simulator/","applicationCategory":"EducationalApplication","operatingSystem":"Any (runs in a web browser)","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"A hands-on simulator for system design, cloud architecture and site reliability engineering.","inLanguage":"en","featureList":["14 incident and design missions","Live architecture canvas","Chaos and traffic experiments","Architecture design review","Security attack simulation","Game days","Role-based learning paths"]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://brunopasqualini.github.io/"},{"@type":"ListItem","position":2,"name":"Software architecture simulator","item":"https://brunopasqualini.github.io/software-architecture-simulator/"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the software architecture simulator?","acceptedAnswer":{"@type":"Answer","text":"Engineering Ops is a hands-on simulator for system design and site reliability. You get a running cloud architecture, investigate an incident from metrics, logs and traces, change the design, deploy it and watch how the system reacts."}},{"@type":"Question","name":"Is it free, and do I need an AWS account?","acceptedAnswer":{"@type":"Answer","text":"It is free and needs no account, no install and no cloud access. Everything is simulated in your browser, and costs are estimates, not AWS prices."}},{"@type":"Question","name":"Is it a real cloud?","acceptedAnswer":{"@type":"Answer","text":"No. It is a deterministic, rule-based simulation that models how load, failures, queues, caches and databases behave, so you can practise decisions safely and see the consequences."}},{"@type":"Question","name":"Who is it for?","acceptedAnswer":{"@type":"Answer","text":"Software engineers moving into system design, cloud and DevOps engineers who want practice beyond tutorials, and people preparing for architecture interviews or AWS certifications who want to make and defend design decisions."}},{"@type":"Question","name":"Is my progress saved?","acceptedAnswer":{"@type":"Answer","text":"Yes, in your browser (localStorage). You can export it from Settings and import it elsewhere."}}]}</script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="topnav">
+      <a class="brand" href="/" aria-label="Home">
+        <img class="brandmark" src="/favicon.svg" alt="" width="28" height="28" />
+        <span class="brand-text"><b>Bruno Pasqualini</b><small>Learning tools</small></span>
+      </a>
+      <nav class="topnav-links" aria-label="Main"><a href="/aws-practice-exams/">AWS practice exams</a><a href="/software-architecture-simulator/">Software architecture simulator</a></nav>
+    </header>
+    <main id="main" class="article">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Software architecture simulator</li></ol></nav>
+      <h1>Software architecture and system design simulator</h1>
+      <p class="lead">Learn system design by running it. Take over a live cloud architecture in a browser, find out why it is failing from metrics, logs and traces, redesign it, deploy the change and see what each decision costs. Fourteen missions, no signup, nothing to install.</p>
+      <p><a class="btn" href="/engineering-ops/dist/">Start the first incident</a></p>
+
+      <h2>How a mission works</h2>
+      <ol class="bullets">
+        <li><b>Investigate.</b> Open metrics, logs, traces, dependencies, cost and security panels to gather evidence.</li>
+        <li><b>Form a hypothesis.</b> Say what you think the root cause is. Diagnosis quality is scored.</li>
+        <li><b>Design a change.</b> Drag components onto the canvas, connect them and configure them. Edits are a draft.</li>
+        <li><b>Deploy and read the consequences.</b> The simulator explains what changed and why, for example that scaling the app tier raised database connections past the limit.</li>
+        <li><b>Verify and debrief.</b> A verification load test scores ten dimensions and gives a structured debrief, with an architecture decision record and a postmortem.</li>
+      </ol>
+
+      <h2>What you will practise</h2>
+      <ul class="bullets">
+        <li>Capacity analysis, bottlenecks, indexes, connection pooling and caching trade-offs</li>
+        <li>Timeouts, retries, circuit breakers, queues, dead-letter queues and idempotency</li>
+        <li>Availability zones versus Regions, RTO and RPO, and disaster recovery strategies</li>
+        <li>VPC networking, IAM least privilege and security groups, with a network inspector</li>
+        <li>Cost trade-offs: right-sizing, data transfer, logging and cost against reliability</li>
+        <li>Rate limiting, backpressure, hot keys and replication lag</li>
+      </ul>
+
+      <h2>The missions</h2>
+      <p>Fourteen missions in five levels, from fixing one slow endpoint to designing a platform from a blank page. Each page below describes the scenario and what it teaches; the simulator itself runs the mission.</p>
+      <h3>Level 1: Software Engineer</h3>
+      <p class="muted">Fix bugs, design APIs, improve code structure, and understand how applications behave.</p>
+      <ul class="cards"><li><a class="card tile" href="/software-architecture-simulator/missions/database-meltdown/"><span class="eyebrow">Incident · Intermediate · ~25 min</span><h4>The Database Meltdown</h4><p>Flash-sale traffic is 3× normal and checkout is timing out.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/n-plus-1-endpoint/"><span class="eyebrow">Design project · Beginner · ~15 min</span><h4>The N+1 Endpoint</h4><p>One product page, a dozen database round trips, and a database that cannot keep up.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/impatient-client/"><span class="eyebrow">Design project · Beginner · ~15 min</span><h4>The Impatient Client</h4><p>A timeout that is shorter than the real answer time, and a client that never gives up.</p></a></li></ul>
+      <h3>Level 2: System Designer</h3>
+      <p class="muted">Design databases, caches, queues, service boundaries, and architectures that handle growth.</p>
+      <ul class="cards"><li><a class="card tile" href="/software-architecture-simulator/missions/growing-monolith/"><span class="eyebrow">Design project · Beginner · ~20 min</span><h4>The Growing Monolith</h4><p>Five domains, one deployable, three squads stepping on each other.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/queue-that-never-drains/"><span class="eyebrow">Incident · Advanced · ~35 min</span><h4>The Queue That Never Drains</h4><p>Fulfilment events pile up, some messages fail forever, and the ledger database spikes.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/stale-receipt/"><span class="eyebrow">Incident · Intermediate · ~25 min</span><h4>The Stale Receipt</h4><p>Customers pay, land on their confirmation page and read “Order not found”.</p></a></li></ul>
+      <h3>Level 3: Cloud Engineer</h3>
+      <p class="muted">Build networks, configure AWS services, manage permissions, and design for availability, security and cost.</p>
+      <ul class="cards"><li><a class="card tile" href="/software-architecture-simulator/missions/aws-networking-puzzle/"><span class="eyebrow">Design project · Intermediate · ~35 min</span><h4>The AWS Networking Puzzle</h4><p>Payments time out, the public endpoint is unreachable, and the security scan is red.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/cloud-bill-shock/"><span class="eyebrow">Design project · Advanced · ~40 min</span><h4>The Cloud Bill Shock</h4><p>The invoice tripled; customers did not.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/hot-key/"><span class="eyebrow">Incident · Intermediate · ~25 min</span><h4>The Hot Key</h4><p>The table has spare capacity and it is still throttling.</p></a></li></ul>
+      <h3>Level 4: Platform Engineer / SRE</h3>
+      <p class="muted">Automate delivery, build reusable platforms, improve observability, and engineer resilience.</p>
+      <ul class="cards"><li><a class="card tile" href="/software-architecture-simulator/missions/unreliable-deployment/"><span class="eyebrow">Incident · Intermediate · ~30 min</span><h4>The Unreliable Deployment</h4><p>A fresh release is throwing intermittent errors in production.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/noisy-neighbour/"><span class="eyebrow">Incident · Intermediate · ~25 min</span><h4>The Noisy Neighbour</h4><p>One partner’s runaway sync job is using everyone’s capacity.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/regional-outage/"><span class="eyebrow">Design project · Advanced · ~30 min</span><h4>The Regional Outage</h4><p>The board asks one question: if our Region disappeared, how long until we are back and what do we lose?</p></a></li></ul>
+      <h3>Level 5: Principal Engineer / Architect</h3>
+      <p class="muted">Decide across whole systems, balance competing requirements, manage organisational complexity, design for failure at scale.</p>
+      <ul class="cards"><li><a class="card tile" href="/software-architecture-simulator/missions/blank-page/"><span class="eyebrow">Design project · Advanced · ~40 min</span><h4>The Blank Page</h4><p>Design a ticketing platform from nothing, against requirements that pull in different directions.</p></a></li><li><a class="card tile" href="/software-architecture-simulator/missions/merger/"><span class="eyebrow">Design project · Advanced · ~45 min</span><h4>The Merger</h4><p>Two platforms, six squads, one audit, and a peak that is three times bigger than last year.</p></a></li></ul>
+
+      <h2>Also in the simulator</h2>
+      <ul class="bullets">
+        <li><b>Architecture Lab.</b> A sandbox with starter templates, chaos experiments, traffic shapes such as a flash sale or a thundering herd, and side-by-side design comparison.</li>
+        <li><b>Design review.</b> An architecture linter that flags anti-patterns in your draft with the reason and a lesson link.</li>
+        <li><b>Attack simulation, game days and multi-Region analysis.</b> See what a leaked credential, a bad deploy or the loss of a Region would do to your design.</li>
+        <li><b>Learning paths.</b> Role-based routes for backend developers, cloud architects, SREs and FinOps engineers.</li>
+      </ul>
+      <p>Studying for an AWS certification? Pair this with the <a href="/aws-practice-exams/">free AWS practice exams</a>.</p>
+
+      <section class="faq" aria-labelledby="faq-h"><h2 id="faq-h">Frequently asked questions</h2><details><summary>What is the software architecture simulator?</summary><p>Engineering Ops is a hands-on simulator for system design and site reliability. You get a running cloud architecture, investigate an incident from metrics, logs and traces, change the design, deploy it and watch how the system reacts.</p></details><details><summary>Is it free, and do I need an AWS account?</summary><p>It is free and needs no account, no install and no cloud access. Everything is simulated in your browser, and costs are estimates, not AWS prices.</p></details><details><summary>Is it a real cloud?</summary><p>No. It is a deterministic, rule-based simulation that models how load, failures, queues, caches and databases behave, so you can practise decisions safely and see the consequences.</p></details><details><summary>Who is it for?</summary><p>Software engineers moving into system design, cloud and DevOps engineers who want practice beyond tutorials, and people preparing for architecture interviews or AWS certifications who want to make and defend design decisions.</p></details><details><summary>Is my progress saved?</summary><p>Yes, in your browser (localStorage). You can export it from Settings and import it elsewhere.</p></details></section>
+    </main>
+    <footer class="foot">
+      <nav class="foot-links" aria-label="Footer">
+        <a href="/">Home</a><a href="/aws-practice-exams/">AWS practice exams</a><a href="/software-architecture-simulator/">Software architecture simulator</a><a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/dist/">Open Engineering Ops</a><a href="https://github.com/brunopasqualini/brunopasqualini.github.io/blob/master/CONTRIBUTING.md" rel="noopener">Contribute a question bank</a><a href="https://github.com/brunopasqualini/brunopasqualini.github.io" rel="noopener">GitHub</a>
+      </nav>
+      <p>
+        Independent study tools. This website and its tools are not affiliated with, endorsed by or sponsored by Amazon Web
+        Services, Inc., Google Cloud, Microsoft or any other cloud provider or certification body. AWS and the AWS certification
+        names are trademarks of their owners, used here only to describe what the practice material is about. The practice
+        questions are AI-generated from official AWS documentation and are not official exam content. Everything runs in your
+        browser; nothing is sent to a server.
+      </p>
+    </footer>
+  </body>
+</html>

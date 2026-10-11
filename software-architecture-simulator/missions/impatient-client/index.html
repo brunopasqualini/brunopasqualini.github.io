@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Impatient Client: System Design Simulation</title>
+    <meta name="description" content="A timeout that is shorter than the real answer time, and a client that never gives up. A free design mission in the software architecture simulator:…" />
+    <link rel="canonical" href="https://brunopasqualini.github.io/software-architecture-simulator/missions/impatient-client/" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="theme-color" content="#070c18" />
+    <meta property="og:site_name" content="Bruno Pasqualini: free learning tools" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The Impatient Client: System Design Simulation" />
+    <meta property="og:description" content="A timeout that is shorter than the real answer time, and a client that never gives up. A free design mission in the software architecture simulator:…" />
+    <meta property="og:url" content="https://brunopasqualini.github.io/software-architecture-simulator/missions/impatient-client/" />
+    <meta property="og:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Bruno Pasqualini: free learning tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The Impatient Client: System Design Simulation" />
+    <meta name="twitter:description" content="A timeout that is shorter than the real answer time, and a client that never gives up. A free design mission in the software architecture simulator:…" />
+    <meta name="twitter:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"The Impatient Client","url":"https://brunopasqualini.github.io/software-architecture-simulator/missions/impatient-client/","description":"A timeout that is shorter than the real answer time, and a client that never gives up.","learningResourceType":"Design exercise","educationalLevel":"Beginner","teaches":["Timeouts as part of an API contract, set from measured latency","How retries multiply load: the retry budget","When a circuit breaker helps and when it only hides a problem","Why “add more replicas” does not fix a slow dependency"],"timeRequired":"PT15M","isAccessibleForFree":true,"inLanguage":"en","isPartOf":{"@type":"WebApplication","name":"Engineering Ops","url":"https://brunopasqualini.github.io/software-architecture-simulator/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://brunopasqualini.github.io/"},{"@type":"ListItem","position":2,"name":"Software architecture simulator","item":"https://brunopasqualini.github.io/software-architecture-simulator/"},{"@type":"ListItem","position":3,"name":"The Impatient Client","item":"https://brunopasqualini.github.io/software-architecture-simulator/missions/impatient-client/"}]}</script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="topnav">
+      <a class="brand" href="/" aria-label="Home">
+        <img class="brandmark" src="/favicon.svg" alt="" width="28" height="28" />
+        <span class="brand-text"><b>Bruno Pasqualini</b><small>Learning tools</small></span>
+      </a>
+      <nav class="topnav-links" aria-label="Main"><a href="/aws-practice-exams/">AWS practice exams</a><a href="/software-architecture-simulator/">Software architecture simulator</a></nav>
+    </header>
+    <main id="main" class="article">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/software-architecture-simulator/">Software architecture simulator</a></li><li aria-current="page">The Impatient Client</li></ol></nav>
+      <h1>The Impatient Client</h1>
+      <p class="lead">A timeout that is shorter than the real answer time, and a client that never gives up.</p>
+      <ul class="chips"><li class="chip">Design project</li><li class="chip">Beginner</li><li class="chip">About 15 minutes</li><li class="chip">Free, in your browser</li></ul>
+      <p><a class="btn" href="/engineering-ops/dist/#/play/m8-impatient-client">Play this mission</a></p>
+
+      <h2>The scenario</h2>
+      <p>The checkout web tier calls a pricing service to quote taxes. Pricing calls a third-party tax provider that takes about 240 ms to answer. Whoever wrote the client picked a 250 ms timeout “to keep checkout snappy” and three retries “to be safe”. Once the provider is a little slower than usual, calls start timing out, retries pile on top of live requests, and the provider rate-limits you. The team’s instinct is to add pricing replicas. You own the client contract.</p>
+      <p><b>Context.</b> Brightcart checkout: 60 requests/second, one third-party dependency with a rate limit you do not control.</p>
+      <p><b>What is at stake.</b> Quotes fail intermittently; abandoned carts are up and the provider has emailed about “abusive traffic”.</p>
+
+      <h2>Your brief</h2>
+      <ul class="bullets"><li>Budget: $480 / month (simulated estimate).</li><li>The tax provider allows 110 requests per second. You cannot change that.</li><li>Checkout may wait up to about a second for a quote; a failed quote is better than a retry storm.</li><li>Fix the contract between the services; do not paper over it with capacity.</li></ul>
+
+      <h2>What you will learn</h2>
+      <ul class="bullets"><li>Timeouts as part of an API contract, set from measured latency</li><li>How retries multiply load: the retry budget</li><li>When a circuit breaker helps and when it only hides a problem</li><li>Why “add more replicas” does not fix a slow dependency</li></ul>
+      <p class="muted">Builds: Software engineering, Solution architecture, Site reliability and observability.</p>
+
+      <h2>How it plays</h2>
+      <p>You are given a running architecture and the evidence a real engineer would have: metrics, logs, traces, cost and recent changes. Form a hypothesis, make a change, deploy it, and read why the system reacted as it did. A verification load test then scores your design and a debrief explains the root cause and the alternatives. Nothing here touches a real cloud account.</p>
+      <p><a class="btn" href="/engineering-ops/dist/#/play/m8-impatient-client">Play The Impatient Client</a></p>
+
+      <nav class="pager" aria-label="More missions">
+        <a href="/software-architecture-simulator/missions/n-plus-1-endpoint/">&larr; The N+1 Endpoint</a>
+        <a href="/software-architecture-simulator/">All missions</a>
+        <a href="/software-architecture-simulator/missions/growing-monolith/">The Growing Monolith &rarr;</a>
+      </nav>
+    </main>
+    <footer class="foot">
+      <nav class="foot-links" aria-label="Footer">
+        <a href="/">Home</a><a href="/aws-practice-exams/">AWS practice exams</a><a href="/software-architecture-simulator/">Software architecture simulator</a><a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/dist/">Open Engineering Ops</a><a href="https://github.com/brunopasqualini/brunopasqualini.github.io/blob/master/CONTRIBUTING.md" rel="noopener">Contribute a question bank</a><a href="https://github.com/brunopasqualini/brunopasqualini.github.io" rel="noopener">GitHub</a>
+      </nav>
+      <p>
+        Independent study tools. This website and its tools are not affiliated with, endorsed by or sponsored by Amazon Web
+        Services, Inc., Google Cloud, Microsoft or any other cloud provider or certification body. AWS and the AWS certification
+        names are trademarks of their owners, used here only to describe what the practice material is about. The practice
+        questions are AI-generated from official AWS documentation and are not official exam content. Everything runs in your
+        browser; nothing is sent to a server.
+      </p>
+    </footer>
+  </body>
+</html>

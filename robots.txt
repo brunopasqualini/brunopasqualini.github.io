@@ -1,0 +1,39 @@
+# Everything on this site is public and meant to be found, by search engines and by AI search and assistant crawlers.
+User-agent: *
+Allow: /
+# The source entry of the app (not the built app at /engineering-ops/dist/) is not a real page.
+Disallow: /engineering-ops/$
+Disallow: /engineering-ops/src/
+
+# AI search, citation and assistant crawlers, named so the intent is explicit.
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://brunopasqualini.github.io/sitemap.xml

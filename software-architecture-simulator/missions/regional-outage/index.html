@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Regional Outage: System Design Simulation</title>
+    <meta name="description" content="The board asks one question: if our Region disappeared, how long until we are back and what do we lose? A free design mission in the software architecture…" />
+    <link rel="canonical" href="https://brunopasqualini.github.io/software-architecture-simulator/missions/regional-outage/" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="theme-color" content="#070c18" />
+    <meta property="og:site_name" content="Bruno Pasqualini: free learning tools" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The Regional Outage: System Design Simulation" />
+    <meta property="og:description" content="The board asks one question: if our Region disappeared, how long until we are back and what do we lose? A free design mission in the software architecture…" />
+    <meta property="og:url" content="https://brunopasqualini.github.io/software-architecture-simulator/missions/regional-outage/" />
+    <meta property="og:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Bruno Pasqualini: free learning tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The Regional Outage: System Design Simulation" />
+    <meta name="twitter:description" content="The board asks one question: if our Region disappeared, how long until we are back and what do we lose? A free design mission in the software architecture…" />
+    <meta name="twitter:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"The Regional Outage","url":"https://brunopasqualini.github.io/software-architecture-simulator/missions/regional-outage/","description":"The board asks one question: if our Region disappeared, how long until we are back and what do we lose?","learningResourceType":"Design exercise","educationalLevel":"Advanced","teaches":["Availability Zone resilience is not Region resilience","RTO and RPO as business numbers, not technical settings","Backup and restore, pilot light, warm standby and active-active: what each buys and costs","Why a plan nobody has exercised is a hope"],"timeRequired":"PT30M","isAccessibleForFree":true,"inLanguage":"en","isPartOf":{"@type":"WebApplication","name":"Engineering Ops","url":"https://brunopasqualini.github.io/software-architecture-simulator/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://brunopasqualini.github.io/"},{"@type":"ListItem","position":2,"name":"Software architecture simulator","item":"https://brunopasqualini.github.io/software-architecture-simulator/"},{"@type":"ListItem","position":3,"name":"The Regional Outage","item":"https://brunopasqualini.github.io/software-architecture-simulator/missions/regional-outage/"}]}</script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="topnav">
+      <a class="brand" href="/" aria-label="Home">
+        <img class="brandmark" src="/favicon.svg" alt="" width="28" height="28" />
+        <span class="brand-text"><b>Bruno Pasqualini</b><small>Learning tools</small></span>
+      </a>
+      <nav class="topnav-links" aria-label="Main"><a href="/aws-practice-exams/">AWS practice exams</a><a href="/software-architecture-simulator/">Software architecture simulator</a></nav>
+    </header>
+    <main id="main" class="article">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/software-architecture-simulator/">Software architecture simulator</a></li><li aria-current="page">The Regional Outage</li></ol></nav>
+      <h1>The Regional Outage</h1>
+      <p class="lead">The board asks one question: if our Region disappeared, how long until we are back and what do we lose?</p>
+      <ul class="chips"><li class="chip">Design project</li><li class="chip">Advanced</li><li class="chip">About 30 minutes</li><li class="chip">Free, in your browser</li></ul>
+      <p><a class="btn" href="/engineering-ops/dist/#/play/m13-regional-outage">Play this mission</a></p>
+
+      <h2>The scenario</h2>
+      <p>A major cloud Region had a many-hour disruption last month and one of your competitors was offline for most of a day. The board has asked a plain question: if our Region disappeared, how long would it take to be back, and how much data would we lose? Today the orders database is Multi-AZ, backups run nightly in the same Region, and the disaster-recovery page in the wiki says “restore from backup”. Nobody has ever tried it. You have a budget for a better answer, not an unlimited one.</p>
+      <p><b>Context.</b> ShopStream marketplace. About 150 requests per second; revenue is roughly $12,000 an hour, so an hour of downtime is expensive but not fatal.</p>
+      <p><b>What is at stake.</b> A full-day outage would cost about a quarter of a million dollars and put enterprise contracts at risk.</p>
+
+      <h2>Your brief</h2>
+      <ul class="bullets"><li>If the Region were lost: service restored within 60 minutes (RTO), and no more than 5 minutes of orders lost (RPO).</li><li>Normal operation must keep ≥ 99.9% availability and p95 ≤ 400 ms.</li><li>Budget $2,600 / month (simulated estimate). A standby has a price; pick the cheapest design that meets the targets.</li><li>Record an ADR that names the targets and the cost you accepted for them.</li></ul>
+
+      <h2>What you will learn</h2>
+      <ul class="bullets"><li>Availability Zone resilience is not Region resilience</li><li>RTO and RPO as business numbers, not technical settings</li><li>Backup and restore, pilot light, warm standby and active-active: what each buys and costs</li><li>Why a plan nobody has exercised is a hope</li></ul>
+      <p class="muted">Builds: Site reliability and observability, AWS services, Platform engineering, Solution architecture.</p>
+
+      <h2>How it plays</h2>
+      <p>You are given a running architecture and the evidence a real engineer would have: metrics, logs, traces, cost and recent changes. Form a hypothesis, make a change, deploy it, and read why the system reacted as it did. A verification load test then scores your design and a debrief explains the root cause and the alternatives. Nothing here touches a real cloud account.</p>
+      <p><a class="btn" href="/engineering-ops/dist/#/play/m13-regional-outage">Play The Regional Outage</a></p>
+
+      <nav class="pager" aria-label="More missions">
+        <a href="/software-architecture-simulator/missions/noisy-neighbour/">&larr; The Noisy Neighbour</a>
+        <a href="/software-architecture-simulator/">All missions</a>
+        <a href="/software-architecture-simulator/missions/blank-page/">The Blank Page &rarr;</a>
+      </nav>
+    </main>
+    <footer class="foot">
+      <nav class="foot-links" aria-label="Footer">
+        <a href="/">Home</a><a href="/aws-practice-exams/">AWS practice exams</a><a href="/software-architecture-simulator/">Software architecture simulator</a><a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/dist/">Open Engineering Ops</a><a href="https://github.com/brunopasqualini/brunopasqualini.github.io/blob/master/CONTRIBUTING.md" rel="noopener">Contribute a question bank</a><a href="https://github.com/brunopasqualini/brunopasqualini.github.io" rel="noopener">GitHub</a>
+      </nav>
+      <p>
+        Independent study tools. This website and its tools are not affiliated with, endorsed by or sponsored by Amazon Web
+        Services, Inc., Google Cloud, Microsoft or any other cloud provider or certification body. AWS and the AWS certification
+        names are trademarks of their owners, used here only to describe what the practice material is about. The practice
+        questions are AI-generated from official AWS documentation and are not official exam content. Everything runs in your
+        browser; nothing is sent to a server.
+      </p>
+    </footer>
+  </body>
+</html>

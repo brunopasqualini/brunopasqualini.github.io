@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Growing Monolith: System Design Simulation</title>
+    <meta name="description" content="Five domains, one deployable, three squads stepping on each other. A free design mission in the software architecture simulator: modularity, cohesion and…" />
+    <link rel="canonical" href="https://brunopasqualini.github.io/software-architecture-simulator/missions/growing-monolith/" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="theme-color" content="#070c18" />
+    <meta property="og:site_name" content="Bruno Pasqualini: free learning tools" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The Growing Monolith: System Design Simulation" />
+    <meta property="og:description" content="Five domains, one deployable, three squads stepping on each other. A free design mission in the software architecture simulator: modularity, cohesion and…" />
+    <meta property="og:url" content="https://brunopasqualini.github.io/software-architecture-simulator/missions/growing-monolith/" />
+    <meta property="og:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Bruno Pasqualini: free learning tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The Growing Monolith: System Design Simulation" />
+    <meta name="twitter:description" content="Five domains, one deployable, three squads stepping on each other. A free design mission in the software architecture simulator: modularity, cohesion and…" />
+    <meta name="twitter:image" content="https://brunopasqualini.github.io/assets/og-image.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"The Growing Monolith","url":"https://brunopasqualini.github.io/software-architecture-simulator/missions/growing-monolith/","description":"Five domains, one deployable, three squads stepping on each other.","learningResourceType":"Design exercise","educationalLevel":"Beginner","teaches":["Modularity, cohesion and coupling","API boundaries between domains","Modular monolith vs microservices trade-offs","Why shared databases couple services"],"timeRequired":"PT20M","isAccessibleForFree":true,"inLanguage":"en","isPartOf":{"@type":"WebApplication","name":"Engineering Ops","url":"https://brunopasqualini.github.io/software-architecture-simulator/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://brunopasqualini.github.io/"},{"@type":"ListItem","position":2,"name":"Software architecture simulator","item":"https://brunopasqualini.github.io/software-architecture-simulator/"},{"@type":"ListItem","position":3,"name":"The Growing Monolith","item":"https://brunopasqualini.github.io/software-architecture-simulator/missions/growing-monolith/"}]}</script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="topnav">
+      <a class="brand" href="/" aria-label="Home">
+        <img class="brandmark" src="/favicon.svg" alt="" width="28" height="28" />
+        <span class="brand-text"><b>Bruno Pasqualini</b><small>Learning tools</small></span>
+      </a>
+      <nav class="topnav-links" aria-label="Main"><a href="/aws-practice-exams/">AWS practice exams</a><a href="/software-architecture-simulator/">Software architecture simulator</a></nav>
+    </header>
+    <main id="main" class="article">
+      <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/software-architecture-simulator/">Software architecture simulator</a></li><li aria-current="page">The Growing Monolith</li></ol></nav>
+      <h1>The Growing Monolith</h1>
+      <p class="lead">Five domains, one deployable, three squads stepping on each other.</p>
+      <ul class="chips"><li class="chip">Design project</li><li class="chip">Beginner</li><li class="chip">About 20 minutes</li><li class="chip">Free, in your browser</li></ul>
+      <p><a class="btn" href="/engineering-ops/dist/#/play/m1-monolith">Play this mission</a></p>
+
+      <h2>The scenario</h2>
+      <p>Brightcart started as one developer and one Rails-style app. Three years later 14 engineers in three squads (Storefront, Payments, Fulfilment) ship into the same deployable. A catalogue change last week broke refunds. Releases are fortnightly, five of the last sixteen were rolled back, and review queues take days. The CTO has asked for a design that lets squads move independently — but the team of two platform engineers cannot run twelve services.</p>
+      <p><b>Context.</b> Series-A e-commerce company, 40 requests/second average, steady growth, small platform team.</p>
+      <p><b>What is at stake.</b> Change failure rate is 31%; features slip by weeks; two senior engineers have resigned citing release pain.</p>
+
+      <h2>Your brief</h2>
+      <ul class="bullets"><li>Budget: $800 / month (simulated estimate).</li><li>Two platform engineers: operational complexity must stay manageable (≤ 55/100).</li><li>Must stay available at 99.5% while you migrate.</li><li>Record an Architecture Decision Record explaining your choice.</li></ul>
+
+      <h2>What you will learn</h2>
+      <ul class="bullets"><li>Modularity, cohesion and coupling</li><li>API boundaries between domains</li><li>Modular monolith vs microservices trade-offs</li><li>Why shared databases couple services</li></ul>
+      <p class="muted">Builds: Solution architecture, Software engineering, DevOps and CI/CD, Platform engineering.</p>
+
+      <h2>How it plays</h2>
+      <p>You are given a running architecture and the evidence a real engineer would have: metrics, logs, traces, cost and recent changes. Form a hypothesis, make a change, deploy it, and read why the system reacted as it did. A verification load test then scores your design and a debrief explains the root cause and the alternatives. Nothing here touches a real cloud account.</p>
+      <p><a class="btn" href="/engineering-ops/dist/#/play/m1-monolith">Play The Growing Monolith</a></p>
+
+      <nav class="pager" aria-label="More missions">
+        <a href="/software-architecture-simulator/missions/impatient-client/">&larr; The Impatient Client</a>
+        <a href="/software-architecture-simulator/">All missions</a>
+        <a href="/software-architecture-simulator/missions/queue-that-never-drains/">The Queue That Never Drains &rarr;</a>
+      </nav>
+    </main>
+    <footer class="foot">
+      <nav class="foot-links" aria-label="Footer">
+        <a href="/">Home</a><a href="/aws-practice-exams/">AWS practice exams</a><a href="/software-architecture-simulator/">Software architecture simulator</a><a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/dist/">Open Engineering Ops</a><a href="https://github.com/brunopasqualini/brunopasqualini.github.io/blob/master/CONTRIBUTING.md" rel="noopener">Contribute a question bank</a><a href="https://github.com/brunopasqualini/brunopasqualini.github.io" rel="noopener">GitHub</a>
+      </nav>
+      <p>
+        Independent study tools. This website and its tools are not affiliated with, endorsed by or sponsored by Amazon Web
+        Services, Inc., Google Cloud, Microsoft or any other cloud provider or certification body. AWS and the AWS certification
+        names are trademarks of their owners, used here only to describe what the practice material is about. The practice
+        questions are AI-generated from official AWS documentation and are not official exam content. Everything runs in your
+        browser; nothing is sent to a server.
+      </p>
+    </footer>
+  </body>
+</html>
