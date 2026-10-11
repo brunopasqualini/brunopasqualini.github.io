@@ -1,0 +1,36 @@
+@layer components {
+  .card {
+    background: linear-gradient(180deg, var(--panel), #081020);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-panel);
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .grid-kpi {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 14px;
+  }
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .grid4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+}

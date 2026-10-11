@@ -1,0 +1,68 @@
+@layer components {
+  .meter {
+    height: 6px;
+    background: #12203d;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .meter-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s;
+  }
+  .meter-ok {
+    background: linear-gradient(90deg, #14b8a6, #34d399);
+  }
+  .meter-warn {
+    background: var(--amber);
+  }
+  .meter-crit {
+    background: var(--red);
+  }
+  .meter-info {
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+  }
+  .kpi {
+    background: linear-gradient(180deg, var(--panel), #081020);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-panel);
+  }
+  .kpi-label {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 600;
+    margin: 2px 0 4px;
+  }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .kpi-ok .kpi-value {
+    color: var(--green);
+  }
+  .kpi-warn .kpi-value {
+    color: var(--amber);
+  }
+  .kpi-info .kpi-value {
+    color: var(--cyan);
+  }
+  .kpi-crit .kpi-value {
+    color: var(--red);
+  }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 22px 14px;
+  }
+  .empty strong {
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+  }
+}
