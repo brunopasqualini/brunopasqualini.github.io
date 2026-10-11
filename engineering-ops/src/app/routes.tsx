@@ -16,6 +16,7 @@ export const routes: RouteObject[] = [
       { path: 'missions', lazy: async () => ({ Component: (await import('@/features/missions/MissionsPage')).MissionsPage }) },
       { path: 'incidents', lazy: async () => ({ Component: (await import('@/features/incidents/IncidentsPage')).IncidentsPage }) },
       { path: 'learning', lazy: async () => ({ Component: (await import('@/features/academy/AcademyPage')).AcademyPage }) },
+      { path: 'paths', lazy: async () => ({ Component: (await import('@/features/paths/PathsPage')).PathsPage }) },
       { path: 'academy', loader: () => redirect('/learning') },
       { path: 'journal', lazy: async () => ({ Component: (await import('@/features/journal/JournalPage')).JournalPage }) },
       {

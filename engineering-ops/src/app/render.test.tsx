@@ -62,6 +62,7 @@ describe('primary navigation renders every section', () => {
     ['#/missions', /Mission Control/],
     ['#/incidents', /Incident Response/],
     ['#/learning', /Engineering Academy/],
+    ['#/paths', /Learning paths/],
     ['#/journal', /Engineering Journal/],
     ['#/achievements', /Achievements/],
   ];

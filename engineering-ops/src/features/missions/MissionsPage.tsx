@@ -1,3 +1,4 @@
+import { go } from '@/shared/lib/nav';
 import { Clock, Lock } from 'lucide-react';
 import { journeyOrder, stageOfMission } from '@/content/journey';
 import { MISSIONS } from '@/content/missions';
@@ -16,6 +17,9 @@ export function MissionsPage() {
             A campaign of progressively harder engineering scenarios. Each is data-driven: evidence, constraints and success criteria — not
             a single “right” diagram.
           </p>
+          <button className="btn btn-ghost btn-sm" onClick={() => go('/paths')}>
+            Follow a learning path for your role
+          </button>
         </div>
       </header>
       <ol className="campaign">
