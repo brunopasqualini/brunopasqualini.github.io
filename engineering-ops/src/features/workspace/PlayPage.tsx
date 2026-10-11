@@ -45,13 +45,24 @@ export function Play({ missionId, template }: { missionId: string; template?: st
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (t && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(t.tagName)) return;
+      const typing = !!t && (['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName) || t.isContentEditable);
+      const g = useGame.getState();
+      // undo/redo work even with a button focused, but never steal the shortcut from a text field's own undo
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && !typing) {
+        const k = e.key.toLowerCase();
+        if (k === 'z' || k === 'y') {
+          e.preventDefault();
+          if (k === 'y' || e.shiftKey) g.redoEdit();
+          else g.undoEdit();
+          return;
+        }
+      }
+      if (typing || t?.tagName === 'BUTTON') return;
       if (e.code === 'Space') {
         e.preventDefault();
-        const g = useGame.getState();
         g.setRunning(!g.running);
       }
-      if (e.key === '.') useGame.getState().step(1);
+      if (e.key === '.') g.step(1);
     };
     window.addEventListener('keydown', on);
     return () => window.removeEventListener('keydown', on);
