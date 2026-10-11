@@ -1,6 +1,6 @@
 // The generated pages. Each builder returns { path, title, description, ld, body } for layout().
 import { loadExams, loadMissions, sampleQuestions } from './data.mjs';
-import { breadcrumbs, esc, faq, slug, url } from './site.mjs';
+import { CONTRIBUTE, breadcrumbs, esc, faq, notice, slug, url } from './site.mjs';
 
 const HUB = '/aws-practice-exams/';
 const SIM = '/software-architecture-simulator/';
@@ -85,7 +85,8 @@ function quizLd(page, exam, questions) {
 }
 
 export async function buildPages() {
-  const exams = loadExams();
+  // Pages exist for the exams described in EXAM_PAGES. A bank for another exam works in the simulator without one.
+  const exams = loadExams().filter((e) => EXAM_PAGES[e.id]);
   const { missions, journey } = await loadMissions();
   const pages = [];
 
@@ -95,10 +96,11 @@ export async function buildPages() {
     const crumbs = breadcrumbs([['Home', '/'], ['AWS practice exams', HUB]]);
     const f = faq([
       ['Is this really free?', 'Yes. The practice exams are free, there is no account, no paywall and no email capture. They run in your browser.'],
-      ['Are these real AWS exam questions?', 'No. They are original, AI-generated practice questions written in the style of each exam, with an explanation for every answer. They are not official AWS questions and not "exam dumps", and they are not affiliated with or endorsed by AWS.'],
+      ['Are these real AWS exam questions?', 'No. They are AI-generated from official AWS documentation, with an explanation for every answer. They are not official AWS questions and not "exam dumps", and this website is not affiliated with, endorsed by or sponsored by AWS or any other cloud provider.'],
       ['Which AWS certifications can I practise?', `Right now the AWS Certified Solutions Architect – Associate (SAA-C03) with ${exams.find((e) => e.id === 'aws-saa-c03').total} questions and the AWS Certified Developer – Associate (DVA-C02) with ${exams.find((e) => e.id === 'aws-dva-c02').total} questions.`],
       ['Do the practice exams work offline?', 'Yes. After the first visit the simulator is cached by your browser, so you can keep practising without a connection, and you can install it to your home screen.'],
       ['Is my progress saved?', 'Your history and any exam in progress are stored in your own browser only, so you can resume later on the same device. Nothing is sent to a server.'],
+      ['Can I add my own questions or another exam?', 'Yes. Question banks are plain JSON files, so anyone can contribute a bank for another AWS exam or for another cloud provider through a pull request on GitHub. The contributing guide explains the format and the rules.'],
       ['How is this different from a video course or a paid question bank?', 'It does not teach from scratch. It is for testing yourself: timed exams, explanations that say why each wrong option is wrong, a score breakdown by exam domain, and a retest of the questions you missed.'],
     ]);
     pages.push({
@@ -126,6 +128,7 @@ export async function buildPages() {
       <h1>Free AWS practice exams, no signup</h1>
       <p class="lead">Practise for your AWS certification in the browser. Take timed ${exams[0].perBank}-question mock exams, see an explanation for every answer, get a score breakdown by exam domain and retest only the questions you missed. It is free, needs no account and works offline once loaded.</p>
       <p><a class="btn" href="/exam-simulator/">Open the practice exam simulator</a></p>
+      ${notice()}
 
       <h2>Choose your AWS exam</h2>
       <div class="grid2">
@@ -152,7 +155,7 @@ export async function buildPages() {
       </ul>
 
       <h2>What these questions are, and are not</h2>
-      <p>The questions are original practice questions generated with AI and written in the style of each exam so that you can test the concepts the exam covers: choosing the right service, spotting the constraint that rules out an option, and trading cost against resilience. They are <b>not</b> official AWS exam content and not leaked questions. If you want to know how the real exam is structured, read the official exam guide on the AWS Certification site, and use these questions to find out what you do not yet know.</p>
+      <p>The questions are generated with AI from AWS's official documentation and written in the style of each exam, so that you can test the concepts the exam covers: choosing the right service, spotting the constraint that rules out an option, and trading cost against resilience. Each links back to the documentation it is based on. They are <b>not</b> official AWS exam content and not leaked questions, and this website is not affiliated with AWS. If you want to know how the real exam is structured, read the official exam guide on the AWS Certification site, and use these questions to find out what you do not yet know.</p>
 
       <h2>How to get the most out of a practice exam</h2>
       <ol class="bullets">
@@ -161,6 +164,9 @@ export async function buildPages() {
         <li>Use the domain breakdown to decide what to study, then retest your weak areas rather than the whole exam.</li>
         <li>Build the services in a free-tier account or a simulator so the trade-offs are concrete. The <a href="${SIM}">software architecture simulator</a> on this site lets you design and break cloud systems without an account.</li>
       </ol>
+
+      <h2>Contribute a question bank</h2>
+      <p>The question banks are plain JSON files in the project's GitHub repository. If you write practice questions for another AWS exam, or for Google Cloud, Azure or another provider, you can add them with a pull request. The <a href="${CONTRIBUTE}" rel="noopener">contributing guide</a> covers the format, the rules (original questions only, based on official documentation, with explanations) and a validator to check your bank before you submit it.</p>
 
       ${f.html}`,
     });
@@ -174,7 +180,7 @@ export async function buildPages() {
     const crumbs = breadcrumbs([['Home', '/'], ['AWS practice exams', HUB], [meta.short, path]]);
     const f = faq([
       [`How many ${meta.short} practice questions are there?`, `${exam.total} questions in ${plural(exam.banks, 'practice exam')} of ${exam.perBank} questions each.`],
-      ['Are these the real exam questions?', 'No. They are original AI-generated practice questions in the style of the exam. They are not official AWS questions and not exam dumps.'],
+      ['Are these the real exam questions?', 'No. They are AI-generated from official AWS documentation, in the style of the exam. They are not official AWS questions and not exam dumps, and this website is not affiliated with AWS.'],
       ['Do I need to create an account?', 'No. There is no signup. Your progress is saved in your own browser.'],
       ['Can I practise offline?', 'Yes. The simulator caches itself after the first visit and can be installed to your home screen.'],
     ]);
@@ -201,6 +207,7 @@ export async function buildPages() {
       <h1>Free ${esc(meta.full)} practice exam</h1>
       <p class="lead">${exam.total} practice questions in ${plural(exam.banks, 'timed exam')} of ${exam.perBank}, each with an explanation of the right answer and why the other options are wrong. Free, no signup, and it works offline.</p>
       <p><a class="btn" href="/exam-simulator/?cert=${exam.id}">Start the ${esc(meta.short)} practice exam</a></p>
+      ${notice()}
 
       <h2>About the exam</h2>
       <p>${esc(meta.about)}</p>
@@ -215,7 +222,7 @@ export async function buildPages() {
           <tr class="total"><th scope="row">Total</th><td>${exam.total}</td></tr>
         </tbody>
       </table>
-      <p class="muted">Check the official AWS exam guide for the current domains and their weightings. These questions are original practice material, not official exam content.</p>
+      <p class="muted">Check the official AWS exam guide for the current domains and their weightings. These questions are AI-generated practice material based on AWS documentation, not official exam content.</p>
 
       <h2>Try ${samples.length} sample questions</h2>
       <p>Read the question, pick an answer in your head, then open the explanation. The simulator adds timing, scoring and retests.</p>
@@ -229,6 +236,7 @@ export async function buildPages() {
           .map((e) => `<li><a href="${examPath(e)}">Free ${esc(EXAM_PAGES[e.id].full)} practice exam</a></li>`)
           .join('\n        ')}
         <li><a href="${SIM}">Software architecture simulator</a>: design, break and fix cloud systems to see the trade-offs the exam asks about.</li>
+        <li><a href="${CONTRIBUTE}" rel="noopener">Contribute a question bank</a>: add questions for another exam or cloud provider on GitHub.</li>
       </ul>
 
       ${f.html}`,

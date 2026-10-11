@@ -24,6 +24,8 @@ Each certification gets its own folder under `questions/` (add more as needed â€
 
 ## Adding or editing question banks
 
+Want to contribute a bank for another exam or cloud provider? Read [CONTRIBUTING.md](../CONTRIBUTING.md) first (rules and checks), and validate with `node scripts/validate-banks.mjs` from the repository root.
+
 1. Create a new JSON file inside the right folder under `questions/` (e.g. `questions/developer-associate/bank2.json`, or `questions/cloud-practitioner/bank1.json` for a brand-new certification folder) following this schema:
 
 ```json
