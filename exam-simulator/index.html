@@ -641,6 +641,25 @@
         margin-top: 10px;
       }
 
+      .about-notice {
+        margin: 14px 0 6px;
+        padding: 12px 14px;
+        border: 1px solid var(--line2);
+        border-left: 3px solid var(--accent);
+        border-radius: var(--radius-sm);
+        background: var(--chip);
+        color: var(--ink-soft);
+        font-size: 12.5px;
+        line-height: 1.55;
+        text-align: left;
+      }
+      .about-notice strong {
+        color: var(--ink);
+      }
+      .about-notice a {
+        color: var(--accent);
+      }
+
       .seo-about {
         max-width: 760px;
         margin: 0 auto;
@@ -658,6 +677,10 @@
       }
       .seo-about ul {
         padding-left: 18px;
+      }
+
+      .disclaimer a {
+        color: var(--accent);
       }
 
       .disclaimer {
@@ -723,6 +746,19 @@
             a full domain-by-domain breakdown at the end. Installed as an app,
             it also works with no internet connection.
           </p>
+
+          <div class="about-notice" role="note">
+            <strong>About these questions.</strong> The practice questions are
+            AI-generated from official AWS documentation. They are not official
+            exam content. This tool and website are not affiliated with,
+            endorsed by or sponsored by AWS or any other cloud provider.
+            <a
+              href="https://github.com/brunopasqualini/brunopasqualini.github.io/blob/master/CONTRIBUTING.md"
+              target="_blank"
+              rel="noopener"
+              >Add your own question bank on GitHub</a
+            >.
+          </div>
 
           <p class="selection-notice hidden" id="selectionNotice"></p>
 
@@ -884,6 +920,12 @@
         </li>
       </ul>
       <p>
+        The questions are AI-generated from official AWS documentation and are
+        not official exam content. Want to add your own question bank, for
+        another exam or another cloud provider?
+        <a href="https://github.com/brunopasqualini/brunopasqualini.github.io/blob/master/CONTRIBUTING.md" target="_blank" rel="noopener">See how to contribute on GitHub</a>.
+      </p>
+      <p>
         Every question has an explanation, and your score is broken down by exam
         domain. See the
         <a href="/aws-practice-exams/">free AWS practice exams overview</a> or
@@ -897,9 +939,14 @@
 
     <footer class="disclaimer">
       Independent study tool, not affiliated with, endorsed by, or associated
-      with AWS, Google Cloud, Microsoft, or any other certification provider.
-      All question content is AI-generated for practice purposes only and is not
-      official exam material.
+      with AWS, Google Cloud, Microsoft, or any other cloud provider or
+      certification body. All question content is AI-generated from official
+      vendor documentation for practice purposes only and is not official exam
+      material.
+      <a href="https://github.com/brunopasqualini/brunopasqualini.github.io/blob/master/CONTRIBUTING.md" target="_blank" rel="noopener"
+        >Contribute a question bank</a
+      >
+      or <a href="https://github.com/brunopasqualini/brunopasqualini.github.io" target="_blank" rel="noopener">view the source on GitHub</a>.
     </footer>
 
     <script>

@@ -443,3 +443,17 @@ summary {
     margin-left: 0;
   }
 }
+
+.notice {
+  margin: 16px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line2);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius-sm);
+  background: var(--panel2);
+  color: var(--muted);
+  line-height: 1.55;
+}
+.notice strong {
+  color: var(--text);
+}
