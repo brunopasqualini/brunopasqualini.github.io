@@ -102,6 +102,10 @@ docs/             ARCHITECTURE.md (stack decisions and research), SIMULATION.md 
 - **Accessibility:** semantic landmarks, labelled controls, dialogs with focus handling, keyboard-operable controls,
   `prefers-reduced-motion` respected, status never conveyed by colour alone (text tags + reasons).
 
+## Game days
+
+The Lab can run scripted multi-fault exercises and grade impact, recovery and detection. See [docs/GAME_DAYS.md](docs/GAME_DAYS.md).
+
 ## Limitations (by design)
 
 This is an MVP teaching model: small, internally consistent and defensible, not a faithful cloud simulator.
