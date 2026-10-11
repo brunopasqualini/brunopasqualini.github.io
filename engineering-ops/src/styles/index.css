@@ -4,6 +4,7 @@
 
 @import '@xyflow/react/dist/style.css' layer(vendor);
 @import './tokens.css';
+@import './review.css';
 @import './base.css';
 @import './shell.css';
 @import './components.css';
@@ -12,6 +13,7 @@
 @import './workspace-layout.css';
 @import './workspace.css';
 @import './canvas.css';
+@import './effects.css';
 @import './responsive.css';
 
 /* Deliberately UNLAYERED. Any page that embeds this app (a hosting shell, a preview frame) may inject plain,

@@ -1,7 +1,8 @@
 import { Download, Trash2, Upload } from 'lucide-react';
 import { useRef } from 'react';
 import { useGame } from '@/game/store';
-import { Modal } from '@/shared/ui/common';
+import { Modal, useConfirm } from '@/shared/ui/common';
+import { FeedbackSection } from '@/app/dialogs/FeedbackSection';
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const mode = useGame((s) => s.settings.mode);
@@ -13,6 +14,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const resetAll = useGame((s) => s.resetAll);
   const toast = useGame((s) => s.toast);
   const file = useRef<HTMLInputElement>(null);
+  const { ask, dialog } = useConfirm();
   return (
     <Modal title="Settings & save data" onClose={onClose}>
       <div className="form">
@@ -64,19 +66,29 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             />
             <button
               className="btn btn-danger"
-              onClick={() => {
-                if (confirm('Erase all progress, journal entries and saved sessions?')) {
-                  resetAll();
-                  toast('Progress reset.', 'info');
-                  onClose();
-                }
-              }}
+              onClick={() =>
+                ask(
+                  {
+                    title: 'Reset all progress?',
+                    message: 'This erases all progress, journal entries and saved sessions. It cannot be undone.',
+                    confirmLabel: 'Erase everything',
+                    danger: true,
+                  },
+                  () => {
+                    resetAll();
+                    toast('Progress reset.', 'info');
+                    onClose();
+                  },
+                )
+              }
             >
               <Trash2 size={14} /> Reset all progress
             </button>
           </div>
         </div>
+        <FeedbackSection />
       </div>
+      {dialog}
     </Modal>
   );
 }

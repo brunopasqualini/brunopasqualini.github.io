@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 export { Modal } from './Dialog';
+export { ConfirmDialog, useConfirm, type ConfirmOptions } from './ConfirmDialog';
 export { Tabs } from './Tabs';
 
 export function Chip({
