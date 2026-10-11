@@ -14,7 +14,7 @@
 @import './timeline.css';
 @import './workspace-layout.css';
 @import './geography.css';
-@import './workspace.css';
+@import './workspace/index.css';
 @import './paths.css';
 @import './canvas.css';
 @import './gamedays.css';
