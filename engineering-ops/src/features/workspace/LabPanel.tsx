@@ -11,6 +11,7 @@ import { useGame } from '@/game/store';
 import { Chip, useConfirm } from '@/shared/ui/common';
 import { ms, usd2 } from '@/shared/lib/fmt';
 import { useLive } from '@/game/hooks';
+import { AttackPanel } from '@/features/workspace/AttackPanel';
 
 export function evaluateDesign(arch: Arch, workload: Workload) {
   let st = emptyState();
@@ -244,6 +245,7 @@ export function LabPanel() {
         </div>
         {chaos.length > 0 && <p className="tiny warn">Active: {chaos.map((c) => c.type).join(', ')}</p>}
       </section>
+      <AttackPanel />
       <section>
         <h4>Designs &amp; comparison</h4>
         <div className="row-gap">
