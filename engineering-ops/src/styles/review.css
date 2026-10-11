@@ -1,0 +1,57 @@
+@layer components {
+  /* ---------- design review (Plan & deploy) ---------- */
+  .design-review {
+    margin: 14px 0;
+    padding: 10px 12px;
+    border: 1px solid var(--line2);
+    border-radius: var(--radius);
+    background: rgba(14, 26, 51, 0.5);
+  }
+  .design-review h4 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 6px;
+  }
+  .dr-counts {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: auto;
+  }
+  .dr-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 8px 0 0;
+  }
+  .dr-item {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: var(--bg2);
+  }
+  .dr-item.dr-high {
+    border-color: rgba(239, 68, 68, 0.45);
+  }
+  .dr-head {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .dr-item summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .dr-item details p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .dr-item details p b {
+    color: var(--text);
+  }
+}

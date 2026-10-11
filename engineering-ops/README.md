@@ -75,6 +75,10 @@ Editing the draft: `Ctrl/⌘+Z` undo, `Ctrl/⌘+Shift+Z` (or `Ctrl+Y`) redo. Shi
 components; `Ctrl/⌘+C` copy, `Ctrl/⌘+V` paste, `Ctrl/⌘+D` duplicate. Undo covers the draft you are editing, never the deployed system
 (use **Revert** for that), and a copy keeps only the connections between the copied components.
 
+Design review: **Plan & deploy → Design review** flags anti-patterns in your draft as you build (single-AZ databases, retries without a
+breaker, queues without a dead-letter queue, connection exhaustion, and more), each with the reason, the fix and a lesson link. It is
+advice, never a deploy gate. See [`docs/DESIGN_REVIEW.md`](docs/DESIGN_REVIEW.md).
+
 ## The missions
 
 | #   | Mission                     | Kind     | Teaches                                                                                                                                  |

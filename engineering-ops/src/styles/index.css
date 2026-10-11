@@ -4,6 +4,7 @@
 
 @import '@xyflow/react/dist/style.css' layer(vendor);
 @import './tokens.css';
+@import './review.css';
 @import './base.css';
 @import './shell.css';
 @import './attack.css';

@@ -266,3 +266,12 @@
     font-size: 12.5px;
   }
 }
+
+@layer features {
+  /* a lesson opened from a deep link, e.g. from the design review */
+  .lessons .lesson-focus {
+    outline: 2px solid var(--cyan);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+  }
+}
