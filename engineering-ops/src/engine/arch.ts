@@ -1,6 +1,9 @@
 import { CATALOG_BY_KIND, canConnect, entryOf, type EdgeClass } from '@/engine/catalog';
 import type { Arch, ArchEdge, ArchNode, Config, EdgeConfig, Fault, Role } from '@/engine/types';
 
+/** Config keys whose value is the id of another component (network placement, identity). Shown as dotted links on the canvas. */
+export const CONFIG_REF_KEYS = ['subnet', 'sg', 'iamRole', 'nat', 'vpc', 'nacl'] as const;
+
 export const DEFAULT_EDGE: EdgeConfig = { weight: 1, timeoutMs: 3000, retries: 0, circuitBreaker: false };
 
 let counter = 0;

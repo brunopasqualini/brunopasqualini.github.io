@@ -26,9 +26,11 @@ export type Chaos =
 
 export const emptyState = (): SimState => ({ queues: {}, replicas: {} });
 
-export function rpsAt(w: Workload, minute: number): number {
+export function rpsAt(w: Workload, rawMinute: number): number {
   const p = w.profile;
   if (!p.length) return w.baseRps;
+  const cycle = w.profileCycle;
+  const minute = cycle && cycle > 0 ? ((rawMinute % cycle) + cycle) % cycle : rawMinute;
   if (minute <= p[0].t) return w.baseRps * p[0].mult;
   for (let i = 1; i < p.length; i++) {
     if (minute <= p[i].t) {
@@ -265,7 +267,11 @@ export function solve(arch: Arch, workload: Workload, minute: number, prev: SimS
     const needed = Math.max(1, (rps0 * 0.5) / P.CACHE_KEYSPACE_RPS_PER_UNIT);
     const memFit = Math.min(1, (cn.config.nodes * sizeMult(cn)) / needed);
     const ttl = cn.config.ttlSeconds ?? 60;
-    const h = workload.cacheableShare * (1 - Math.exp(-ttl / (workload.keyReuseSeconds ?? 45))) * (0.35 + 0.65 * memFit) * (1 - Math.min(0.5, util * 0.1));
+    const h =
+      workload.cacheableShare *
+      (1 - Math.exp(-ttl / (workload.keyReuseSeconds ?? 45))) *
+      (0.35 + 0.65 * memFit) *
+      (1 - Math.min(0.5, util * 0.1));
     return facts[cn.id].down ? 0 : clamp(h, 0, 0.98);
   };
   for (const cn of caches) hit[cn.id] = cacheHit(cn);
