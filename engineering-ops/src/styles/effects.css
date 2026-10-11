@@ -1,0 +1,244 @@
+/* Canvas effects. Everything here is gated by data-fx on .canvas (off | subtle | full) and, for ambient motion,
+   by data-running, so a paused or "Off" canvas is exactly the static diagram. The logic lives in
+   features/workspace/effects; this file only styles it. */
+@layer features {
+  .fx-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .fx-packet {
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+
+  /* ---- ambient life (only while the simulation runs) ---- */
+  .anode-tile::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 18px;
+    border: 2px solid var(--rc, #22d3ee);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .canvas[data-fx='subtle'][data-running='true'] {
+    --fx-glow-r: 14px;
+    --fx-glow-a: 0.32;
+  }
+  .canvas[data-fx='full'][data-running='true'] {
+    --fx-glow-r: 26px;
+    --fx-glow-a: 0.55;
+  }
+  .canvas:is([data-fx='subtle'], [data-fx='full'])[data-running='true'] .anode-healthy .anode-tile {
+    animation: fx-breathe var(--bt, 3.6s) ease-in-out infinite;
+  }
+  .canvas:is([data-fx='subtle'], [data-fx='full'])[data-running='true'] .anode-degraded .anode-tile {
+    animation: fx-breathe-warn 1.6s ease-in-out infinite;
+  }
+  .canvas:is([data-fx='subtle'], [data-fx='full'])[data-running='true'] .anode-unavailable .anode-tile {
+    animation: fx-flicker 2.6s steps(1) infinite;
+  }
+  .canvas:is([data-fx='subtle'], [data-fx='full'])[data-running='true'] .anode-bar div {
+    background-image: linear-gradient(90deg, transparent 0 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70% 100%);
+    background-size: 40px 100%;
+    background-repeat: repeat-x;
+    background-color: var(--cyan);
+    animation: fx-shimmer 1.2s linear infinite;
+  }
+  .canvas[data-fx='full'][data-running='true'] .anode-overloaded .anode-tile {
+    animation:
+      glow 0.9s infinite,
+      fx-shake 0.2s linear infinite;
+  }
+  .canvas[data-fx='full'][data-running='true'] .anode-working .anode-tile > svg:first-child {
+    animation: fx-spin 6s linear infinite;
+  }
+  .canvas[data-fx='full'][data-running='true'] .qdots span.on {
+    animation: fx-blink 1.3s infinite;
+  }
+  .canvas[data-fx='full'][data-running='true'] .qdots span.on:nth-child(3n) {
+    animation-delay: 0.35s;
+  }
+  .canvas[data-fx='full'][data-running='true'] .qdots span.on:nth-child(3n + 1) {
+    animation-delay: 0.7s;
+  }
+  .canvas[data-fx='full'] .anode-tile.fx-arrive::before {
+    animation: fx-ripple 0.7s ease-out;
+  }
+
+  /* ---- one-shot moments: hit, recovered, scaled, deployed ---- */
+  .fx-moment {
+    --mc: var(--cyan);
+    position: absolute;
+    inset: -3px;
+    border-radius: 19px;
+    border: 2px solid var(--mc);
+    opacity: 0;
+    pointer-events: none;
+    animation: fx-wave 1s ease-out;
+  }
+  .fx-moment::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 22px;
+    border: 2px solid var(--mc);
+    opacity: 0;
+    animation: fx-wave 1s 0.18s ease-out;
+  }
+  .fx-moment b {
+    position: absolute;
+    left: 50%;
+    top: -6px;
+    transform: translate(-50%, 0);
+    font: 700 11px var(--mono);
+    color: var(--mc);
+    text-shadow: 0 1px 6px #000;
+    white-space: nowrap;
+    opacity: 0;
+    animation: fx-float 1.8s ease-out;
+  }
+  .fx-hit {
+    --mc: #ef4444;
+  }
+  .fx-recover {
+    --mc: #34d399;
+  }
+  .fx-deploy {
+    --mc: #22d3ee;
+    animation-iteration-count: 2;
+  }
+  .fx-scale-out {
+    --mc: #22d3ee;
+  }
+  .fx-scale-in {
+    --mc: #a78bfa;
+  }
+
+  @keyframes fx-breathe {
+    0%,
+    100% {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 6px 16px rgba(0, 0, 0, 0.45),
+        0 0 0 2px var(--ring),
+        0 0 0 rgba(52, 211, 153, 0);
+    }
+    50% {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 6px 16px rgba(0, 0, 0, 0.45),
+        0 0 0 2px var(--ring),
+        0 0 var(--fx-glow-r, 14px) rgba(52, 211, 153, var(--fx-glow-a, 0.32));
+    }
+  }
+  @keyframes fx-breathe-warn {
+    0%,
+    100% {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 0 8px rgba(245, 158, 11, 0.2),
+        0 0 0 2px var(--ring);
+    }
+    50% {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(245, 158, 11, 0.7),
+        0 0 0 2px var(--ring);
+    }
+  }
+  @keyframes fx-flicker {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    45% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+    58% {
+      opacity: 0.55;
+    }
+    62% {
+      opacity: 1;
+    }
+  }
+  @keyframes fx-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-1.5px);
+    }
+    75% {
+      transform: translateX(1.5px);
+    }
+  }
+  @keyframes fx-shimmer {
+    from {
+      background-position: -40px 0;
+    }
+    to {
+      background-position: 120px 0;
+    }
+  }
+  @keyframes fx-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes fx-blink {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @keyframes fx-ripple {
+    from {
+      opacity: 0.85;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.8);
+    }
+  }
+  @keyframes fx-wave {
+    from {
+      opacity: 0.95;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.9);
+    }
+  }
+  @keyframes fx-float {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 6px);
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -28px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx-moment,
+    .fx-moment::after,
+    .fx-moment b {
+      animation: none;
+      display: none;
+    }
+  }
+}
