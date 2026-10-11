@@ -19,6 +19,7 @@ import {
   replay,
   revertLast,
   setChaos,
+  startGameDay,
   patchWorkload,
   verify,
   describeChaos,
@@ -150,6 +151,7 @@ interface Store {
 
   // lab
   setChaosList: (c: Chaos[]) => void;
+  beginGameDay: (id: string) => void;
   setWorkload: (patch: Partial<Workload>) => void;
   saveDesign: (name: string) => void;
   deleteDesign: (id: string) => void;
@@ -586,6 +588,13 @@ export const useGame = create<Store>()(
           if (!session) return;
           setChaos(session, c);
           get().toast(c.length ? `Injected: ${c.map(describeChaos).join(', ')}` : 'Chaos cleared.', c.length ? 'warn' : 'info');
+          set((s) => ({ tick: s.tick + 1 }));
+          persistSession();
+        },
+        beginGameDay: (id) => {
+          const { session } = get();
+          if (!session || !startGameDay(session, id)) return;
+          get().toast('Game day started. Press play: faults arrive on a script you cannot see.', 'warn');
           set((s) => ({ tick: s.tick + 1 }));
           persistSession();
         },

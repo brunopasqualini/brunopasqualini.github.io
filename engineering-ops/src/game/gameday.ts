@@ -84,8 +84,7 @@ export function scoreGameDay(day: GameDay, window: Snapshot[], arch: Arch, finis
   // Detection: 20 points; a fifteen-minute blind spot (no alerting at all) earns nothing.
   const detectionPoints = detectionMinutes === null ? 20 : Math.round(20 * (1 - clamp(detectionMinutes / 15, 0, 1)));
   // Recovery: 30 points; never recovering earns nothing, a quick recovery earns most of it.
-  const recoveryPoints =
-    first === -1 ? 30 : recoveryMinutes === null ? 0 : Math.round(30 * (1 - clamp((recoveryMinutes - 1) / 20, 0, 1)));
+  const recoveryPoints = first === -1 ? 30 : recoveryMinutes === null ? 0 : Math.round(30 * (1 - clamp((recoveryMinutes - 1) / 20, 0, 1)));
   const total = impactPoints + detectionPoints + recoveryPoints;
 
   if (first === -1) notes.push('Customers never noticed: the design absorbed every fault.');
@@ -96,5 +95,17 @@ export function scoreGameDay(day: GameDay, window: Snapshot[], arch: Arch, finis
     if (recoveryMinutes === null && finished) notes.push('Service had not recovered when the exercise ended.');
   }
   const grade = total >= 90 ? 'A' : total >= 75 ? 'B' : total >= 55 ? 'C' : total >= 35 ? 'D' : 'F';
-  return { impactMinutes, failedRequests, detectionMinutes, recoveryMinutes, impactPoints, detectionPoints, recoveryPoints, total, grade, finished, notes };
+  return {
+    impactMinutes,
+    failedRequests,
+    detectionMinutes,
+    recoveryMinutes,
+    impactPoints,
+    detectionPoints,
+    recoveryPoints,
+    total,
+    grade,
+    finished,
+    notes,
+  };
 }

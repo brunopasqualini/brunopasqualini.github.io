@@ -36,7 +36,13 @@ describe('game day scripts', () => {
 describe('resolveFaults', () => {
   it('maps roles to real nodes and drops faults with no matching component', () => {
     const a = threeTier();
-    const { chaos, skipped } = resolveFaults([{ type: 'slow', target: { roles: ['db'] }, mult: 5 }, { type: 'spike', mult: 2 }], a);
+    const { chaos, skipped } = resolveFaults(
+      [
+        { type: 'slow', target: { roles: ['db'] }, mult: 5 },
+        { type: 'spike', mult: 2 },
+      ],
+      a,
+    );
     expect(skipped).toBe(0);
     expect(chaos).toHaveLength(2);
     const none = resolveFaults([{ type: 'node-down', target: { roles: ['db'] } }], { nodes: [makeNode('alb', { x: 0, y: 0 })], edges: [] });

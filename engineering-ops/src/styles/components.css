@@ -715,3 +715,27 @@
     -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent);
   }
 }
+
+@layer features {
+  .gameday .gd-feed {
+    list-style: none;
+    margin: 6px 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+    max-height: 140px;
+    overflow: auto;
+  }
+  .gameday .gd-score {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0;
+  }
+  .gameday .gd-result {
+    margin: 8px 0;
+    padding: 8px 10px;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+  }
+}

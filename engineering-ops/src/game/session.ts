@@ -220,7 +220,11 @@ function fireGameDay(s: Session) {
   if (!step) return;
   const { chaos, skipped } = resolveFaults(step.faults, s.live);
   s.chaos = chaos;
-  s.events.push({ minute: s.minute, kind: 'incident', text: `Game day: ${step.announce}${skipped ? ' (a fault had no matching component in your design)' : ''}` });
+  s.events.push({
+    minute: s.minute,
+    kind: 'incident',
+    text: `Game day: ${step.announce}${skipped ? ' (a fault had no matching component in your design)' : ''}`,
+  });
 }
 
 /** Start a game day now: the script runs from the current minute. */
