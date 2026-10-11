@@ -105,6 +105,8 @@ interface Store {
   running: boolean;
   speed: 1 | 4 | 16;
   selection: { type: 'node' | 'edge' | null; id?: string };
+  /** Components to mark on the canvas (the blast radius of an attack run in the Lab). Runtime only. */
+  highlight: string[];
   introOpen: boolean;
   debrief: { outcome: Outcome; report: Report; firstTime: boolean } | null;
   toasts: Toast[];
@@ -113,8 +115,6 @@ interface Store {
   rightTab: 'inspect' | 'plan';
   mobilePane: 'mission' | 'canvas' | 'build' | 'evidence';
   labTemplate: string;
-  /** Components to mark on the canvas (the blast radius of an attack run in the Lab). Runtime only. */
-  highlight: string[];
   /** Undo history for the draft. Tied to the session object it was recorded for, so opening another mission starts clean. */
   undoState: { owner: Session | null; stack: UndoStack };
   drill?: { title: string; goal: string };
@@ -262,6 +262,7 @@ export const useGame = create<Store>()(
         running: false,
         speed: 1,
         selection: { type: null },
+        highlight: [],
         introOpen: false,
         debrief: null,
         toasts: [],
@@ -270,7 +271,6 @@ export const useGame = create<Store>()(
         rightTab: 'inspect',
         mobilePane: 'canvas',
         labTemplate: 'three-tier',
-        highlight: [],
         undoState: { owner: null, stack: emptyUndo() },
 
         toast: (text, kind = 'info') => {
