@@ -2,7 +2,7 @@
   "certifications": [
     {
       "id": "aws-dva-c02",
-      "title": "AWS Certified Developer - Associated (DVA-C02)",
+      "title": "AWS Certified Developer - Associate (DVA-C02)",
       "banks": [
         {
           "file": "questions/aws/dva-c02/DVA-C02_01.json"
@@ -26,7 +26,7 @@
     },
     {
       "id": "aws-saa-c03",
-      "title": "AWS Certified Solutions Architect - Associated (SAA-C03)",
+      "title": "AWS Certified Solutions Architect - Associate (SAA-C03)",
       "banks": [
         {
           "file": "questions/aws/saa-c03/SAA-C03_01.json"
