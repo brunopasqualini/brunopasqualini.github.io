@@ -57,6 +57,11 @@ The Lab can run scripted multi-fault exercises and grade impact, recovery and de
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
+Looking back: drag the timeline under the health strip (or press `[` and `]`) to see the canvas and health numbers as they were at an
+earlier minute. It is paused and read-only in effect: nothing is replayed or changed, and running, stepping or deploying returns to
+live. Markers show deploys, faults and incidents; click one to jump there. Time-series panels (charts, logs) always show the full
+history, so they keep showing the latest.
+
 Feedback: after a mission, the debrief asks how hard it was and whether the brief was clear (optional note). Answers are stored in this
 browser only, in their own storage key (`engineering-ops-feedback-v1`), separate from the game save, so **Reset all progress** does not
 erase them. **Settings → Your feedback** shows them per mission and lets you open a pre-filled GitHub issue, copy as text, export JSON or

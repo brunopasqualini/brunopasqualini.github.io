@@ -31,6 +31,7 @@ import { TEMPLATES, templateWorkload } from '@/content/templates';
 import { tagsFor } from '@/game/decisions';
 import { SAVE_SCHEMA_VERSION, migrateSave } from '@/game/migrate';
 import { isReplayCompatible, SIM_VERSION } from '@/game/simVersion';
+import { indexAt, stepView } from '@/game/timeline';
 import { emptyUndo, record, redo, undo, type UndoStack } from '@/game/undo';
 
 export interface SavedSession {
@@ -116,6 +117,8 @@ interface Store {
   rightTab: 'inspect' | 'plan';
   mobilePane: 'mission' | 'canvas' | 'build' | 'evidence';
   labTemplate: string;
+  /** Which past minute the canvas is showing (null = live). Tied to the session it was set for, so another mission starts live. */
+  view: { owner: Session | null; minute: number | null };
   /** Undo history for the draft. Tied to the session object it was recorded for, so opening another mission starts clean. */
   undoState: { owner: Session | null; stack: UndoStack };
   drill?: { title: string; goal: string };
@@ -132,6 +135,10 @@ interface Store {
   startIncident: () => void;
 
   setRunning: (v: boolean) => void;
+  /** Look back at a past minute (pauses the simulation), or null to return to live. Nothing in the run changes. */
+  viewAt: (minute: number | null) => void;
+  /** Move the view by n minutes; stepping past the newest minute returns to live. */
+  scrub: (delta: number) => void;
   setSpeed: (s: 1 | 4 | 16) => void;
   step: (n: number) => void;
   editDraft: (fn: (a: Arch) => void) => void;
@@ -273,6 +280,7 @@ export const useGame = create<Store>()(
         rightTab: 'inspect',
         mobilePane: 'canvas',
         labTemplate: 'three-tier',
+        view: { owner: null, minute: null },
         undoState: { owner: null, stack: emptyUndo() },
 
         toast: (text, kind = 'info') => {
@@ -414,10 +422,26 @@ export const useGame = create<Store>()(
           set({ introOpen: false, running: missionOf(get().session?.missionId ?? '').kind === 'incident' });
         },
 
-        setRunning: (v) => set({ running: v }),
+        setRunning: (v) => set((s) => ({ running: v, view: v ? { owner: null, minute: null } : s.view })),
+        viewAt: (minute) => {
+          const { session } = get();
+          if (!session) return;
+          if (minute === null || session.history.length === 0) return set({ view: { owner: null, minute: null } });
+          // snap to a minute that has a snapshot, and never to the newest one: that is just "live"
+          const i = indexAt(session.history, minute);
+          set({ running: false, view: { owner: session, minute: i === session.history.length - 1 ? null : session.history[i].minute } });
+        },
+        scrub: (delta) => {
+          const { session, view } = get();
+          if (!session || session.history.length === 0) return;
+          const cur = view.owner === session ? view.minute : null;
+          const next = stepView(session.history, cur, delta);
+          set({ running: next === null ? get().running : false, view: { owner: next === null ? null : session, minute: next } });
+        },
         setSpeed: (s) => set({ speed: s }),
         step: (n) => {
           const { session, progress } = get();
+          if (get().view.minute !== null) set({ view: { owner: null, minute: null } });
           if (!session) return;
           const wasFailed = session.failed;
           advance(session, n);
@@ -485,6 +509,7 @@ export const useGame = create<Store>()(
         deploy: () => {
           const { session, progress } = get();
           if (!session) return;
+          set({ view: { owner: null, minute: null } });
           const r = deployDraft(session);
           if (!r.ok) {
             get().toast((r.blocked ?? ['Deploy failed']).slice(0, 3).join(' • '), 'warn');
@@ -498,6 +523,7 @@ export const useGame = create<Store>()(
         revert: () => {
           const { session, progress } = get();
           if (!session) return;
+          set({ view: { owner: null, minute: null } });
           if (revertLast(session)) {
             get().toast('Reverted to the previous deployed architecture.', 'info');
             set({ progress: { ...progress, stats: { ...progress.stats, reverts: progress.stats.reverts + 1 } } });
@@ -508,6 +534,7 @@ export const useGame = create<Store>()(
         act: (id) => {
           const { session } = get();
           if (!session) return;
+          set({ view: { owner: null, minute: null } });
           const r = applyAction(session, id);
           // a mission action rewrites the draft as well as the live system, so earlier snapshots no longer apply
           set({ undoState: { owner: session, stack: emptyUndo() } });
@@ -574,6 +601,7 @@ export const useGame = create<Store>()(
           if (!session || session.missionId === LAB_ID) return;
           const m = MISSION_BY_ID[session.missionId];
           const firstTime = !progress.completed[m.id]?.passed;
+          set({ view: { owner: null, minute: null } });
           const { outcome, report } = verify(session, firstTime);
           const prevLevel = levelFromXp(progress.xp);
           const next: Progress = {
