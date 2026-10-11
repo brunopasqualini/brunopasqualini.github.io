@@ -9,6 +9,7 @@ import { useGame } from '@/game/store';
 import { Chip, Meter, Modal } from '@/shared/ui/common';
 import { usd2 } from '@/shared/lib/fmt';
 import { go } from '@/shared/lib/nav';
+import { FeedbackCard } from '@/features/workspace/FeedbackCard';
 
 export function MissionIntro() {
   const session = useGame((s) => s.session);
@@ -317,6 +318,17 @@ export function Debrief() {
           )}
         </div>
       </div>
+      <FeedbackCard
+        ctx={{
+          missionId: o.missionId,
+          attempt: o.attempt,
+          mode: session.mode,
+          passed: o.passed,
+          overall: o.overall,
+          hintsUsed: o.hintsUsed,
+          minutes: o.minutes,
+        }}
+      />
       <div className="tabs" role="tablist">
         {(
           [
