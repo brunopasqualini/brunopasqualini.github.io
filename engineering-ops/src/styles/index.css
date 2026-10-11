@@ -13,6 +13,7 @@
 @import './workspace.css';
 @import './canvas.css';
 @import './timeline.css';
+@import './effects.css';
 @import './responsive.css';
 
 /* Deliberately UNLAYERED. Any page that embeds this app (a hosting shell, a preview frame) may inject plain,
