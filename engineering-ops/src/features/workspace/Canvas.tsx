@@ -83,6 +83,7 @@ function CanvasInner() {
   const speed = useGame((s) => s.speed);
   const { chosen: fxChosen, level: fx, reduced: fxReduced, cycle: cycleFx } = useFx();
   const selection = useGame((s) => s.selection);
+  const highlight = useGame((s) => s.highlight);
   const undoable = useGame((s) => s.undoState.owner === s.session && canUndo(s.undoState.stack));
   const redoable = useGame((s) => s.undoState.owner === s.session && canRedo(s.undoState.stack));
   // semantic zoom: 2 = close (everything), 1 = overview (no metric text), 0 = far (tiles and names only)
@@ -125,6 +126,7 @@ function CanvasInner() {
         changed: liveIds.has(n.id) && liveCfg.get(n.id) !== JSON.stringify(n.config),
         isNetwork,
         minute: snap?.minute ?? 0,
+        attacked: highlight.includes(n.id),
         moment: moments[n.id],
       };
       if (entryOf(n.kind).role === 'lb' && snap) {
@@ -156,7 +158,7 @@ function CanvasInner() {
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, draft, selection.type, selection.id, snap, report, moments]);
+  }, [tick, draft, selection.type, selection.id, snap, report, moments, highlight]);
 
   const edges: BuiltInEdge[] = useMemo(() => {
     if (!draft) return [];

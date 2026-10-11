@@ -106,6 +106,8 @@ interface Store {
   running: boolean;
   speed: 1 | 4 | 16;
   selection: { type: 'node' | 'edge' | null; id?: string };
+  /** Components to mark on the canvas (the blast radius of an attack run in the Lab). Runtime only. */
+  highlight: string[];
   introOpen: boolean;
   debrief: { outcome: Outcome; report: Report; firstTime: boolean } | null;
   toasts: Toast[];
@@ -140,6 +142,7 @@ interface Store {
   resetDraft: () => void;
   moveNode: (id: string, pos: { x: number; y: number }) => void;
   select: (type: 'node' | 'edge' | null, id?: string) => void;
+  setHighlight: (ids: string[]) => void;
   deploy: () => void;
   revert: () => void;
   act: (id: string) => void;
@@ -261,6 +264,7 @@ export const useGame = create<Store>()(
         running: false,
         speed: 1,
         selection: { type: null },
+        highlight: [],
         introOpen: false,
         debrief: null,
         toasts: [],
@@ -476,6 +480,7 @@ export const useGame = create<Store>()(
           set((s) => ({ tick: s.tick + 1, selection: { type: null } }));
           persistSoon();
         },
+        setHighlight: (ids) => set({ highlight: ids }),
         select: (type, id) => set({ selection: { type, id }, rightTab: type ? 'inspect' : get().rightTab }),
         deploy: () => {
           const { session, progress } = get();
