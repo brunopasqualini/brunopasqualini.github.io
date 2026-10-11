@@ -49,6 +49,11 @@ Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings 
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
+Feedback: after a mission, the debrief asks how hard it was and whether the brief was clear (optional note). Answers are stored in this
+browser only, in their own storage key (`engineering-ops-feedback-v1`), separate from the game save, so **Reset all progress** does not
+erase them. **Settings → Your feedback** shows them per mission and lets you open a pre-filled GitHub issue, copy as text, export JSON or
+clear. Nothing is sent anywhere unless you use one of those buttons.
+
 Attack simulation: in the Lab, **Attack simulation** runs a leaked credential, an open data store or an HTTP flood against the deployed
 design and shows which defences held or failed, how far the damage spreads (marked on the canvas) and what to change. See
 [`docs/ATTACKS.md`](docs/ATTACKS.md).
