@@ -13,7 +13,7 @@ or benefits.
 
 - Real, runnable **React + TypeScript + Vite** app. No backend, no account, no cloud calls.
 - A deterministic, rule-based **simulation engine** (pure TypeScript, unit-tested) with explainable causal effects.
-- **Fourteen playable missions** on one data-driven engine, an **Architecture Lab** sandbox with chaos drills,
+- **Fourteen playable missions** on one data-driven engine, an **Architecture Lab** sandbox with chaos drills and traffic shapes (daily cycle, flash sale, thundering herd, batch sawtooth, going viral),
   scoring across ten dimensions, skill tree, journal, ADRs and postmortems.
 - Everything is **simulated**. Costs are _estimates_, not AWS prices; nothing touches a real cloud account.
 
@@ -54,6 +54,10 @@ earlier minute. It is paused and read-only in effect: nothing is replayed or cha
 live. Markers show deploys, faults and incidents; click one to jump there. Time-series panels (charts, logs) always show the full
 history, so they keep showing the latest.
 
+Editing the draft: `Ctrl/⌘+Z` undo, `Ctrl/⌘+Shift+Z` (or `Ctrl+Y`) redo. Shift/Ctrl/⌘-click or Shift-drag a box to select several
+components; `Ctrl/⌘+C` copy, `Ctrl/⌘+V` paste, `Ctrl/⌘+D` duplicate. Undo covers the draft you are editing, never the deployed system
+(use **Revert** for that), and a copy keeps only the connections between the copied components.
+
 ## The missions
 
 | #   | Mission                     | Kind     | Teaches                                                                                                                                  |
@@ -89,14 +93,14 @@ src/
   features/       home, missions, incidents, lab/workspace, academy, journal, achievements (no cross-imports)
   shared/         ui (design-system components on Base UI), lib, hooks
   styles/         tokens, base, layout, components, features, responsive: CSS cascade layers
-docs/             ARCHITECTURE.md (stack decisions and research), SIMULATION.md (model), MISSIONS.md (authoring)
+docs/             ARCHITECTURE.md (stack decisions and research), SIMULATION.md (model), MISSIONS.md (authoring), CANVAS_EFFECTS.md (animation)
 ```
 
 - **Persistence by replay.** A session is an ordered log of ops (advance / deploy / action / chaos / revert); resuming
   replays them deterministically, so saves stay tiny and exact.
 - **Clear boundaries for a future backend:** the store is the only persistence consumer (`zustand/persist`); the
   simulation and scoring are pure functions.
-- See [`docs/SIMULATION.md`](docs/SIMULATION.md) for every rule and [`docs/MISSIONS.md`](docs/MISSIONS.md) to add a scenario.
+- See [`docs/SIMULATION.md`](docs/SIMULATION.md) for every rule and [`docs/MISSIONS.md`](docs/MISSIONS.md) to add a scenario. The canvas animation (Effects: Subtle / Full / Off) is described in [`docs/CANVAS_EFFECTS.md`](docs/CANVAS_EFFECTS.md).
 
 ## Design notes
 
