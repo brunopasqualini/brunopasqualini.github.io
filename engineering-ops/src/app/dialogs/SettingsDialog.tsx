@@ -2,6 +2,7 @@ import { Download, Trash2, Upload } from 'lucide-react';
 import { useRef } from 'react';
 import { useGame } from '@/game/store';
 import { Modal, useConfirm } from '@/shared/ui/common';
+import { FeedbackSection } from '@/app/dialogs/FeedbackSection';
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const mode = useGame((s) => s.settings.mode);
@@ -85,6 +86,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
+        <FeedbackSection />
       </div>
       {dialog}
     </Modal>

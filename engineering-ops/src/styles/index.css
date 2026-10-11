@@ -9,10 +9,10 @@
 @import './components.css';
 @import './pages.css';
 @import './home.css';
+@import './timeline.css';
 @import './workspace-layout.css';
 @import './workspace.css';
 @import './canvas.css';
-@import './timeline.css';
 @import './effects.css';
 @import './responsive.css';
 
