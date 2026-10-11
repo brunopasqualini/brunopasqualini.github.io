@@ -93,6 +93,10 @@ Journey order: Level 1 = missions 2, 7, 8 · Level 2 = 1, 5, 10 · Level 3 = 4, 
 
 Each has multiple valid solutions and tempting wrong ones; `src/game/missions.test.ts` encodes both.
 
+Multi-Region: in the Lab, **Users and Regions** shows latency by user geography, how DNS routes (single Region, latency-routed or split
+active/active), what losing the primary Region costs in minutes (automatic, manual or nowhere to go), replica lag and cross-Region transfer
+cost. See [`docs/MULTI_REGION.md`](docs/MULTI_REGION.md).
+
 ## Architecture
 
 ```
