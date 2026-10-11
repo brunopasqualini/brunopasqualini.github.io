@@ -1,0 +1,45 @@
+@layer components {
+  .toasts {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 18px;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 60;
+    pointer-events: none;
+    max-width: min(420px, calc(100vw - 32px));
+  }
+  .toast {
+    pointer-events: auto;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #0e1a33;
+    border: 1px solid var(--line2);
+    box-shadow: var(--shadow);
+    font-size: 13px;
+    animation: slide 0.25s;
+  }
+  .toast-good {
+    border-color: rgba(52, 211, 153, 0.6);
+  }
+  .toast-warn {
+    border-color: rgba(245, 158, 11, 0.7);
+  }
+  .toast-bad {
+    border-color: rgba(239, 68, 68, 0.8);
+    background: #2a0f1a;
+  }
+  @keyframes slide {
+    from {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+  }
+}

@@ -1,0 +1,120 @@
+@layer features {
+  .plan-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .diff li {
+    display: flex;
+    gap: 8px;
+    font: 12px var(--mono);
+    padding: 3px 6px;
+    border-radius: 5px;
+  }
+  .diff .op {
+    width: 12px;
+    font-weight: 700;
+  }
+  .diff-add {
+    background: rgba(52, 211, 153, 0.08);
+    color: #86efac;
+  }
+  .diff-rem {
+    background: rgba(239, 68, 68, 0.08);
+    color: #fca5a5;
+  }
+  .diff-chg {
+    background: rgba(245, 158, 11, 0.07);
+    color: #fde68a;
+  }
+  .diff .link {
+    color: inherit;
+    font: inherit;
+  }
+  .issues li {
+    padding: 5px 0;
+    font-size: 12.5px;
+    border-bottom: 1px solid var(--line);
+  }
+  .issues .link {
+    color: var(--text);
+  }
+  .explain {
+    margin-top: 16px;
+    padding-top: 6px;
+    border-top: 1px solid var(--line2);
+  }
+  .guide-steps {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .guide-steps li {
+    display: flex;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .guide-steps li.current {
+    color: var(--text);
+  }
+  .guide-steps li.done b {
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .guide-steps p {
+    margin: 4px 0 8px;
+    color: var(--text);
+  }
+  .guide-mark {
+    flex: none;
+    margin-top: 1px;
+    color: var(--cyan);
+  }
+  .guide-steps li.done .guide-mark {
+    color: var(--green);
+  }
+  .story-block {
+    margin-top: 12px;
+  }
+  .story-block h5 {
+    margin: 0 0 4px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .story-block > p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text);
+  }
+  .story-next {
+    padding: 9px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--line2);
+    border-left: 3px solid var(--cyan);
+    background: var(--panel2);
+  }
+  .changes li {
+    padding: 9px 11px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid var(--line);
+    background: var(--panel2);
+  }
+  .changes li.better {
+    border-left: 3px solid var(--green);
+  }
+  .changes li.worse {
+    border-left: 3px solid var(--red);
+  }
+  .changes p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+}
