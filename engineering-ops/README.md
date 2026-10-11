@@ -102,6 +102,10 @@ docs/             ARCHITECTURE.md (stack decisions and research), SIMULATION.md 
 - **Accessibility:** semantic landmarks, labelled controls, dialogs with focus handling, keyboard-operable controls,
   `prefers-reduced-motion` respected, status never conveyed by colour alone (text tags + reasons).
 
+## Learning paths
+
+Role-based routes (backend, cloud architect, SRE, FinOps) over the missions, with a next-step view. See [docs/LEARNING_PATHS.md](docs/LEARNING_PATHS.md).
+
 ## Limitations (by design)
 
 This is an MVP teaching model: small, internally consistent and defensible, not a faithful cloud simulator.
