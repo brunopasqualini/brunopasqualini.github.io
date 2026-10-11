@@ -1,0 +1,73 @@
+@layer components {
+  .tabs {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab {
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    padding: 9px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .tab:hover {
+    color: var(--text);
+  }
+  .tab[data-active],
+  .tab-on {
+    color: var(--cyan);
+    border-bottom-color: var(--cyan);
+  }
+  .badge {
+    font-size: 10px;
+    padding: 0 6px;
+    border-radius: 99px;
+    background: var(--panel3);
+    color: var(--text);
+    line-height: 16px;
+  }
+  .badge-crit {
+    background: var(--red-strong);
+    color: #fff;
+  }
+  .badge-warn {
+    background: var(--amber);
+    color: #1b1200;
+  }
+  .badge-guide {
+    background: rgba(34, 211, 238, 0.18);
+    color: var(--cyan);
+    border: 1px solid rgba(34, 211, 238, 0.4);
+  }
+  .seen {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    opacity: 0.8;
+  }
+  /* Base UI renders a wrapper element around the tab list: let it shrink so long tab strips scroll instead of pushing siblings out. */
+  .tabs-root {
+    min-width: 0;
+  }
+  .dock-bar .tabs-root {
+    flex: 1;
+  }
+  .dock-bar > .icon-btn {
+    flex: none;
+  }
+  .dock-bar .tabs {
+    mask-image: linear-gradient(90deg, #000 94%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent);
+  }
+}

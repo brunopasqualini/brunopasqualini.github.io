@@ -1,0 +1,27 @@
+@layer features {
+  .slider {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12.5px;
+  }
+  .slider span {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+  }
+  .slider b {
+    color: var(--text);
+    font-family: var(--mono);
+  }
+  .designs li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 12.5px;
+  }
+  .cmp {
+    overflow-x: auto;
+    margin-top: 8px;
+  }
+}

@@ -1,0 +1,58 @@
+@layer components {
+  .switch {
+    width: 38px;
+    height: 22px;
+    border-radius: 99px;
+    background: #1a2a4a;
+    border: 1px solid var(--line2);
+    position: relative;
+    cursor: pointer;
+    padding: 0;
+    flex: none;
+  }
+  .switch span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #8aa0c6;
+    transition: 0.15s;
+  }
+  .switch.on {
+    background: rgba(34, 211, 238, 0.3);
+    border-color: var(--cyan);
+  }
+  .switch.on span {
+    left: 18px;
+    background: var(--cyan);
+  }
+  input[type='text'],
+  input[type='number'],
+  input:not([type]),
+  select,
+  textarea {
+    background: #08111f;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    padding: 6px 9px;
+    width: 100%;
+    min-width: 0;
+  }
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='range'] {
+    width: auto;
+    accent-color: var(--cyan);
+  }
+  input[type='range'] {
+    width: 100%;
+  }
+  select {
+    cursor: pointer;
+  }
+  textarea {
+    resize: vertical;
+  }
+}
