@@ -49,6 +49,10 @@ Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings 
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
+Editing the draft: `Ctrl/⌘+Z` undo, `Ctrl/⌘+Shift+Z` (or `Ctrl+Y`) redo. Shift/Ctrl/⌘-click or Shift-drag a box to select several
+components; `Ctrl/⌘+C` copy, `Ctrl/⌘+V` paste, `Ctrl/⌘+D` duplicate. Undo covers the draft you are editing, never the deployed system
+(use **Revert** for that), and a copy keeps only the connections between the copied components.
+
 ## The missions
 
 | #   | Mission                     | Kind     | Teaches                                                                                                                                  |
