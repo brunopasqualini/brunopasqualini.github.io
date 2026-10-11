@@ -4,6 +4,7 @@ import { buildReport } from '@/engine/analysis';
 import { emptyState, solve } from '@/engine/engine';
 import type { Arch, Workload } from '@/engine/types';
 import { TEMPLATES } from '@/content/templates';
+import { GameDayPanel } from './GameDayPanel';
 import { TRAFFIC_SHAPES, SHAPE_BY_ID, atPeak, matchShape, profilePeak, shapePatch } from '@/content/trafficShapes';
 import { ShapePreview } from '@/features/workspace/ShapePreview';
 import { useGame } from '@/game/store';
@@ -210,6 +211,7 @@ export function LabPanel() {
           />
         </label>
       </section>
+      <GameDayPanel />
       <section>
         <h4>Inject failure (chaos)</h4>
         <div className="row-gap">
