@@ -1,0 +1,44 @@
+@layer features {
+  .path-steps {
+    list-style: none;
+    margin: 12px 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .path-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+  }
+  .path-step.is-blocked {
+    opacity: 0.65;
+  }
+  .path-step.is-next {
+    border-color: var(--accent, var(--line2));
+  }
+  .path-num {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--line2);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+  }
+  .path-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .path-next {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 10px 0;
+  }
+}

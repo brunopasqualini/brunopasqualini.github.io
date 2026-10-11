@@ -17,6 +17,10 @@ or benefits.
   scoring across ten dimensions, skill tree, journal, ADRs and postmortems.
 - Everything is **simulated**. Costs are _estimates_, not AWS prices; nothing touches a real cloud account.
 
+## Learning paths
+
+Role-based routes (backend, cloud architect, SRE, FinOps) over the missions, with a next-step view. See [docs/LEARNING_PATHS.md](docs/LEARNING_PATHS.md).
+
 ## Quick start
 
 ```bash
