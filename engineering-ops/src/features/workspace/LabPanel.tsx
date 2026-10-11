@@ -1,6 +1,7 @@
 import { FlaskConical, Save, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { buildReport } from '@/engine/analysis';
+import { GeographyPanel } from '@/features/workspace/GeographyPanel';
 import { emptyState, solve } from '@/engine/engine';
 import type { Arch, Workload } from '@/engine/types';
 import { TEMPLATES } from '@/content/templates';
@@ -336,6 +337,7 @@ export function LabPanel() {
           </div>
         )}
       </section>
+      <GeographyPanel />
       <p className="muted tiny">
         All behaviour here is simulated. Costs are estimates, not AWS prices, and nothing touches a real cloud account.{' '}
         <Chip kind="info">sandbox</Chip>
