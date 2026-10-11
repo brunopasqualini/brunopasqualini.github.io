@@ -77,7 +77,7 @@ function freeSpot(arch: Arch, from: { x: number; y: number }): { x: number; y: n
 const FIT = { padding: { top: '40px', right: '24px', bottom: '60px', left: '56px' }, maxZoom: 1.2 } as const;
 
 function CanvasInner() {
-  const { session, snap, report } = useLive();
+  const { session, snap, report, viewing } = useLive();
   const tick = useGame((s) => s.tick);
   const running = useGame((s) => s.running);
   const speed = useGame((s) => s.speed);
@@ -511,6 +511,7 @@ function CanvasInner() {
     <div
       className="canvas"
       data-detail={detail}
+      data-viewing={viewing}
       data-fx={fx}
       data-running={running}
       ref={wrap}
