@@ -19,7 +19,7 @@ import {
   QueuesPanel,
   SecurityPanel,
   TracesPanel,
-} from '@/features/workspace/panels/panels';
+} from '@/features/workspace/panels';
 import { OverviewPanel } from '@/features/workspace/panels/overview';
 
 const LABELS: Record<PanelId, string> = {
