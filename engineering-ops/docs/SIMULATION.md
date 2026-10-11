@@ -11,7 +11,10 @@ The simulation is a **small, deterministic, explainable** model — not a cloud 
 One tick = one virtual minute. `solve(arch, workload, minute, prevState, chaos)` returns a `Snapshot` plus the
 next carried `SimState` (queue backlogs, autoscaled replica counts). Same inputs → same outputs.
 
-Workload traffic is a piecewise-linear multiplier profile over minutes (`rpsAt`).
+Workload traffic is a piecewise-linear multiplier profile over minutes (`rpsAt`). By default it plays once and holds its last value;
+an optional `profileCycle` (minutes) makes it repeat, which is how the Lab's traffic shapes (daily cycle, flash sale, thundering herd,
+batch sawtooth, going viral) are built. The shapes live in `content/trafficShapes.ts`; choosing one only patches the workload, so it is
+recorded and replayed like any other workload operation.
 
 ## Solving a snapshot
 
