@@ -49,6 +49,11 @@ Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings 
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
+Feedback: after a mission, the debrief asks how hard it was and whether the brief was clear (optional note). Answers are stored in this
+browser only, in their own storage key (`engineering-ops-feedback-v1`), separate from the game save, so **Reset all progress** does not
+erase them. **Settings → Your feedback** shows them per mission and lets you open a pre-filled GitHub issue, copy as text, export JSON or
+clear. Nothing is sent anywhere unless you use one of those buttons.
+
 Editing the draft: `Ctrl/⌘+Z` undo, `Ctrl/⌘+Shift+Z` (or `Ctrl+Y`) redo. Shift/Ctrl/⌘-click or Shift-drag a box to select several
 components; `Ctrl/⌘+C` copy, `Ctrl/⌘+V` paste, `Ctrl/⌘+D` duplicate. Undo covers the draft you are editing, never the deployed system
 (use **Revert** for that), and a copy keeps only the connections between the copied components.
