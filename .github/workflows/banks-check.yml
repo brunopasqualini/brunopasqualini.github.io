@@ -1,0 +1,30 @@
+# Validates the exam simulator's catalog and question banks, so a contributed bank is checked before it is merged.
+name: Question banks check
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'exam-simulator/banks.json'
+      - 'exam-simulator/questions/**'
+      - 'scripts/validate-banks.mjs'
+      - '.github/workflows/banks-check.yml'
+  pull_request:
+    paths:
+      - 'exam-simulator/banks.json'
+      - 'exam-simulator/questions/**'
+      - 'scripts/validate-banks.mjs'
+      - '.github/workflows/banks-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  banks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node scripts/validate-banks.mjs
