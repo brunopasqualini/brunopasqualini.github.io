@@ -117,6 +117,8 @@ export interface Workload {
   baseRps: number;
   /** Piecewise-linear multiplier profile over virtual minutes. */
   profile: { t: number; mult: number }[];
+  /** When set, the profile repeats every this many virtual minutes (a daily curve, a cron-driven batch). Unset: it plays once and holds its last value. */
+  profileCycle?: number;
   readRatio: number;
   /** Share of reads that are cacheable (same key requested repeatedly). */
   cacheableShare: number;
