@@ -7,6 +7,7 @@ import { num } from '@/shared/lib/fmt';
 import { toneOfKind } from '@/shared/ui/roleTone';
 import { serviceName } from '@/shared/ui/serviceName';
 import { QueueDots, Strip, tilesFor, type Tile } from '@/features/workspace/InstanceStrip';
+import { breathSeconds, momentLabel, type Moment } from '@/features/workspace/effects/fx';
 
 export interface ArchNodeData extends Record<string, unknown> {
   node: ArchNode;
@@ -24,6 +25,8 @@ export interface ArchNodeData extends Record<string, unknown> {
   /** Downstream fleet of a load balancer: its targets' instances. */
   fanout?: Tile[];
   fanoutLabel?: string;
+  /** Something just happened to this component (hit, recovered, scaled, deployed): plays a one-shot effect. */
+  moment?: Moment;
 }
 
 export function summaryOf(n: ArchNode): string {
@@ -126,6 +129,7 @@ export function ArchNodeView({ data, selected }: NodeProps) {
   const summary = summaryOf(n);
   const showConf = summary !== e.name;
   const service = serviceName(n.kind);
+  const working = e.role === 'worker' && (d.metrics?.served ?? 0) > 0;
   const tile = (
     <div className={`anode-tile ${fleet ? 'anode-stacked' : ''}`}>
       <NodeIcon name={e.icon} size={d.isNetwork ? 20 : card ? 22 : 26} />
@@ -135,11 +139,17 @@ export function ArchNodeView({ data, selected }: NodeProps) {
         </span>
       )}
       {n.kind === 'sg' && <Lock className="anode-lock" size={11} />}
+      {d.moment && (
+        <span key={d.moment.at} className={`fx-moment fx-${d.moment.kind}`} aria-hidden="true">
+          {momentLabel(d.moment) && <b>{momentLabel(d.moment)}</b>}
+        </span>
+      )}
     </div>
   );
   return (
     <div
-      className={`anode anode-${d.status} tone-${toneOfKind(n.kind, e.role)} ${card ? 'anode-card' : ''} ${asg ? 'anode-asg' : ''} ${selected ? 'anode-selected' : ''} ${d.pending ? 'anode-pending' : ''} ${d.isNetwork ? 'anode-net' : ''}`}
+      className={`anode anode-${d.status} tone-${toneOfKind(n.kind, e.role)} ${card ? 'anode-card' : ''} ${asg ? 'anode-asg' : ''} ${selected ? 'anode-selected' : ''} ${d.pending ? 'anode-pending' : ''} ${d.isNetwork ? 'anode-net' : ''} ${working ? 'anode-working' : ''}`}
+      style={{ ['--bt' as string]: `${breathSeconds(util)}s` }}
       aria-label={`${n.label}, ${d.status}`}
     >
       {asg && (
