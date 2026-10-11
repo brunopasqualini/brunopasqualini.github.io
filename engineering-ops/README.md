@@ -17,8 +17,6 @@ or benefits.
   scoring across ten dimensions, skill tree, journal, ADRs and postmortems.
 - Everything is **simulated**. Costs are _estimates_, not AWS prices; nothing touches a real cloud account.
 
-## Learning paths
-
 Role-based routes (backend, cloud architect, SRE, FinOps) over the missions, with a next-step view. See [docs/LEARNING_PATHS.md](docs/LEARNING_PATHS.md).
 
 ## Quick start
@@ -36,8 +34,6 @@ npm run preview
 ```
 
 Requires Node 20+. Progress is saved in your browser (`localStorage`); Settings → Export/Import moves it between browsers.
-
-## Game days
 
 The Lab can run scripted multi-fault exercises and grade impact, recovery and detection. See [docs/GAME_DAYS.md](docs/GAME_DAYS.md).
 
@@ -57,27 +53,22 @@ The Lab can run scripted multi-fault exercises and grade impact, recovery and de
 
 Keyboard: `Space` run/pause, `.` step one minute, `Delete` removes the selected item.
 
-Looking back: drag the timeline under the health strip (or press `[` and `]`) to see the canvas and health numbers as they were at an
-earlier minute. It is paused and read-only in effect: nothing is replayed or changed, and running, stepping or deploying returns to
-live. Markers show deploys, faults and incidents; click one to jump there. Time-series panels (charts, logs) always show the full
-history, so they keep showing the latest.
+## Features
 
-Feedback: after a mission, the debrief asks how hard it was and whether the brief was clear (optional note). Answers are stored in this
-browser only, in their own storage key (`engineering-ops-feedback-v1`), separate from the game save, so **Reset all progress** does not
-erase them. **Settings → Your feedback** shows them per mission and lets you open a pre-filled GitHub issue, copy as text, export JSON or
-clear. Nothing is sent anywhere unless you use one of those buttons.
+| Feature                     | Where                               | What it does                                                                                                                                           | More                                        |
+| --------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| Learning paths              | `/paths`                            | Role-based routes (backend, cloud architect, SRE, FinOps) over the missions, with a next-step view.                                                    | [LEARNING_PATHS.md](docs/LEARNING_PATHS.md) |
+| Timeline scrubber           | under the health strip; `[` and `]` | Look back at the canvas and health numbers at an earlier minute. Read-only: running, stepping or deploying returns to live.                            |                                             |
+| Undo, redo and multi-select | canvas                              | `Ctrl/⌘+Z` and `Ctrl/⌘+Shift+Z` for the draft; Shift/Ctrl/⌘-click or Shift-drag to select several; `Ctrl/⌘+C`, `V`, `D` copy, paste and duplicate.     |                                             |
+| Design review               | Plan & deploy                       | Flags anti-patterns in your draft as you build, each with the reason, the fix and a lesson link. Advice, never a deploy gate.                          | [DESIGN_REVIEW.md](docs/DESIGN_REVIEW.md)   |
+| Attack simulation           | Lab                                 | Runs a leaked credential, an open data store or an HTTP flood against the deployed design and marks the blast radius on the canvas.                    | [ATTACKS.md](docs/ATTACKS.md)               |
+| Users and Regions           | Lab                                 | Latency by user geography, how DNS routes, what losing the primary Region costs, replication lag and cost.                                             | [MULTI_REGION.md](docs/MULTI_REGION.md)     |
+| Game days                   | Lab                                 | Scripted multi-fault exercises graded on impact, recovery and detection.                                                                               | [GAME_DAYS.md](docs/GAME_DAYS.md)           |
+| Traffic shapes              | Lab                                 | Daily cycle, flash sale, thundering herd, batch sawtooth and going viral.                                                                              | [SIMULATION.md](docs/SIMULATION.md)         |
+| Canvas effects              | canvas toolbar                      | Animated traffic and component effects while the simulation runs (Subtle, Full, Off).                                                                  | [CANVAS_EFFECTS.md](docs/CANVAS_EFFECTS.md) |
+| Feedback                    | mission debrief, Settings           | Rate a mission and add a note. Stored in this browser only, separate from the game save; you can copy it, export it or open a pre-filled GitHub issue. |                                             |
 
-Attack simulation: in the Lab, **Attack simulation** runs a leaked credential, an open data store or an HTTP flood against the deployed
-design and shows which defences held or failed, how far the damage spreads (marked on the canvas) and what to change. See
-[`docs/ATTACKS.md`](docs/ATTACKS.md).
-
-Editing the draft: `Ctrl/⌘+Z` undo, `Ctrl/⌘+Shift+Z` (or `Ctrl+Y`) redo. Shift/Ctrl/⌘-click or Shift-drag a box to select several
-components; `Ctrl/⌘+C` copy, `Ctrl/⌘+V` paste, `Ctrl/⌘+D` duplicate. Undo covers the draft you are editing, never the deployed system
-(use **Revert** for that), and a copy keeps only the connections between the copied components.
-
-Design review: **Plan & deploy → Design review** flags anti-patterns in your draft as you build (single-AZ databases, retries without a
-breaker, queues without a dead-letter queue, connection exhaustion, and more), each with the reason, the fix and a lesson link. It is
-advice, never a deploy gate. See [`docs/DESIGN_REVIEW.md`](docs/DESIGN_REVIEW.md).
+New features add a row here and their own file under `docs/`.
 
 ## The missions
 
@@ -101,10 +92,6 @@ advice, never a deploy gate. See [`docs/DESIGN_REVIEW.md`](docs/DESIGN_REVIEW.md
 Journey order: Level 1 = missions 2, 7, 8 · Level 2 = 1, 5, 10 · Level 3 = 4, 6, 11 · Level 4 = 3, 12, 13 · Level 5 = 14, 9. New players start with Mission 2: something is visibly failing, which teaches the investigate-and-fix loop faster than an open design brief.
 
 Each has multiple valid solutions and tempting wrong ones; `src/game/missions.test.ts` encodes both.
-
-Multi-Region: in the Lab, **Users and Regions** shows latency by user geography, how DNS routes (single Region, latency-routed or split
-active/active), what losing the primary Region costs in minutes (automatic, manual or nowhere to go), replica lag and cross-Region transfer
-cost. See [`docs/MULTI_REGION.md`](docs/MULTI_REGION.md).
 
 ## Architecture
 
