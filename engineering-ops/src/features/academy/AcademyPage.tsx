@@ -1,9 +1,10 @@
 import { Lock } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { MISSIONS } from '@/content/missions';
 import type { SkillId } from '@/content/missions/types';
 import { skillLevel, SKILLS, SKILL_THRESHOLDS, SKILL_TITLES } from '@/game/progression';
-import { LESSONS } from '@/content/academy';
+import { LESSONS, lessonById } from '@/content/academy';
 import { useGame } from '@/game/store';
 import { Chip, Meter, Empty } from '@/shared/ui/common';
 import { when } from '@/shared/lib/fmt';
@@ -11,7 +12,13 @@ import { go } from '@/shared/lib/nav';
 
 export function AcademyPage() {
   const progress = useGame((s) => s.progress);
-  const [sel, setSel] = useState<SkillId>('sd');
+  // /learning?lesson=sd-2 opens that lesson's skill branch and highlights it (linked from the design review)
+  const focusId = useSearchParams()[0].get('lesson');
+  const target = lessonById(focusId);
+  const [sel, setSel] = useState<SkillId>(target?.skill ?? 'sd');
+  useEffect(() => {
+    if (target) document.getElementById(`lesson-${target.lesson.id}`)?.scrollIntoView?.({ block: 'center' });
+  }, [target?.lesson.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const skill = SKILLS.find((s) => s.id === sel)!;
   const xp = progress.skillXp[sel];
   const lv = skillLevel(xp);
@@ -72,7 +79,11 @@ export function AcademyPage() {
               {LESSONS[sel].map((l) => {
                 const open = xp >= l.unlockXp;
                 return (
-                  <li key={l.id} className={open ? '' : 'locked'}>
+                  <li
+                    key={l.id}
+                    id={`lesson-${l.id}`}
+                    className={`${open ? '' : 'locked'} ${l.id === target?.lesson.id ? 'lesson-focus' : ''}`}
+                  >
                     <div className="row-between">
                       <b>
                         {open ? (
