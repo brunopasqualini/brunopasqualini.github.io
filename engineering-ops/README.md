@@ -13,7 +13,7 @@ or benefits.
 
 - Real, runnable **React + TypeScript + Vite** app. No backend, no account, no cloud calls.
 - A deterministic, rule-based **simulation engine** (pure TypeScript, unit-tested) with explainable causal effects.
-- **Fourteen playable missions** on one data-driven engine, an **Architecture Lab** sandbox with chaos drills,
+- **Fourteen playable missions** on one data-driven engine, an **Architecture Lab** sandbox with chaos drills and traffic shapes (daily cycle, flash sale, thundering herd, batch sawtooth, going viral),
   scoring across ten dimensions, skill tree, journal, ADRs and postmortems.
 - Everything is **simulated**. Costs are _estimates_, not AWS prices; nothing touches a real cloud account.
 
