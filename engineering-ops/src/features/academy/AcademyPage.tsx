@@ -25,6 +25,9 @@ export function AcademyPage() {
             Ten skill branches. Levels are earned from mission outcomes — each level shows the evidence behind it. Lessons unlock as you
             demonstrate the skill.
           </p>
+          <button className="btn btn-ghost btn-sm" onClick={() => go('/paths')}>
+            Follow a learning path for your role
+          </button>
         </div>
       </header>
       <div className="skill-grid">
