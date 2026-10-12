@@ -6,7 +6,8 @@ How this site is set up to be found by search engines and by AI search and assis
 
 | URL | Purpose | Source |
 | --- | --- | --- |
-| `/` | Home: both tools, plus crawlable text and links to every section | `index.html` (by hand, this repository) |
+| `/` | Home: the CV (experience, certifications, education), with a Person JSON-LD and a My Tools link | `index.html` (by hand, this repository) |
+| `/tools/` | Both tools, plus crawlable text and links to every section | `tools/index.html` (by hand, this repository) |
 | `/aws-practice-exams/` | Hub for the free AWS practice exams | generated |
 | `/aws-practice-exams/solutions-architect-associate-saa-c03/` | SAA-C03 page: domain table, 8 sample questions with explanations | generated |
 | `/aws-practice-exams/developer-associate-dva-c02/` | DVA-C02 page, same shape | generated |
@@ -51,7 +52,7 @@ Anthropic crawler documentation, and the general state of AI-search guidance.
 - **Real content on each exam page.** Question counts and domain breakdown come from the data, and eight sample questions with
   explanations are in the HTML, so the page is useful on its own and matches long-tail searches such as "AWS SAA-C03 sample
   question about Glue job bookmarks".
-- **Structured data (JSON-LD):** `WebSite` and `ItemList` on the home page, `WebApplication` on the apps,
+- **Structured data (JSON-LD):** `Person` on the CV home page, `WebSite` and `ItemList` on the tools page, `WebApplication` on the apps,
   `CollectionPage`, `Quiz`/`Question` and `FAQPage` on the exam pages, `LearningResource` on missions, and `BreadcrumbList`
   throughout. Google restricts some rich results (FAQ, for example, to a small set of sites), so treat this as helping search
   engines and AI systems understand the pages, not as a promise of rich results.
@@ -78,8 +79,8 @@ A static site cannot do these for itself, and they matter more for ranking than 
 
 1. **Verify the site in Google Search Console** (URL-prefix property `https://brunopasqualini.github.io/`). The easiest way on
    GitHub Pages is the HTML-tag method: add the `<meta name="google-site-verification" content="...">` tag Google gives you to the
-   `<head>` of `index.html` (and to `scripts/seo/site.mjs` if you want it on every page). Then **submit
-   `https://brunopasqualini.github.io/sitemap.xml`** and use URL Inspection to **Request indexing** for the home page, the hub,
+   `<head>` of `index.html` (and to `tools/index.html` and `scripts/seo/site.mjs` if you want it on every page). Then **submit
+   `https://brunopasqualini.github.io/sitemap.xml`** and use URL Inspection to **Request indexing** for the home page, the tools page, the hub,
    and each exam page. Also do this for Bing Webmaster Tools (it can import from Search Console).
 2. **Set the repository's description, website and topics** on GitHub (About box): description such as "Free AWS practice exams
    and a software architecture simulator", website `https://brunopasqualini.github.io/`, topics like `aws`, `aws-certification`,
