@@ -1,7 +1,7 @@
 // The checklist every indexable page has to meet. Returns a list of problems (empty when everything passes).
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from './data.mjs';
+import { OUT } from './data.mjs';
 import { SITE } from './site.mjs';
 
 const attr = (html, re) => html.match(re)?.[1];
@@ -10,23 +10,23 @@ export function check({ pages }) {
   const problems = [];
   const titles = new Map();
   const descriptions = new Map();
-  const sitemap = readFileSync(join(ROOT, 'sitemap.xml'), 'utf8');
+  const sitemap = readFileSync(join(OUT, 'sitemap.xml'), 'utf8');
 
   const exists = (href) => {
     const path = href.split('#')[0].split('?')[0];
     if (!path || !path.startsWith('/')) return true;
-    const target = join(ROOT, path);
+    const target = join(OUT, path);
     if (existsSync(target) && statSync(target).isFile()) return true;
     return existsSync(join(target, 'index.html'));
   };
 
   for (const { path, file } of pages) {
     const where = `${path} (${file})`;
-    if (!existsSync(join(ROOT, file))) {
+    if (!existsSync(join(OUT, file))) {
       problems.push(`${where}: file is missing`);
       continue;
     }
-    const html = readFileSync(join(ROOT, file), 'utf8');
+    const html = readFileSync(join(OUT, file), 'utf8');
     const title = attr(html, /<title>([^<]*)<\/title>/);
     const description = attr(html, /<meta\s+name="description"\s+content="([^"]*)"/);
     const canonical = attr(html, /<link\s+rel="canonical"\s+href="([^"]*)"/);
