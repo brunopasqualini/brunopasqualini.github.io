@@ -6,35 +6,34 @@ How this site is set up to be found by search engines and by AI search and assis
 
 | URL | Purpose | Source |
 | --- | --- | --- |
-| `/` | Home: both tools, plus crawlable text and links to every section | `index.html` (by hand) |
+| `/` | Home: both tools, plus crawlable text and links to every section | `index.html` (by hand, this repository) |
 | `/aws-practice-exams/` | Hub for the free AWS practice exams | generated |
 | `/aws-practice-exams/solutions-architect-associate-saa-c03/` | SAA-C03 page: domain table, 8 sample questions with explanations | generated |
 | `/aws-practice-exams/developer-associate-dva-c02/` | DVA-C02 page, same shape | generated |
 | `/software-architecture-simulator/` | Landing page for Engineering Ops, with all 14 missions | generated |
 | `/software-architecture-simulator/missions/<name>/` | One page per mission (scenario, brief, what it teaches) | generated |
-| `/exam-simulator/` | The practice exam app, with metadata and crawlable text around it | `exam-simulator/index.html` |
-| `/engineering-ops/dist/` | The simulator app (a React single-page app) | `engineering-ops/index.html`, built by CI |
+| `/exam-simulator/` | The practice exam app, with metadata and crawlable text around it | `index.html` in [cert-exam-simulator](https://github.com/brunopasqualini/cert-exam-simulator) |
+| `/engineering-ops/` | The simulator app (a React single-page app) | `index.html` in [system-design-simulator](https://github.com/brunopasqualini/system-design-simulator), built by the site pipeline |
+| `/engineering-ops/dist/` | Old address of the app: redirects to `/engineering-ops/`, marked `noindex`, not in the sitemap | `scripts/build-site.mjs` |
 
 The Engineering Ops app uses hash routing (`#/play/...`). Search engines treat everything after `#` as part of one page, so the app
 itself can only ever be one indexable URL. The generated pages are what make its content findable: each mission has a real URL
 with its own title, description and text, and links into the app.
 
-## Regenerating the pages
+## How the pages are generated
 
-The generated pages, `sitemap.xml` and `llms.txt` are built from the exam question banks and the Engineering Ops missions, so they
-cannot drift from the apps.
+The generated pages, `sitemap.xml` and `llms.txt` are built from the exam question banks (in `cert-exam-simulator`) and the
+Engineering Ops missions (in `system-design-simulator`), so they cannot drift from the apps. They are produced on every deploy
+into `_site/` and are not committed. [`deploy.yml`](../.github/workflows/deploy.yml) does this on each push to `master` here and each push
+to `main` in either project; to do it yourself, follow "Building locally" in the [README](../README.md).
 
-```bash
-cd engineering-ops && npm ci && cd ..   # once: esbuild bundles the TypeScript missions
-node scripts/seo/generate.mjs           # write the pages, sitemap.xml and llms.txt
-node scripts/seo/generate.mjs --check   # verify nothing is stale and every page passes the checklist
-```
+Change a bank or a mission's title, tagline, story, brief or learning points in its own repository and merge it: the next
+deploy regenerates the pages. To change the wording or structure of the generated pages, edit `scripts/seo/` in this repository.
 
-Run the generator after changing a question bank (`exam-simulator/banks.json` or `questions/`) or a mission's title, tagline,
-story, brief or learning points, and commit the result. The **SEO check** workflow runs `--check` on pull requests and fails if
-a generated file is out of date.
+The generator ends by holding every indexable page, hand-written and generated, to a checklist, and exits non-zero (failing the
+deploy, or the pull request) if any page does not meet it:
 
-`--check` also holds the hand-written pages to the same checklist: a `<title>` under 70 characters, a meta description of 50 to
+The checklist: a `<title>` under 70 characters, a meta description of 50 to
 170 characters, a canonical URL that matches the sitemap, `lang` on `<html>`, Open Graph title and image, exactly one `<h1>`,
 `alt` on every image, valid JSON-LD, working internal links, no duplicate titles or descriptions, and no `noindex` on a page that is
 in the sitemap.
@@ -60,7 +59,7 @@ Anthropic crawler documentation, and the general state of AI-search guidance.
   `lastmod` is left out because it is only used when it is reliably accurate.
 - **`robots.txt`** that allows everything, names the AI search and assistant crawlers (OAI-SearchBot, ChatGPT-User, GPTBot,
   Claude-SearchBot, Claude-User, ClaudeBot, PerplexityBot, Perplexity-User, Google-Extended, Applebot-Extended) and points to the
-  sitemap. It blocks only the app's un-built source entry (`/engineering-ops/` and `/engineering-ops/src/`), which is not a page.
+  sitemap. It blocks nothing.
   Blocking training crawlers such as GPTBot or ClaudeBot while still allowing the search ones is a one-line change per bot if you
   ever want that.
 - **`llms.txt`**, a short Markdown guide to the site for AI agents. Support for it is not established among the major crawlers, so
