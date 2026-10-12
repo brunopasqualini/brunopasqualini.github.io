@@ -8,9 +8,10 @@ import { OUT } from './data.mjs';
 import { buildPages } from './pages.mjs';
 import { CONTRIBUTE, REPO_EXAMS, REPO_OPS, SITE, layout } from './site.mjs';
 
-/** Pages that are not generated here: the landing page and the two apps. They are listed in the sitemap and held to the same checklist. */
+/** Pages that are not generated here: the CV, the tools landing page and the two apps. They are listed in the sitemap and held to the same checklist. */
 export const HANDWRITTEN = [
   { path: '/', file: 'index.html' },
+  { path: '/tools/', file: 'tools/index.html' },
   { path: '/exam-simulator/', file: 'exam-simulator/index.html' },
   { path: '/engineering-ops/', file: 'engineering-ops/index.html' },
 ];
