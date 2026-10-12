@@ -1,7 +1,9 @@
 // Shared building blocks for the generated pages: head metadata, structured data, header and footer.
 export const SITE = 'https://brunopasqualini.github.io';
 export const REPO = 'https://github.com/brunopasqualini/brunopasqualini.github.io';
-export const CONTRIBUTE = `${REPO}/blob/master/CONTRIBUTING.md`;
+export const REPO_EXAMS = 'https://github.com/brunopasqualini/cert-exam-simulator';
+export const REPO_OPS = 'https://github.com/brunopasqualini/system-design-simulator';
+export const CONTRIBUTE = `${REPO_EXAMS}/blob/main/CONTRIBUTING.md`;
 export const OG_IMAGE = `${SITE}/assets/og-image.png`;
 export const SITE_NAME = 'Bruno Pasqualini: free learning tools';
 
@@ -110,7 +112,7 @@ export function layout(page) {
     </main>
     <footer class="foot">
       <nav class="foot-links" aria-label="Footer">
-        <a href="/">Home</a>${nav}<a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/dist/">Open Engineering Ops</a><a href="${CONTRIBUTE}" rel="noopener">Contribute a question bank</a><a href="${REPO}" rel="noopener">GitHub</a>
+        <a href="/">Home</a>${nav}<a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/">Open Engineering Ops</a><a href="${CONTRIBUTE}" rel="noopener">Contribute a question bank</a><a href="${REPO_OPS}" rel="noopener">Simulator on GitHub</a><a href="${REPO_EXAMS}" rel="noopener">Exam simulator on GitHub</a>
       </nav>
       <p>
         Independent study tools. This website and its tools are not affiliated with, endorsed by or sponsored by Amazon Web

@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { check } from './check.mjs';
 import { OUT } from './data.mjs';
 import { buildPages } from './pages.mjs';
-import { CONTRIBUTE, SITE, layout } from './site.mjs';
+import { CONTRIBUTE, REPO_EXAMS, REPO_OPS, SITE, layout } from './site.mjs';
 
 /** Pages that are not generated here: the landing page and the two apps. They are listed in the sitemap and held to the same checklist. */
 export const HANDWRITTEN = [
@@ -43,7 +43,8 @@ ${missions.map(mission).join('\n')}
 
 ## Optional
 
-- [Source code and documentation](https://github.com/brunopasqualini/brunopasqualini.github.io): the repository, including the simulator's architecture and simulation docs
+- [Simulator source code and documentation](${REPO_OPS}): the repository, including the simulator's architecture and simulation docs
+- [Exam simulator source code](${REPO_EXAMS}): the app and the question banks
 - [Contribute a question bank](${CONTRIBUTE}): add practice questions for another exam or cloud provider (plain JSON, with a validator)
 `;
 }
