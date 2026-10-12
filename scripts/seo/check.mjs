@@ -1,6 +1,6 @@
 // The checklist every indexable page has to meet. Returns a list of problems (empty when everything passes).
-import { existsSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
 import { OUT } from './data.mjs';
 import { SITE } from './site.mjs';
 
@@ -38,6 +38,8 @@ export function check({ pages }) {
     if (canonical !== `${SITE}${path}`) problems.push(`${where}: canonical is ${canonical ?? 'missing'}, expected ${SITE}${path}`);
     if (!/<html[^>]*\slang="/.test(html)) problems.push(`${where}: missing lang on <html>`);
     if (!/property="og:title"/.test(html) || !/property="og:image"/.test(html)) problems.push(`${where}: missing Open Graph title or image`);
+    const ogImage = attr(html, /<meta\s+property="og:image"\s+content="([^"]*)"/);
+    if (ogImage?.startsWith(SITE) && !exists(ogImage.slice(SITE.length))) problems.push(`${where}: og:image ${ogImage} does not exist in the built site`);
     if (/<meta[^>]+name="robots"[^>]+noindex/i.test(html)) problems.push(`${where}: is marked noindex but listed in the sitemap`);
     if (!sitemap.includes(`<loc>${SITE}${path}</loc>`)) problems.push(`${where}: not in sitemap.xml`);
 
@@ -63,6 +65,19 @@ export function check({ pages }) {
     titles.set(title, path);
     if (description && descriptions.has(description)) problems.push(`${where}: duplicate description with ${descriptions.get(description)}`);
     descriptions.set(description, path);
+  }
+
+  // A page that is published but neither in the sitemap nor marked noindex is a page search engines may find by accident
+  // or never find at all: usually a forgotten entry in HANDWRITTEN or a stray file.
+  const walk = (dir) =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name)) : e.name.endsWith('.html') ? [join(dir, e.name)] : []));
+  for (const file of walk(OUT)) {
+    const rel = relative(OUT, file).split(sep).join('/');
+    const path = rel.endsWith('index.html') ? `/${rel.slice(0, -'index.html'.length)}` : `/${rel}`;
+    const html = readFileSync(file, 'utf8');
+    if (!sitemap.includes(`<loc>${SITE}${path}</loc>`) && !/<meta[^>]+name="robots"[^>]+noindex/i.test(html)) {
+      problems.push(`${path} (${rel}): published but not in sitemap.xml and not marked noindex`);
+    }
   }
   return problems;
 }
