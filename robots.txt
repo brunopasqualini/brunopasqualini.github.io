@@ -1,9 +1,6 @@
 # Everything on this site is public and meant to be found, by search engines and by AI search and assistant crawlers.
 User-agent: *
 Allow: /
-# The source entry of the app (not the built app at /engineering-ops/dist/) is not a real page.
-Disallow: /engineering-ops/$
-Disallow: /engineering-ops/src/
 
 # AI search, citation and assistant crawlers, named so the intent is explicit.
 User-agent: OAI-SearchBot
