@@ -1,12 +1,12 @@
 # brunopasqualini.github.io
 
-The GitHub Pages site that hosts two independent projects behind a small landing page. This repository holds only the landing
-page, the search-engine setup and the pipeline that assembles and publishes the site. The two projects live in their own
+The GitHub Pages site: a CV portfolio at the root, with a **My Tools** button that leads to a page listing two independent projects. This repository holds only the CV, the tools page, the search-engine setup and the pipeline that assembles and publishes the site. The two projects live in their own
 repositories:
 
 | URL | Project | Repository |
 | --- | --- | --- |
-| `/` | Landing page | this repository |
+| `/` | CV portfolio (home page) | this repository |
+| `/tools/` | Tools landing page, linked from the CV's **My Tools** button | this repository |
 | `/exam-simulator/` | Mock Exam Simulator (PWA, raw HTML/CSS/JS, no build step) | [cert-exam-simulator](https://github.com/brunopasqualini/cert-exam-simulator) |
 | `/engineering-ops/` | Engineering Ops (React + Vite + TypeScript) | [system-design-simulator](https://github.com/brunopasqualini/system-design-simulator) |
 | `/aws-practice-exams/…`, `/software-architecture-simulator/…` | Crawlable pages about the two tools, plus `sitemap.xml` and `llms.txt` | generated here at build time |
@@ -18,7 +18,9 @@ properties at the top of each project's stylesheet.
 
 ```
 .
-├── index.html, 404.html, styles.css, favicon.svg, robots.txt, assets/   hand-written site files
+├── index.html                           the CV (home page, self-contained: its own CSS and JS)
+├── tools/index.html                     tools landing page (uses styles.css)
+├── 404.html, styles.css, favicon.svg, robots.txt, assets/   other hand-written site files
 ├── scripts/build-site.mjs               assembles the site into _site/
 ├── scripts/seo/                         generator and checker for the generated pages
 ├── .github/workflows/deploy.yml         build and deploy pipeline
