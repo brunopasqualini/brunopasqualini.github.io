@@ -1,18 +1,18 @@
-// Builds the crawlable pages, sitemap.xml and llms.txt. `node scripts/seo/generate.mjs --check` verifies the committed
-// files are up to date and that every page meets the checklist in check.mjs, without writing anything.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+// Builds the crawlable pages, sitemap.xml and llms.txt into the assembled site (_site/), then holds every indexable page,
+// hand-written and generated, to the checklist in check.mjs and exits non-zero if any page fails it.
+// Run it after scripts/build-site.mjs has copied the site and both projects into _site/.
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { check } from './check.mjs';
-import { ROOT } from './data.mjs';
+import { OUT } from './data.mjs';
 import { buildPages } from './pages.mjs';
-import { CONTRIBUTE, SITE, layout } from './site.mjs';
+import { CONTRIBUTE, REPO_EXAMS, REPO_OPS, SITE, layout } from './site.mjs';
 
-/** Pages written by hand rather than generated. They are listed in the sitemap and held to the same checklist. */
+/** Pages that are not generated here: the landing page and the two apps. They are listed in the sitemap and held to the same checklist. */
 export const HANDWRITTEN = [
   { path: '/', file: 'index.html' },
   { path: '/exam-simulator/', file: 'exam-simulator/index.html' },
-  // The built app lives at /engineering-ops/dist/ and is produced from this source file by the build workflow.
-  { path: '/engineering-ops/dist/', file: 'engineering-ops/index.html' },
+  { path: '/engineering-ops/', file: 'engineering-ops/index.html' },
 ];
 
 const fileOf = (path) => join(path.slice(1), 'index.html');
@@ -43,12 +43,12 @@ ${missions.map(mission).join('\n')}
 
 ## Optional
 
-- [Source code and documentation](https://github.com/brunopasqualini/brunopasqualini.github.io): the repository, including the simulator's architecture and simulation docs
+- [Simulator source code and documentation](${REPO_OPS}): the repository, including the simulator's architecture and simulation docs
+- [Exam simulator source code](${REPO_EXAMS}): the app and the question banks
 - [Contribute a question bank](${CONTRIBUTE}): add practice questions for another exam or cloud provider (plain JSON, with a validator)
 `;
 }
 
-const mode = process.argv.includes('--check') ? 'check' : 'write';
 const built = await buildPages();
 const outputs = new Map();
 for (const page of built.pages) outputs.set(fileOf(page.path), layout(page));
@@ -56,20 +56,16 @@ const allPaths = [...HANDWRITTEN.map((p) => p.path), ...built.pages.map((p) => p
 outputs.set('sitemap.xml', sitemap(allPaths));
 outputs.set('llms.txt', llms(built));
 
-if (mode === 'write') {
-  for (const [file, content] of outputs) {
-    const target = join(ROOT, file);
-    mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, content);
-  }
-  console.log(`Wrote ${outputs.size} files (${built.pages.length} pages, sitemap.xml, llms.txt).`);
-} else {
-  const stale = [...outputs].filter(([file, content]) => !existsSync(join(ROOT, file)) || readFileSync(join(ROOT, file), 'utf8') !== content).map(([f]) => f);
-  const problems = check({ pages: [...HANDWRITTEN, ...built.pages.map((p) => ({ path: p.path, file: fileOf(p.path) }))] });
-  for (const f of stale) problems.push(`${f} is out of date: run "node scripts/seo/generate.mjs" and commit the result.`);
-  if (problems.length) {
-    console.error(problems.map((p) => `- ${p}`).join('\n'));
-    process.exit(1);
-  }
-  console.log(`SEO check passed for ${allPaths.length} pages.`);
+for (const [file, content] of outputs) {
+  const target = join(OUT, file);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, content);
 }
+console.log(`Wrote ${outputs.size} files (${built.pages.length} pages, sitemap.xml, llms.txt) to ${OUT}.`);
+
+const problems = check({ pages: [...HANDWRITTEN, ...built.pages.map((p) => ({ path: p.path, file: fileOf(p.path) }))] });
+if (problems.length) {
+  console.error(problems.map((p) => `- ${p}`).join('\n'));
+  process.exit(1);
+}
+console.log(`SEO check passed for ${allPaths.length} pages.`);
