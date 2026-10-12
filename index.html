@@ -863,7 +863,9 @@ footer h2{font:700 clamp(1.9rem,4.4vw,3rem)/1.05 var(--display);letter-spacing:-
     var cv = document.getElementById(id), ctx = cv.getContext('2d'), host = cv.parentNode;
     var d = factory(ctx), st = {cv:cv,d:d,vis:false,W:0,H:0,sized:false};
     function size(){
-      var w = Math.floor(cv.getBoundingClientRect().width || host.getBoundingClientRect().width), h = d.height(w), dpr = Math.min(window.devicePixelRatio||1, 2);
+      /* offsetWidth is the layout width. getBoundingClientRect() includes the shrink-to-fit scale applied to the card in
+         background mode, which made the canvas draw too narrow and then stretch on phones. */
+      var w = Math.floor(cv.offsetWidth || host.offsetWidth), h = d.height(w), dpr = Math.min(window.devicePixelRatio||1, 2);
       if(!w) return; if(w === st.W && st.sized) return;
       cv.width = w*dpr; cv.height = h*dpr; cv.style.height = h+'px'; ctx.setTransform(dpr,0,0,dpr,0,0);
       st.W = w; st.H = h; d.init(w,h);
