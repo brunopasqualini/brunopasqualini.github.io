@@ -1,4 +1,6 @@
-# brunopasqualini.github.io
+# brunopasqualini.github.io: CV and portfolio of Bruno Pasqualini
+
+Live site: <https://brunopasqualini.github.io/>. The CV and portfolio of Bruno Pasqualini, a full stack software engineer in Brisbane, Australia (AWS serverless, event-driven architecture, React, TypeScript), with free AWS practice exams and a software architecture and system design simulator at [/tools/](https://brunopasqualini.github.io/tools/).
 
 The GitHub Pages site: a CV portfolio at the root, with a **My Tools** button that leads to a page listing two independent projects. This repository holds only the CV, the tools page, the search-engine setup and the pipeline that assembles and publishes the site. The two projects live in their own
 repositories:
