@@ -112,7 +112,7 @@ export function layout(page) {
     </main>
     <footer class="foot">
       <nav class="foot-links" aria-label="Footer">
-        <a href="/">Home</a>${nav}<a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/">Open Engineering Ops</a><a href="${CONTRIBUTE}" rel="noopener">Contribute a question bank</a><a href="${REPO_OPS}" rel="noopener">Simulator on GitHub</a><a href="${REPO_EXAMS}" rel="noopener">Exam simulator on GitHub</a>
+        <a href="/">CV</a><a href="/tools/">My tools</a>${nav}<a href="/exam-simulator/">Open the exam simulator</a><a href="/engineering-ops/">Open Engineering Ops</a><a href="${CONTRIBUTE}" rel="noopener">Contribute a question bank</a><a href="${REPO_OPS}" rel="noopener">Simulator on GitHub</a><a href="${REPO_EXAMS}" rel="noopener">Exam simulator on GitHub</a>
       </nav>
       <p>
         Independent study tools. This website and its tools are not affiliated with, endorsed by or sponsored by Amazon Web

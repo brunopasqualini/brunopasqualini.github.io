@@ -93,7 +93,7 @@ export async function buildPages() {
   // ------------------------------------------------------------------------------------------- AWS practice exams hub
   {
     const total = exams.reduce((n, e) => n + e.total, 0);
-    const crumbs = breadcrumbs([['Home', '/'], ['AWS practice exams', HUB]]);
+    const crumbs = breadcrumbs([['My tools', '/tools/'], ['AWS practice exams', HUB]]);
     const f = faq([
       ['Is this really free?', 'Yes. The practice exams are free, there is no account, no paywall and no email capture. They run in your browser.'],
       ['Are these real AWS exam questions?', 'No. They are AI-generated from official AWS documentation, with an explanation for every answer. They are not official AWS questions and not "exam dumps", and this website is not affiliated with, endorsed by or sponsored by AWS or any other cloud provider.'],
@@ -177,7 +177,7 @@ export async function buildPages() {
     const meta = EXAM_PAGES[exam.id];
     const path = examPath(exam);
     const samples = sampleQuestions(exam, 8);
-    const crumbs = breadcrumbs([['Home', '/'], ['AWS practice exams', HUB], [meta.short, path]]);
+    const crumbs = breadcrumbs([['My tools', '/tools/'], ['AWS practice exams', HUB], [meta.short, path]]);
     const f = faq([
       [`How many ${meta.short} practice questions are there?`, `${exam.total} questions in ${plural(exam.banks, 'practice exam')} of ${exam.perBank} questions each.`],
       ['Are these the real exam questions?', 'No. They are AI-generated from official AWS documentation, in the style of the exam. They are not official AWS questions and not exam dumps, and this website is not affiliated with AWS.'],
@@ -247,7 +247,7 @@ export async function buildPages() {
   const byId = new Map(missions.map((m) => [m.id, m]));
   const ordered = journey.flatMap((s) => s.missionIds.map((id) => byId.get(id)).filter(Boolean));
   {
-    const crumbs = breadcrumbs([['Home', '/'], ['Software architecture simulator', SIM]]);
+    const crumbs = breadcrumbs([['My tools', '/tools/'], ['Software architecture simulator', SIM]]);
     const f = faq([
       ['What is the software architecture simulator?', 'Engineering Ops is a hands-on simulator for system design and site reliability. You get a running cloud architecture, investigate an incident from metrics, logs and traces, change the design, deploy it and watch how the system reacts.'],
       ['Is it free, and do I need an AWS account?', 'It is free and needs no account, no install and no cloud access. Everything is simulated in your browser, and costs are estimates, not AWS prices.'],
@@ -335,7 +335,7 @@ export async function buildPages() {
     const path = missionPath(m);
     const prev = ordered[i - 1];
     const next = ordered[i + 1];
-    const crumbs = breadcrumbs([['Home', '/'], ['Software architecture simulator', SIM], [m.title, path]]);
+    const crumbs = breadcrumbs([['My tools', '/tools/'], ['Software architecture simulator', SIM], [m.title, path]]);
     const incident = m.kind === 'incident';
     const skills = Object.entries(m.skills)
       .sort((a, b) => b[1] - a[1])
