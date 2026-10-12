@@ -45,6 +45,7 @@ ${missions.map(mission).join('\n')}
 ## Optional
 
 - [Bruno Pasqualini's CV](${SITE}/): experience, certifications and education of the author, a full stack software engineer
+- [AWS Certified Developer - Associate](https://cp.certmetrics.com/amazon/en/public/verify/credential/20b0e7e865b2413ba4de90b467ee4dfc), [AWS Certified Cloud Practitioner](https://cp.certmetrics.com/amazon/en/public/verify/credential/77f27aa631e141ab8c3a30083b7edaaa) and [AWS Certified AI Practitioner](https://cp.certmetrics.com/amazon/en/public/verify/credential/ffab1a6dd8a14039ab08aab2756696f5): public verification pages for the author's certifications
 - [GitHub profile](https://github.com/brunopasqualini) and [LinkedIn profile](https://www.linkedin.com/in/brunopasqualini/): the author's public profiles
 - [All tools](${SITE}/tools/): the two tools side by side
 - [Simulator source code and documentation](${REPO_OPS}): the repository, including the simulator's architecture and simulation docs
