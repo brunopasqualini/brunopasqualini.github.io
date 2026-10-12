@@ -85,13 +85,14 @@ a{color:inherit}
 main{position:relative}
 .hero{position:relative;z-index:1}
 .arch{position:relative}
-.arch-card{transition:opacity .5s ease}
+@property --ma{syntax:'<number>';inherits:false;initial-value:1}
+.arch-card{--ma:1;-webkit-mask-image:linear-gradient(to right,rgba(0,0,0,var(--ma)),#000 70%);mask-image:linear-gradient(to right,rgba(0,0,0,var(--ma)),#000 70%);transition:opacity .75s ease,background-color .75s ease,border-color .75s ease,--ma .75s ease}
 .arch-card canvas{user-select:none;-webkit-user-select:none;touch-action:manipulation}
 body.bg .hero{pointer-events:none}
 body.bg .arch{position:absolute;left:0;right:0;top:0;padding:0;z-index:0;display:flex;align-items:center}
 body.bg .arch .wrap{width:100%}
-body.bg .arch-card{background:transparent;border-color:transparent;opacity:.3;-webkit-mask-image:linear-gradient(to right,rgba(0,0,0,.28),#000 70%);mask-image:linear-gradient(to right,rgba(0,0,0,.28),#000 70%)}
-@media (max-width:640px){body.bg .arch-card{opacity:.2;-webkit-mask-image:none;mask-image:none}}
+body.bg .arch-card{background:transparent;border-color:transparent;opacity:.3;--ma:.28}
+@media (max-width:640px){body.bg .arch-card{opacity:.2;--ma:1}}
 body.bg .arch-card .btns{display:none}
 @media (prefers-reduced-motion:reduce){.arch-card{transition:none}}
 .kicker{font:500 .8125rem/1.4 var(--mono);color:var(--teal);letter-spacing:.06em;text-transform:uppercase;margin:0 0 18px}
@@ -896,13 +897,67 @@ footer h2{font:700 clamp(1.9rem,4.4vw,3rem)/1.05 var(--display);letter-spacing:-
     var hh = heroW.offsetHeight, ch = cvs.offsetHeight || 1, k = Math.min(1,(hh-24)/ch);
     arch.style.height = hh + 'px'; card.style.transform = k < 1 ? 'scale(' + k.toFixed(3) + ')' : '';
   }
+  /* Double-click shifts the canvas between its background and interactive positions. The card is measured before and after the
+     layout flips, then animated from the old position to the new one (FLIP), while the space it takes in the page grows or
+     collapses in step, so nothing jumps. */
+  var DUR = 750, EASE = 'cubic-bezier(.22,1,.36,1)', running = [], spacer = null, scrollRaf = 0, root = document.documentElement;
+  /* The page scroll uses the same curve and duration as the card, so the two stay in step (the browser's own smooth
+     scroll has a different curve and finishes early, which made the card wobble). */
+  function bezier(x1, y1, x2, y2){
+    return function(x){
+      if(x <= 0) return 0; if(x >= 1) return 1;
+      var lo = 0, hi = 1, t = x;
+      for(var i = 0; i < 30; i++){
+        var cx = 3*(1-t)*(1-t)*t*x1 + 3*(1-t)*t*t*x2 + t*t*t;
+        if(Math.abs(cx - x) < 1e-5) break;
+        if(cx < x) lo = t; else hi = t;
+        t = (lo + hi) / 2;
+      }
+      return 3*(1-t)*(1-t)*t*y1 + 3*(1-t)*t*t*y2 + t*t*t;
+    };
+  }
+  var ease = bezier(.22, 1, .36, 1);
+  function cancelGlide(){ if(scrollRaf){ cancelAnimationFrame(scrollRaf); scrollRaf = 0; } }
+  function stopGlide(){ cancelGlide(); root.style.overflowAnchor = ''; }
+  function glideTo(y){
+    cancelGlide();
+    if(reduce){ window.scrollTo({top: y, behavior: 'auto'}); root.style.overflowAnchor = ''; return; }
+    var from = window.scrollY, t0 = performance.now();
+    root.style.overflowAnchor = 'none';
+    (function tick(now){
+      var p = Math.min(1, (now - t0) / DUR);
+      window.scrollTo({top: from + (y - from) * ease(p), behavior: 'instant'});
+      if(p < 1) scrollRaf = requestAnimationFrame(tick); else stopGlide();
+    })(t0);
+  }
+  ['wheel', 'touchstart', 'keydown'].forEach(function(ev){ window.addEventListener(ev, stopGlide, {passive: true}); });
+  function cancelRunning(){ running.forEach(function(a){ a.cancel(); }); running = []; if(spacer){ spacer.remove(); spacer = null; } }
   function setMode(m){
     if(m === mode) return; mode = m;
-    card.style.transition = 'none'; card.style.opacity = '0'; void card.offsetWidth;
+    stopGlide(); root.style.overflowAnchor = 'none'; // the browser would otherwise re-scroll the moment the layout flips
+    var first = card.getBoundingClientRect(), taken = arch.getBoundingClientRect().height;
+    cancelRunning();
     body.classList.toggle('bg', m === 'bg'); fit();
-    card.style.transition = ''; card.style.opacity = '';
-    if(m === 'flow') arch.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'center'});
-    else window.scrollTo({top: 0, behavior: reduce ? 'auto' : 'smooth'});
+    var last = card.getBoundingClientRect(), canAnimate = !reduce && typeof card.animate === 'function' && last.width > 0 && last.height > 0;
+    if(canAnimate){
+      var F = card.style.transform || '', k = first.width / last.width;
+      var dx = (first.left + first.width/2) - (last.left + last.width/2), dy = first.top - last.top - last.height*(1-k)/2;
+      var opt = {duration: DUR, easing: EASE};
+      running.push(card.animate([{transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + k + ') ' + F}, {transform: 'translate(0px,0px) scale(1) ' + F}], opt));
+      var btns = card.querySelector('.btns');
+      if(m === 'flow' && btns) running.push(btns.animate([{opacity: 0}, {opacity: 0, offset: .45}, {opacity: 1}], opt));
+      if(m === 'flow'){
+        var pb = getComputedStyle(arch).paddingBottom, h = arch.getBoundingClientRect().height;
+        running.push(arch.animate([{height: '0px', paddingBottom: '0px'}, {height: h + 'px', paddingBottom: pb}], opt));
+      }else if(taken > 1){
+        var sp = spacer = document.createElement('div'); sp.setAttribute('aria-hidden', 'true'); sp.style.height = '0px';
+        arch.parentNode.insertBefore(sp, arch);
+        var sa = sp.animate([{height: taken + 'px'}, {height: '0px'}], opt);
+        sa.onfinish = function(){ sp.remove(); if(spacer === sp) spacer = null; };
+        running.push(sa);
+      }
+    }
+    glideTo(m === 'flow' ? Math.max(0, last.top + window.scrollY - (window.innerHeight - last.height) / 2) : 0);
   }
   cvs.addEventListener('pointerup', function(e){
     var n = performance.now();
