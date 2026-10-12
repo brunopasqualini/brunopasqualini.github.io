@@ -36,8 +36,9 @@ deploy, or the pull request) if any page does not meet it:
 
 The checklist: a `<title>` under 70 characters, a meta description of 50 to
 170 characters, a canonical URL that matches the sitemap, `lang` on `<html>`, Open Graph title and image, exactly one `<h1>`,
-`alt` on every image, valid JSON-LD, working internal links, no duplicate titles or descriptions, and no `noindex` on a page that is
-in the sitemap.
+`alt` on every image, valid JSON-LD, working internal links, an `og:image` that exists in the built site, no duplicate titles or
+descriptions, and no `noindex` on a page that is in the sitemap. The reverse is checked too: every published HTML page must be in the
+sitemap or marked `noindex`, so a forgotten page fails the build.
 
 ## What was done and why
 
@@ -82,9 +83,14 @@ A static site cannot do these for itself, and they matter more for ranking than 
    `<head>` of `index.html` (and to `tools/index.html` and `scripts/seo/site.mjs` if you want it on every page). Then **submit
    `https://brunopasqualini.github.io/sitemap.xml`** and use URL Inspection to **Request indexing** for the home page, the tools page, the hub,
    and each exam page. Also do this for Bing Webmaster Tools (it can import from Search Console).
-2. **Set the repository's description, website and topics** on GitHub (About box): description such as "Free AWS practice exams
-   and a software architecture simulator", website `https://brunopasqualini.github.io/`, topics like `aws`, `aws-certification`,
-   `practice-exam`, `system-design`, `software-architecture`, `sre`.
+2. **Fill in this repository's GitHub "About" box** (the gear next to About on the repository page). GitHub repository pages rank in
+   Google and are read by AI agents, and these three fields are what they show first:
+   - **Description:** `CV and portfolio of Bruno Pasqualini, full stack software engineer (AWS serverless, React, TypeScript), plus free AWS practice exams and a system design simulator.`
+   - **Website:** `https://brunopasqualini.github.io/`
+   - **Topics:** `portfolio`, `cv`, `resume`, `full-stack`, `aws`, `serverless`, `event-driven`, `react`, `typescript`, `github-pages`, `seo`, `system-design`, `aws-certification`
+   Also set your **GitHub profile** (Settings, Profile) website to the same URL, and consider a profile README (a repository named
+   `brunopasqualini` with a README.md) that links the CV, `/tools/` and LinkedIn. The CV already links back with `rel="me"`, so the
+   profiles and the site vouch for each other.
 3. **Earn links.** Backlinks from real sites are the biggest ranking factor you control. Post it where the audience is (a "Show HN",
    r/AWSCertifications, r/devops, dev.to or Hashnode write-ups, LinkedIn), and ask people who write about AWS study resources.
 4. **Consider a custom domain** with a name that says what the site is. A `github.io` subdomain can rank, but a descriptive domain
