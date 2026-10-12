@@ -1,6 +1,6 @@
 // Assembles the site into _site/, ready for GitHub Pages:
 //
-//   this repository (landing page, 404, robots.txt, assets)  ->  _site/
+//   this repository (CV, tools page, 404, robots.txt, assets)  ->  _site/
 //   cert-exam-simulator  (the PWA, stamped with its commit)  ->  _site/exam-simulator/
 //   system-design-simulator (its Vite build, dist/)          ->  _site/engineering-ops/
 //
@@ -23,8 +23,8 @@ const sha = (dir) => execFileSync('git', ['-C', dir, 'rev-parse', '--short=12', 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
-// 1. This repository's own pages. Only what is listed here is published.
-for (const name of ['index.html', 'styles.css', 'favicon.svg', '404.html', 'robots.txt', 'assets']) {
+// 1. This repository's own pages (the CV at /, the tools landing page at /tools/). Only what is listed here is published.
+for (const name of ['index.html', 'tools', 'styles.css', 'favicon.svg', '404.html', 'robots.txt', 'assets']) {
   cpSync(join(ROOT, name), join(OUT, name), { recursive: true });
 }
 

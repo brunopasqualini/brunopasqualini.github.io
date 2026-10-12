@@ -8,9 +8,10 @@ import { OUT } from './data.mjs';
 import { buildPages } from './pages.mjs';
 import { CONTRIBUTE, REPO_EXAMS, REPO_OPS, SITE, layout } from './site.mjs';
 
-/** Pages that are not generated here: the landing page and the two apps. They are listed in the sitemap and held to the same checklist. */
+/** Pages that are not generated here: the CV, the tools landing page and the two apps. They are listed in the sitemap and held to the same checklist. */
 export const HANDWRITTEN = [
   { path: '/', file: 'index.html' },
+  { path: '/tools/', file: 'tools/index.html' },
   { path: '/exam-simulator/', file: 'exam-simulator/index.html' },
   { path: '/engineering-ops/', file: 'engineering-ops/index.html' },
 ];
@@ -25,9 +26,9 @@ function sitemap(paths) {
 function llms({ exams, missions, helpers }) {
   const exam = (e) => `- [${e.title.replace('Associated', 'Associate')}](${SITE}${helpers.examPath(e)}): ${e.total} free practice questions in ${e.banks} timed exams, with explanations`;
   const mission = (m) => `- [${m.title}](${SITE}${helpers.missionPath(m)}): ${m.tagline}`;
-  return `# Bruno Pasqualini: free learning tools
+  return `# Bruno Pasqualini: full stack software engineer (CV and free learning tools)
 
-> Two free, in-browser learning tools that need no signup: AWS certification practice exams (Solutions Architect Associate SAA-C03 and Developer Associate DVA-C02) and Engineering Ops, a software architecture and system design simulator with 14 cloud incident and design missions. Everything runs client-side; nothing is sent to a server. The practice questions are AI-generated from official AWS documentation and are not official exam content; the site is not affiliated with, endorsed by or sponsored by AWS or any other cloud provider. Community question banks are welcome.
+> Bruno Pasqualini is a full stack software engineer in Brisbane, Australia, specialising in AWS serverless and event-driven architecture, React, TypeScript, Node.js and Java, and holds three AWS certifications (AI Practitioner, Cloud Practitioner, Developer Associate). This site is Bruno Pasqualini's CV plus two free, in-browser learning tools that need no signup: AWS certification practice exams (Solutions Architect Associate SAA-C03 and Developer Associate DVA-C02) and Engineering Ops, a software architecture and system design simulator with 14 cloud incident and design missions. Everything runs client-side; nothing is sent to a server. The practice questions are AI-generated from official AWS documentation and are not official exam content; the site is not affiliated with, endorsed by or sponsored by AWS or any other cloud provider. Community question banks are welcome.
 
 ## Free AWS practice exams
 
@@ -43,6 +44,10 @@ ${missions.map(mission).join('\n')}
 
 ## Optional
 
+- [Bruno Pasqualini's CV](${SITE}/): experience, certifications and education of the author, a full stack software engineer
+- [AWS Certified Developer - Associate](https://cp.certmetrics.com/amazon/en/public/verify/credential/20b0e7e865b2413ba4de90b467ee4dfc), [AWS Certified Cloud Practitioner](https://cp.certmetrics.com/amazon/en/public/verify/credential/77f27aa631e141ab8c3a30083b7edaaa) and [AWS Certified AI Practitioner](https://cp.certmetrics.com/amazon/en/public/verify/credential/ffab1a6dd8a14039ab08aab2756696f5): public verification pages for the author's certifications
+- [GitHub profile](https://github.com/brunopasqualini) and [LinkedIn profile](https://www.linkedin.com/in/brunopasqualini/): the author's public profiles
+- [All tools](${SITE}/tools/): the two tools side by side
 - [Simulator source code and documentation](${REPO_OPS}): the repository, including the simulator's architecture and simulation docs
 - [Exam simulator source code](${REPO_EXAMS}): the app and the question banks
 - [Contribute a question bank](${CONTRIBUTE}): add practice questions for another exam or cloud provider (plain JSON, with a validator)
