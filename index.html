@@ -200,8 +200,12 @@ footer h2{font:700 clamp(1.9rem,4.4vw,3rem)/1.05 var(--display);letter-spacing:-
   .two{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:560px){
+  .top .wrap{gap:10px}
+  .top nav{gap:6px}
   .top nav a{display:none}
   .top nav a.tools-link{display:inline-block}
+  .top nav a.tools-link,.theme{padding:9px 10px;font-size:.75rem;white-space:nowrap}
+  .mark{font-size:1.05rem}
   .jobs{padding-left:34px}.job::before{left:-34px}
   .st{display:none}
   .nodes li{grid-template-columns:28px minmax(0,1fr)}
