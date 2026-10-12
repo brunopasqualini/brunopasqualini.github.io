@@ -4,7 +4,7 @@ import { CONTRIBUTE, breadcrumbs, esc, faq, notice, slug, url } from './site.mjs
 
 const HUB = '/aws-practice-exams/';
 const SIM = '/software-architecture-simulator/';
-const APP_OPS = '/engineering-ops/dist/';
+const APP_OPS = '/engineering-ops/';
 
 const trunc = (s, n) => (s.length <= n ? s : s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…');
 const letter = (i) => String.fromCharCode(65 + i);
