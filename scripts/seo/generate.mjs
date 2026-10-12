@@ -44,6 +44,8 @@ ${missions.map(mission).join('\n')}
 
 ## Optional
 
+- [Bruno Pasqualini's CV](${SITE}/): experience, certifications and education of the author, a full stack software engineer
+- [All tools](${SITE}/tools/): the two tools side by side
 - [Simulator source code and documentation](${REPO_OPS}): the repository, including the simulator's architecture and simulation docs
 - [Exam simulator source code](${REPO_EXAMS}): the app and the question banks
 - [Contribute a question bank](${CONTRIBUTE}): add practice questions for another exam or cloud provider (plain JSON, with a validator)
