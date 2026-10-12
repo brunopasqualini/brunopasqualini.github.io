@@ -1,0 +1,85 @@
+# Builds the whole site and deploys it to GitHub Pages.
+#
+# The two apps live in their own repositories and are checked out here at their latest main:
+#   brunopasqualini/cert-exam-simulator      -> /exam-simulator/
+#   brunopasqualini/system-design-simulator  -> /engineering-ops/
+#
+# Triggers:
+# - repository_dispatch (project-updated): sent by the CI workflow of either project after a push to its main.
+# - push to master: a change to this repository (landing page, SEO generator, workflow).
+# - pull_request: build and check only, nothing is deployed.
+# - workflow_dispatch: rebuild by hand.
+#
+# One-time setup: Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+name: Build and deploy site
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  repository_dispatch:
+    types: [project-updated]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Deploys queue up one at a time and only the newest waiting run is kept, so a burst of pushes cannot deploy out of order.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('site-pr-{0}', github.ref) || 'site-deploy' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/checkout@v5
+        with:
+          repository: brunopasqualini/cert-exam-simulator
+          ref: main
+          path: _src/cert-exam-simulator
+
+      - uses: actions/checkout@v5
+        with:
+          repository: brunopasqualini/system-design-simulator
+          ref: main
+          path: _src/system-design-simulator
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: _src/system-design-simulator/package-lock.json
+
+      # Also installs esbuild, which the SEO generator uses to read the TypeScript missions.
+      - name: Build Engineering Ops
+        working-directory: _src/system-design-simulator
+        run: |
+          npm ci
+          npm run build
+
+      - name: Assemble the site
+        run: node scripts/build-site.mjs
+
+      - name: Generate the SEO pages and check every page
+        run: node scripts/seo/generate.mjs
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
