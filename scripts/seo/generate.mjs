@@ -4,6 +4,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { check } from './check.mjs';
+import { checkLinks } from './links.mjs';
 import { OUT } from './data.mjs';
 import { buildPages } from './pages.mjs';
 import { CONTRIBUTE, REPO_EXAMS, REPO_OPS, SITE, layout } from './site.mjs';
@@ -68,7 +69,11 @@ for (const [file, content] of outputs) {
 }
 console.log(`Wrote ${outputs.size} files (${built.pages.length} pages, sitemap.xml, llms.txt) to ${OUT}.`);
 
-const problems = check({ pages: [...HANDWRITTEN, ...built.pages.map((p) => ({ path: p.path, file: fileOf(p.path) }))] });
+const allPages = [...HANDWRITTEN, ...built.pages.map((p) => ({ path: p.path, file: fileOf(p.path) }))];
+const problems = [
+  ...check({ pages: allPages }),
+  ...checkLinks({ pages: allPages, missionIds: built.missions.map((m) => m.id), certIds: built.exams.map((e) => e.id) }),
+];
 if (problems.length) {
   console.error(problems.map((p) => `- ${p}`).join('\n'));
   process.exit(1);

@@ -30,6 +30,13 @@ The generator then checks every indexable page and fails the build if any check 
 - no duplicate titles or descriptions; no `noindex` on a page in the sitemap
 - every published HTML page is in the sitemap or marked `noindex`
 
+Links are checked separately (`scripts/seo/links.mjs`) across every checked page, the sitemap, `llms.txt` and `robots.txt`, including JSON-LD URLs:
+
+- same-site links resolve to a built file, and a `#fragment` exists on its target page
+- app links `…/engineering-ops/#/play/<id>` name a real mission; `…/exam-simulator/?cert=<id>` names a real exam
+- external links use `https`, and links that open a new tab carry `rel="noopener"`
+- external URLs are not fetched, so the build never depends on other sites being up
+
 ## Decisions
 
 - **Static, crawlable HTML.** Pages work without JavaScript; the apps carry fallback text and links for the same reason.
